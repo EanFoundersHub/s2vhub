@@ -78,20 +78,137 @@
     els.loginMessage.className = `message ${type}`.trim();
   }
 
-  /* ── API ── */
+  /* ── API (modo demo temporal) ── */
   async function fetchData(session) {
     const apiUrl = getConfiguredApiUrl();
-    if (!apiUrl) throw new Error("Falta configurar la URL HTTP del flujo S2V_02.");
-    const res = await fetch(apiUrl, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ correoEvaluador: session.correoEvaluador, codigoAcceso: session.codigoAcceso, modo: "consulta" })
-    });
-    let data = null;
-    const text = await res.text();
-    try { data = text ? JSON.parse(text) : null; }
-    catch { throw new Error("La API no devolvió JSON válido. " + text.slice(0, 160)); }
-    if (!res.ok || data?.ok === false) throw new Error(data?.mensaje || `Error HTTP ${res.status}`);
-    return data;
+
+    const DEMO_DATA = {
+      ok: true,
+      mensaje: "Modo demo temporal cargado",
+      postulaciones: [
+        {
+          IDIniciativa: "S2V-2026-23",
+          NombreIniciativa: "El cambio como mecánica de juego: Desarrollo de un RPG educativo para la enseñanza de derivadas",
+          EstadoPostulacion: "Recibida",
+          NombreLider: "Nicolás Varón Bernal",
+          CorreoLider: "nvaronb89301@universidadean.edu.co",
+          RutaTRL: "TRL 1-3",
+          TRLDeclarado: "TRL 2",
+          CRLDeclarado: "Pendiente",
+          BRLDeclarado: "Pendiente",
+          IPRLDeclarado: "Pendiente",
+          DescripcionCorta: "RPG educativo para apoyar la enseñanza de derivadas en estudiantes universitarios mediante mecánicas de juego.",
+          PropuestaValor: "Transforma el aprendizaje de derivadas en una experiencia interactiva basada en mecánicas de RPG.",
+          BonoEquidadAplica: "No",
+          VideoPitchURL: "https://youtu.be/wygC5u1XgG4",
+          EvidenciasURL: "https://drive.google.com/drive/folders/1hQIZJg3xi8b2ioPnvQRTybRnAcHx_QPh?usp=sharing"
+        },
+        {
+          IDIniciativa: "S2V-2026-22",
+          NombreIniciativa: "PRUEBA MVP SCIENCE2VENTURE HTML",
+          EstadoPostulacion: "Recibida",
+          NombreLider: "Prueba Automatización Líder MVP",
+          CorreoLider: "afcaballero@universidadean.edu.co",
+          RutaTRL: "TRL 4-6",
+          TRLDeclarado: "TRL 4",
+          CRLDeclarado: "CRL 4",
+          BRLDeclarado: "BRL 3",
+          IPRLDeclarado: "IPRL 2",
+          DescripcionCorta: "Sistema digital para centralizar recepción, revisión y evaluación de iniciativas científico-tecnológicas.",
+          PropuestaValor: "Centraliza postulaciones, evidencias y control documental en un hub conectado a SharePoint y Power Automate.",
+          BonoEquidadAplica: "No",
+          VideoPitchURL: "https://example.com/video-pitch-s2v-mvp",
+          EvidenciasURL: "https://example.com/evidencias-s2v-mvp"
+        }
+      ],
+      controlDocumental: [
+        {
+          IDIniciativa: "S2V-2026-23",
+          NombreIniciativa: "El cambio como mecánica de juego: Desarrollo de un RPG educativo para la enseñanza de derivadas",
+          EstadoDocumentalGeneral: "Pendiente revisión",
+          VideoPitchEstado: "Pendiente revisión",
+          VideoPitchURL: "https://youtu.be/wygC5u1XgG4",
+          EvidenciasEstado: "Pendiente revisión",
+          EvidenciasURL: "https://drive.google.com/drive/folders/1hQIZJg3xi8b2ioPnvQRTybRnAcHx_QPh?usp=sharing",
+          EstadoAnexo1: "Pendiente revisión",
+          URLAnexo1: "https://drive.google.com/drive/folders/1hQIZJg3xi8b2ioPnvQRTybRnAcHx_QPh",
+          MetodoRecepcionAnexo1: "Formulario",
+          RequiereSubsanacion: "No"
+        },
+        {
+          IDIniciativa: "S2V-2026-22",
+          NombreIniciativa: "PRUEBA MVP SCIENCE2VENTURE HTML",
+          EstadoDocumentalGeneral: "Pendiente revisión",
+          VideoPitchEstado: "Pendiente revisión",
+          VideoPitchURL: "https://example.com/video-pitch-s2v-mvp",
+          EvidenciasEstado: "Pendiente revisión",
+          EvidenciasURL: "https://example.com/evidencias-s2v-mvp",
+          EstadoAnexo1: "Pendiente revisión",
+          URLAnexo1: "https://example.com/anexo1-s2v-mvp",
+          MetodoRecepcionAnexo1: "Formulario",
+          RequiereSubsanacion: "No"
+        }
+      ],
+      miembrosEquipo: [
+        {
+          IDIniciativa: "S2V-2026-23",
+          NombreMiembro: "Nicolás Varón Bernal",
+          CorreoMiembro: "nvaronb89301@universidadean.edu.co",
+          RolIniciativa: "Líder técnico",
+          EsLider: "Sí",
+          EsEanista: "Sí",
+          EsMujer: "No",
+          EstadoRegistro: "Activo"
+        },
+        {
+          IDIniciativa: "S2V-2026-22",
+          NombreMiembro: "Prueba Automatización Líder MVP",
+          CorreoMiembro: "afcaballero@universidadean.edu.co",
+          RolIniciativa: "Investigador principal y líder técnico",
+          EsLider: "Sí",
+          EsEanista: "Sí",
+          EsMujer: "No",
+          EstadoRegistro: "Activo"
+        }
+      ]
+    };
+
+    if (!apiUrl) {
+      console.warn("Falta configurar la URL HTTP del flujo S2V_02. Cargando modo demo.");
+      return DEMO_DATA;
+    }
+
+    try {
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          correoEvaluador: session.correoEvaluador,
+          codigoAcceso: session.codigoAcceso,
+          modo: "consulta"
+        })
+      });
+
+      const text = await res.text();
+      let data = null;
+
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch (parseError) {
+        console.warn("La API no devolvió JSON válido. Cargando modo demo.", parseError);
+        return DEMO_DATA;
+      }
+
+      if (!res.ok || data?.ok === false) {
+        console.warn("API respondió con error. Cargando modo demo.", res.status, data);
+        return DEMO_DATA;
+      }
+
+      return data;
+    } catch (error) {
+      console.warn("No se pudo consultar Power Automate. Cargando modo demo.", error);
+      return DEMO_DATA;
+    }
   }
 
   /* ── Auth ── */
