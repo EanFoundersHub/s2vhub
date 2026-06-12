@@ -15,7 +15,8 @@
 
   const state = {
     raw: null, postulaciones: [], controlDocumental: [], miembrosEquipo: [],
-    filtered: [], selectedId: null, session: null, activeTab: "analytics"
+    filtered: [], selectedId: null, session: null, activeTab: "analytics",
+    crossIds: null
   };
 
   const $ = (s) => document.querySelector(s);
@@ -33,6 +34,7 @@
     initiativeList: $("#initiativeList"), visibleCount: $("#visibleCount"),
     detailPanel: $("#detailPanel"), cardTemplate: $("#initiativeCardTemplate"),
     tabNav: $("#tabNav"), analyticsPanel: $("#analyticsPanel"),
+    componentsPanel: $("#componentsPanel"),
     listSection: $("#listSection")
   };
 
@@ -100,7 +102,11 @@
       els.loginView.classList.remove("leaving");
       els.dashboardView.classList.remove("hidden");
       staggerIn(".metric-card", 70);
-      // Render analytics
+      // Render analytics + wire cross-filter (shared store)
+      if (window.S2V_Filter && !state._crossWired) {
+        state._crossWired = true;
+        window.S2V_Filter.subscribe(handleCrossFilter);
+      }
       if (window.S2V_Analytics) {
         window.S2V_Analytics.render(els.analyticsPanel, state.postulaciones);
       }
@@ -130,7 +136,11 @@
     state.activeTab = tab;
     $$(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
     els.analyticsPanel.classList.toggle("hidden", tab !== "analytics");
+    els.componentsPanel.classList.toggle("hidden", tab !== "componentes");
     els.listSection.classList.toggle("hidden", tab !== "iniciativas");
+    if (tab === "componentes" && window.S2V_Components) {
+      window.S2V_Components.render(els.componentsPanel);
+    }
   }
 
   /* ── Data ── */
@@ -171,11 +181,35 @@
     const q = clean(els.searchInput.value).toLowerCase();
     const route = els.routeFilter.value;
     const status = els.statusFilter.value;
+    const cross = state.crossIds;
     state.filtered = state.postulaciones.filter(item => {
+      if (cross && !cross.has(initiativeIdOf(item))) return false;
       const h = [initiativeIdOf(item), initiativeNameOf(item), item.NombreLider, item.CorreoLider, item.Ciudad, trlOf(item), routeOf(item), statusOf(item), item.Enfoque, item.SectoresTexto, item.ODSTexto].join(" ").toLowerCase();
       return (!q || h.includes(q)) && (!route || routeOf(item).includes(route)) && (!status || statusOf(item).includes(status));
     });
     renderInitiativeList();
+  }
+
+  /* ── Cross-filter: the analytics dashboard fixes a variable and the
+     whole board (metrics + list) follows that segment. ── */
+  function handleCrossFilter(filtered, filters) {
+    const active = filters && Object.keys(filters).length > 0;
+    state.crossIds = active ? new Set(filtered.map(i => initiativeIdOf(i))) : null;
+    const subset = active ? filtered : state.postulaciones;
+    renderCrossMetrics(subset);
+    applyFilters();
+    if (state.selectedId && state.crossIds && !state.crossIds.has(state.selectedId)) {
+      state.selectedId = null;
+      resetDetail();
+    }
+  }
+
+  function renderCrossMetrics(subset) {
+    const ids = new Set(subset.map(i => initiativeIdOf(i)));
+    animateNumber(els.metricPostulaciones, subset.length);
+    animateNumber(els.metricControl, state.controlDocumental.filter(c => ids.has(clean(c.IDIniciativa))).length);
+    animateNumber(els.metricMiembros, state.miembrosEquipo.filter(m => ids.has(clean(m.IDIniciativa))).length);
+    animateNumber(els.metricEquidad, subset.filter(i => parseInt(i.MujeresEquipo) >= 2).length);
   }
 
   function renderInitiativeList() {
@@ -515,6 +549,16 @@
     $$(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => switchTab(btn.dataset.tab));
     });
+
+    // Roster chips (from analytics / components) open an initiative profile
+    window.S2V_Nav = (id) => {
+      if (!id) return;
+      selectInitiative(id);
+      switchTab("iniciativas");
+      requestAnimationFrame(() => {
+        els.listSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    };
   }
 
   document.addEventListener("DOMContentLoaded", init);

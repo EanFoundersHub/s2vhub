@@ -1,0 +1,283 @@
+/* ── Analytics-only additions for DEMO ── */
+
+/* Tab Navigation */
+.tab-nav {
+  display: flex; gap: 4px; margin-bottom: 24px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  overflow-x: auto;
+}
+.tab-btn {
+  padding: 10px 22px;
+  border: none; border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit; font-size: 0.88rem; font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+.tab-btn.active {
+  background: rgba(85,201,204,0.15);
+  color: var(--teal-light);
+}
+
+/* Analytics Section */
+.analytics-panel { margin-bottom: 32px; }
+.ana-section-title { margin-bottom: 22px; }
+.ana-section-title h3 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
+.ana-section-title .muted { margin-top: 4px; }
+
+.ana-kpi-row {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px;
+}
+.ana-kpi {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 16px 16px;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+  transition: border-color 0.3s, transform 0.2s;
+}
+.ana-kpi:hover { border-color: rgba(85,201,204,0.3); transform: translateY(-2px); }
+.ana-kpi strong { display: block; font-size: 2rem; font-weight: 800; color: var(--teal-light); letter-spacing: -0.03em; line-height: 1; }
+.ana-kpi span { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 11px; }
+.kpi-share { display: flex; align-items: center; gap: 7px; width: 100%; max-width: 124px; margin: 11px auto 0; }
+.kpi-bar { flex: 1; height: 5px; border-radius: 99px; background: rgba(255,255,255,0.09); overflow: hidden; }
+.kpi-bar i { display: block; height: 100%; border-radius: 99px; background: var(--teal); transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+.kpi-share em { font-style: normal; font-size: 0.74rem; font-weight: 700; color: var(--teal-light); min-width: 30px; text-align: right; font-variant-numeric: tabular-nums; }
+.ana-kpi.is-active .kpi-bar i { background: var(--teal-light); }
+
+.ana-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.ana-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 22px;
+  transition: border-color 0.3s;
+}
+.ana-card:hover { border-color: rgba(85,201,204,0.2); }
+.ana-card h4 {
+  font-size: 0.88rem; font-weight: 700; margin-bottom: 16px;
+  color: rgba(255,255,255,0.8);
+}
+.ana-card-wide { grid-column: span 2; }
+
+/* Donut */
+.ana-donut-wrap { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.ana-donut { flex-shrink: 0; }
+.ana-legend { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 120px; }
+.ana-legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: rgba(255,255,255,0.7); }
+.ana-legend-item strong { color: var(--text); margin-left: auto; }
+.ana-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+/* Bars */
+.ana-bars { display: flex; flex-direction: column; gap: 8px; }
+.ana-bar-row { display: grid; grid-template-columns: 150px 1fr 58px; align-items: center; gap: 10px; }
+.ana-bar-label {
+  font-size: 0.76rem; font-weight: 600; color: rgba(255,255,255,0.66);
+  line-height: 1.18;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ana-bar-track {
+  height: 22px; background: rgba(255,255,255,0.04); border-radius: 6px; overflow: hidden;
+}
+.ana-bar-fill {
+  height: 100%; border-radius: 6px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ana-bar-val { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; line-height: 1.05; font-size: 0.82rem; font-weight: 700; color: var(--text); white-space: nowrap; }
+.ana-bar-val .pctv { font-size: 0.66rem; font-weight: 600; color: var(--text-muted); margin-top: 1px; font-variant-numeric: tabular-nums; }
+
+.ana-tag {
+  display: inline-block; padding: 4px 10px; margin: 3px 2px;
+  background: rgba(85,201,204,0.1); border: 1px solid rgba(85,201,204,0.2);
+  border-radius: 100px; font-size: 0.72rem; font-weight: 600; color: var(--teal-light);
+}
+.ana-semilleros-list { margin-top: 10px; }
+.ana-empty { color: var(--text-muted); font-size: 0.85rem; font-style: italic; }
+
+/* ── Cross-filter ── */
+.ana-hint {
+  margin-top: 8px; font-size: 0.78rem; color: var(--text-muted);
+  display: flex; align-items: center; gap: 7px;
+}
+.ana-hint::before {
+  content: ""; width: 8px; height: 8px; border-radius: 2px;
+  background: var(--teal); box-shadow: 0 0 0 3px rgba(85,201,204,0.18); flex-shrink: 0;
+}
+
+.ana-filterbar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 18px; padding: 12px 14px;
+  background: rgba(85,201,204,0.07);
+  border: 1px solid rgba(85,201,204,0.28);
+  border-radius: var(--radius-md);
+}
+.ana-filterbar .fb-label {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: var(--teal-light); margin-right: 2px;
+}
+.ana-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 11px 6px 13px;
+  background: rgba(85,201,204,0.16);
+  border: 1px solid rgba(85,201,204,0.4);
+  border-radius: 100px;
+  font-family: inherit; font-size: 0.79rem; font-weight: 600; color: #eafdfd;
+  cursor: pointer; transition: background 0.2s, border-color 0.2s;
+}
+.ana-chip:hover { background: rgba(239,107,107,0.2); border-color: rgba(239,107,107,0.5); }
+.ana-chip .x { font-size: 0.78rem; line-height: 1; opacity: 0.75; }
+.ana-clear-all {
+  margin-left: auto; background: transparent; border: none;
+  color: var(--text-muted); font-family: inherit; font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+}
+.ana-clear-all:hover { color: var(--text); }
+
+
+.ana-sticky-context {
+  position: sticky;
+  top: 12px;
+  z-index: 70;
+  margin-bottom: 22px;
+  border-radius: var(--radius-md);
+}
+.ana-sticky-context .ana-filterbar {
+  margin-bottom: 10px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(24px) saturate(1.1);
+  -webkit-backdrop-filter: blur(24px) saturate(1.1);
+}
+.ana-sticky-context .ana-roster {
+  margin-bottom: 0;
+  background: rgba(12, 17, 22, 0.88);
+  border-color: rgba(85,201,204,0.22);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(24px) saturate(1.1);
+  -webkit-backdrop-filter: blur(24px) saturate(1.1);
+}
+.ana-sticky-context .ana-roster-list {
+  max-height: 190px;
+}
+
+/* Roster de iniciativas filtradas */
+.ana-roster {
+  margin-bottom: 18px; padding: 13px 15px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.ana-roster-head { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
+.ana-roster-count {
+  font-size: 0.74rem; font-weight: 800; color: var(--teal-light);
+  background: rgba(85,201,204,0.14); border: 1px solid rgba(85,201,204,0.3);
+  border-radius: 100px; padding: 1px 9px; font-variant-numeric: tabular-nums;
+}
+.ana-roster-hint { margin-left: auto; font-size: 0.72rem; color: var(--text-muted); }
+.ana-roster-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
+  gap: 8px;
+  max-height: 220px; overflow-y: auto; padding-right: 2px;
+}
+.ana-ini-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 100%; padding: 8px 12px; border: none; border-radius: 100px; cursor: pointer;
+  background: #55c9cc; color: #06231f;
+  font-family: inherit; font-size: 0.72rem; font-weight: 700; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  transition: filter 0.16s, transform 0.12s, box-shadow 0.16s;
+}
+.ana-ini-chip:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 14px -6px rgba(85,201,204,0.7); }
+.ana-ini-chip:active { transform: translateY(0); }
+
+/* clickable affordances + active / dimmed states */
+.clickable { cursor: pointer; }
+.ana-bar-row.clickable .ana-bar-track { transition: background 0.2s, box-shadow 0.2s; }
+.ana-bar-row.clickable:hover .ana-bar-track { background: rgba(255,255,255,0.1); }
+.ana-bar-row.is-active .ana-bar-label { color: #fff; }
+.ana-bar-row.is-active .ana-bar-val { color: var(--teal-light); }
+.ana-bar-row.is-active .ana-bar-track { box-shadow: inset 0 0 0 1.5px rgba(85,201,204,0.75); }
+.ana-legend-item.clickable { transition: color 0.2s; }
+.ana-legend-item.clickable:hover { color: #fff; }
+.ana-legend-item.is-active { color: #fff; font-weight: 700; }
+.ana-legend-item.is-active .ana-legend-dot { box-shadow: 0 0 0 2px rgba(255,255,255,0.3); }
+.ana-arc.clickable { cursor: pointer; transition: opacity 0.2s, stroke-width 0.2s; }
+.ana-arc.clickable:hover { opacity: 1 !important; }
+.is-dim { opacity: 0.4; transition: opacity 0.2s; }
+.ana-kpi.clickable { cursor: pointer; }
+.ana-kpi.clickable:hover { border-color: rgba(85,201,204,0.45); }
+.ana-kpi.is-active { border-color: rgba(85,201,204,0.65); background: rgba(85,201,204,0.1); }
+.ana-kpi.is-active strong { color: #fff; }
+
+/* Responsive analytics */
+@media (max-width: 1200px) {
+  .ana-grid { grid-template-columns: repeat(2, 1fr); }
+  .ana-card-wide { grid-column: span 2; }
+  .ana-kpi-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .ana-grid { grid-template-columns: 1fr; }
+  .ana-card-wide { grid-column: span 1; }
+  .ana-kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .ana-bar-row { grid-template-columns: 112px 1fr 52px; }
+}
+@media (max-width: 420px) {
+  .ana-kpi-row { grid-template-columns: 1fr 1fr; }
+  .ana-kpi strong { font-size: 1.5rem; }
+  .ana-donut-wrap { flex-direction: column; align-items: center; text-align: center; }
+}
+
+
+@media (max-width: 768px) {
+  .ana-sticky-context { position: static; }
+  .ana-sticky-context .ana-roster-list { max-height: 180px; }
+}
+
+/* ── Mapa por componentes ── */
+.cmp-groups { display: flex; flex-direction: column; gap: 26px; }
+.cmp-group { position: relative; }
+.cmp-group-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.cmp-group-head h4 { font-size: 1.06rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+.cmp-dot { width: 11px; height: 11px; border-radius: 3px; background: var(--cmp-accent, var(--teal)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--cmp-accent, var(--teal)) 18%, transparent); flex-shrink: 0; }
+.cmp-group-num { margin-left: auto; font-size: 0.78rem; font-weight: 800; color: var(--text-muted); font-variant-numeric: tabular-nums; letter-spacing: 0.05em; }
+
+.cmp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.cmp-chart {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 16px 12px;
+  transition: border-color 0.3s;
+}
+.cmp-chart:hover { border-color: color-mix(in srgb, var(--cmp-accent, var(--teal)) 35%, var(--border)); }
+.cmp-chart-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+.cmp-chart-head h5 { font-size: 0.82rem; font-weight: 700; color: rgba(255,255,255,0.82); letter-spacing: -0.01em; }
+.cmp-multi {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--cmp-accent, var(--teal));
+  background: color-mix(in srgb, var(--cmp-accent, var(--teal)) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cmp-accent, var(--teal)) 30%, transparent);
+  padding: 1px 6px; border-radius: 100px; flex-shrink: 0;
+}
+.cmp-base { margin-top: 10px; font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.01em; }
+.cmp-chart .ana-bars { gap: 6px; }
+.cmp-chart .ana-bar-row { grid-template-columns: 130px 1fr 54px; gap: 8px; }
+.cmp-chart .ana-bar-track { height: 18px; }
+.cmp-chart .ana-bar-label { font-size: 0.72rem; }
+
+@media (max-width: 1200px) { .cmp-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 720px) {
+  .cmp-grid { grid-template-columns: 1fr; }
+  .cmp-chart .ana-bar-row { grid-template-columns: 120px 1fr 50px; }
+}
