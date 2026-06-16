@@ -139,10 +139,8 @@ window.S2V_Analytics = (function () {
         <p class="muted">${subtitle}</p>
         <p class="ana-hint">Haz clic en cualquier segmento (dona, barra o indicador) para fijar esa variable y filtrar todo el tablero. Cada categoría muestra conteo y porcentaje.</p>
       </div>
-      <div class="ana-sticky-context" aria-label="Contexto de filtros e iniciativas seleccionadas">
-        ${filterBar}
-        ${S.rosterHtml()}
-      </div>
+      ${filterBar}
+      ${S.rosterHtml()}
       <div class="ana-kpi-row">
         <div class="ana-kpi base clickable${S.hasFilters() ? '' : ' is-active'}" data-clear="1"><strong>${nf}</strong><span>Iniciativas</span></div>
         <div class="${kpiCls('Semillero', 'Sí')}" data-dim="Semillero" data-value="Sí"><strong>${kSem}</strong>${share(kSem)}<span>De semillero</span></div>

@@ -261,6 +261,127 @@
     return `<article class="member-card"><strong>${esc(name)}</strong><p>${esc(parts.join(" · "))}</p>${m.CorreoMiembro ? `<p>${esc(m.CorreoMiembro)}</p>` : ""}</article>`;
   }
 
+  function extractUrls(raw) {
+    if (!raw) return [];
+    const matches = String(raw).match(/https?:\/\/[^\s)]+/gi) || [];
+    const seen = new Set();
+    return matches.map(u => u.replace(/[.,;]+$/g, "").trim()).filter(u => {
+      if (!/^https?:\/\//i.test(u) || seen.has(u)) return false;
+      seen.add(u);
+      return true;
+    });
+  }
+
+  function resourceButton(label, rawUrl) {
+    const urls = extractUrls(rawUrl);
+    if (!urls.length) return "";
+    const json = esc(JSON.stringify(urls));
+    const suffix = urls.length > 1 ? ` <small>${urls.length}</small>` : "";
+    return `<button class="detail-link resource-open" type="button" data-resource-title="${esc(label)}" data-resource-urls="${json}">${esc(label)}${suffix}</button>`;
+  }
+
+  function getYoutubeId(url) {
+    try {
+      const u = new URL(url);
+      if (u.hostname.includes("youtu.be")) return u.pathname.split("/").filter(Boolean)[0] || "";
+      if (u.searchParams.get("v")) return u.searchParams.get("v");
+      const parts = u.pathname.split("/").filter(Boolean);
+      const idx = parts.findIndex(p => ["shorts", "embed", "live"].includes(p));
+      return idx >= 0 ? parts[idx + 1] || "" : "";
+    } catch { return ""; }
+  }
+
+  function previewUrl(rawUrl) {
+    const url = clean(rawUrl);
+    if (!/^https?:\/\//i.test(url)) return "";
+    try {
+      const u = new URL(url);
+      const host = u.hostname.toLowerCase();
+      const yt = getYoutubeId(url);
+      if (yt) return `https://www.youtube.com/embed/${encodeURIComponent(yt)}`;
+      const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+      if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+      const driveFile = url.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+      if (driveFile) return `https://drive.google.com/file/d/${driveFile[1]}/preview`;
+      const driveFolder = url.match(/drive\.google\.com\/(?:drive\/u\/\d+\/)?folders\/([^/?#]+)/i);
+      if (driveFolder) return `https://drive.google.com/embeddedfolderview?id=${driveFolder[1]}#list`;
+      const googleDoc = url.match(/docs\.google\.com\/(document|presentation|spreadsheets)\/d\/([^/]+)/i);
+      if (googleDoc) return `https://docs.google.com/${googleDoc[1]}/d/${googleDoc[2]}/preview`;
+      return url;
+    } catch {
+      return url;
+    }
+  }
+
+  function ensureResourceModal() {
+    let modal = document.getElementById("resourceModal");
+    if (modal) return modal;
+    modal = document.createElement("div");
+    modal.id = "resourceModal";
+    modal.className = "resource-modal hidden";
+    modal.innerHTML = `
+      <div class="resource-backdrop" data-close-resource="1"></div>
+      <section class="resource-dialog" role="dialog" aria-modal="true" aria-labelledby="resourceModalTitle">
+        <header class="resource-header">
+          <div>
+            <p class="eyebrow">Vista previa integrada</p>
+            <h3 id="resourceModalTitle">Recurso</h3>
+          </div>
+          <button class="resource-close" type="button" data-close-resource="1" aria-label="Cerrar">×</button>
+        </header>
+        <div id="resourceTabs" class="resource-tabs"></div>
+        <div class="resource-frame-wrap">
+          <iframe id="resourceFrame" title="Vista previa del recurso" loading="lazy" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <div class="resource-fallback">
+            <strong>Si el recurso no carga</strong>
+            <span>Algunos Drive, OneDrive o SharePoint bloquean la vista embebida por permisos. El enlace sigue disponible abajo, porque hasta los iframes tienen burocracia.</span>
+            <a id="resourceOriginalLink" href="#">Abrir enlace original</a>
+          </div>
+        </div>
+      </section>`;
+    document.body.appendChild(modal);
+    modal.addEventListener("click", e => {
+      if (e.target.closest("[data-close-resource]")) closeResourceModal();
+      const tab = e.target.closest("[data-resource-tab]");
+      if (tab) setResourceFrame(tab.dataset.resourceUrl, tab.textContent.trim());
+    });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeResourceModal(); });
+    return modal;
+  }
+
+  function setResourceFrame(url, label) {
+    const frame = document.getElementById("resourceFrame");
+    const original = document.getElementById("resourceOriginalLink");
+    if (!frame || !original) return;
+    frame.src = previewUrl(url);
+    original.href = url;
+    original.removeAttribute("target");
+    original.textContent = label ? `Abrir enlace original · ${label}` : "Abrir enlace original";
+    $$("#resourceTabs [data-resource-tab]").forEach(btn => btn.classList.toggle("active", btn.dataset.resourceUrl === url));
+  }
+
+  function openResourceModal(title, urls) {
+    if (!urls || !urls.length) return;
+    const modal = ensureResourceModal();
+    const titleEl = document.getElementById("resourceModalTitle");
+    const tabs = document.getElementById("resourceTabs");
+    if (titleEl) titleEl.textContent = title || "Recurso";
+    if (tabs) {
+      tabs.innerHTML = urls.length > 1 ? urls.map((url, idx) => `<button type="button" data-resource-tab="1" data-resource-url="${esc(url)}">Recurso ${idx + 1}</button>`).join("") : "";
+    }
+    modal.classList.remove("hidden");
+    document.body.classList.add("modal-open");
+    setResourceFrame(urls[0], urls.length > 1 ? "Recurso 1" : title);
+  }
+
+  function closeResourceModal() {
+    const modal = document.getElementById("resourceModal");
+    const frame = document.getElementById("resourceFrame");
+    if (frame) frame.src = "about:blank";
+    if (modal) modal.classList.add("hidden");
+    document.body.classList.remove("modal-open");
+  }
+
   /* ── Detail Rendering (enriched) ── */
   function renderDetail(id) {
     const item = state.postulaciones.find(r => initiativeIdOf(r) === id);
@@ -279,9 +400,9 @@
           </div>
         </div>
         <div class="detail-actions">
-          ${item.VideoPitchURL ? `<a class="detail-link" href="${esc(item.VideoPitchURL)}" target="_blank" rel="noopener">Video pitch</a>` : ""}
-          ${item.EvidenciasURL ? `<a class="detail-link" href="${esc(item.EvidenciasURL)}" target="_blank" rel="noopener">Evidencias</a>` : ""}
-          ${item.Anexo1URL ? `<a class="detail-link" href="${esc(item.Anexo1URL)}" target="_blank" rel="noopener">Anexo 1</a>` : ""}
+          ${resourceButton("Video pitch", item.VideoPitchURL)}
+          ${resourceButton("Evidencias", item.EvidenciasURL)}
+          ${resourceButton("Anexo 1", item.Anexo1URL)}
         </div>
       </div>
 
@@ -544,6 +665,16 @@
     els.searchInput.addEventListener("input", applyFilters);
     els.routeFilter.addEventListener("change", applyFilters);
     els.statusFilter.addEventListener("change", applyFilters);
+    els.detailPanel.addEventListener("click", e => {
+      const btn = e.target.closest("[data-resource-urls]");
+      if (!btn) return;
+      try {
+        const urls = JSON.parse(btn.dataset.resourceUrls || "[]");
+        openResourceModal(btn.dataset.resourceTitle || "Recurso", urls);
+      } catch {
+        openResourceModal(btn.dataset.resourceTitle || "Recurso", []);
+      }
+    });
 
     // Tab navigation
     $$(".tab-btn").forEach(btn => {
@@ -555,9 +686,10 @@
       if (!id) return;
       selectInitiative(id);
       switchTab("iniciativas");
-      requestAnimationFrame(() => {
-        els.listSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+      setTimeout(() => {
+        els.listSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+        els.detailPanel?.querySelector(".detail-header")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 60);
     };
   }
 

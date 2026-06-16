@@ -1,41 +1,19 @@
-SCIENCE2VENTURE — SELECTION HUB (EAN · Impacta)
-================================================
+Science2Venture · Selection Hub
+Versión ajustada
 
-Sitio estático autónomo. No requiere servidor ni build: son archivos
-HTML/CSS/JS planos.
+Cambios incluidos:
+- Estructura limpia para GitHub Pages.
+- Partículas reactivas al movimiento del cursor restauradas y reforzadas.
+- Video pitch, evidencias y Anexo 1 ahora se abren en un visor modal dentro del sitio.
+- Los enlaces dejan de abrirse automáticamente en una nueva pestaña.
+- Barras de contexto "Filtrando por" e "Iniciativas en la selección" quedan sticky en Radiografía y Mapa por componentes.
+- Vista de detalle más ordenada, con encabezado sticky para mantener visible la iniciativa seleccionada.
 
-CÓMO MONTARLO
--------------
-1. Sube TODA esta carpeta tal cual a tu hosting estático
-   (Netlify, Vercel, GitHub Pages, Cloudflare Pages, S3, IIS, Apache, etc.).
-2. El punto de entrada es  index.html.
-3. Acceso de demo:
-      - Correo: cualquiera (p. ej. evaluador@ean.edu.co)
-      - Código: el definido en config.js (CODIGO_DEMO)
+Para GitHub Pages:
+1. Descomprimir el ZIP.
+2. Entrar a la carpeta Selection-Hub.
+3. Subir el contenido interno a la raíz del repositorio.
+4. Configurar Pages: Deploy from branch > main > /root.
 
-Para verlo en local basta con abrir index.html en el navegador, o servir
-la carpeta:  npx serve .   /   python -m http.server
-
-CONTENIDO
----------
-index.html               Hub (login + tablero + evaluación)
-hub-demo-data.js         Datos reales de la convocatoria (22 postulaciones)
-hub-analytics.js         Tablero analítico con FILTRADO CRUZADO (cross-filter)
-hub-app-demo.js          Lógica de la app (lista, detalle, evaluación)
-hub-particles.js         Fondo animado
-hub-styles.css           Estilos base
-hub-analytics-styles.css Estilos del tablero analítico
-config.js                Configuración (código de acceso / endpoints)
-assets/                  Logos
-
-FILTRADO CRUZADO
-----------------
-En el tablero, haz clic en cualquier segmento (dona, barra o indicador)
-para fijar esa variable: todo el tablero, las métricas y la lista de
-iniciativas se recalculan sobre ese segmento. Los filtros se apilan;
-usa los chips o "Limpiar todo" para quitarlos.
-
-NOTA
-----
-Esta es la versión DEMO con datos embebidos (modo solo lectura). Para
-conectar a la fuente en vivo, ajusta los endpoints en config.js.
+Nota:
+Algunos recursos de Google Drive, OneDrive o SharePoint pueden bloquear la vista embebida por permisos del proveedor. En esos casos el modal conserva el enlace original como respaldo.

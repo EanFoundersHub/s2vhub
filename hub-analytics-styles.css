@@ -144,32 +144,6 @@
 }
 .ana-clear-all:hover { color: var(--text); }
 
-
-.ana-sticky-context {
-  position: sticky;
-  top: 12px;
-  z-index: 70;
-  margin-bottom: 22px;
-  border-radius: var(--radius-md);
-}
-.ana-sticky-context .ana-filterbar {
-  margin-bottom: 10px;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
-  backdrop-filter: blur(24px) saturate(1.1);
-  -webkit-backdrop-filter: blur(24px) saturate(1.1);
-}
-.ana-sticky-context .ana-roster {
-  margin-bottom: 0;
-  background: rgba(12, 17, 22, 0.88);
-  border-color: rgba(85,201,204,0.22);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.26);
-  backdrop-filter: blur(24px) saturate(1.1);
-  -webkit-backdrop-filter: blur(24px) saturate(1.1);
-}
-.ana-sticky-context .ana-roster-list {
-  max-height: 190px;
-}
-
 /* Roster de iniciativas filtradas */
 .ana-roster {
   margin-bottom: 18px; padding: 13px 15px;
@@ -238,12 +212,6 @@
   .ana-donut-wrap { flex-direction: column; align-items: center; text-align: center; }
 }
 
-
-@media (max-width: 768px) {
-  .ana-sticky-context { position: static; }
-  .ana-sticky-context .ana-roster-list { max-height: 180px; }
-}
-
 /* ── Mapa por componentes ── */
 .cmp-groups { display: flex; flex-direction: column; gap: 26px; }
 .cmp-group { position: relative; }
@@ -280,4 +248,30 @@
 @media (max-width: 720px) {
   .cmp-grid { grid-template-columns: 1fr; }
   .cmp-chart .ana-bar-row { grid-template-columns: 120px 1fr 50px; }
+}
+
+/* ── Sticky context bars: la selección no se pierde al hacer scroll ── */
+.ana-filterbar,
+.ana-roster {
+  position: sticky;
+  z-index: 24;
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+}
+.ana-filterbar { top: 154px; }
+.ana-roster { top: 154px; }
+.ana-filterbar + .ana-roster { top: 220px; }
+.ana-roster-list {
+  grid-template-columns: repeat(auto-fill, minmax(164px, 1fr));
+}
+.ana-roster-head {
+  flex-wrap: wrap;
+}
+.ana-roster-hint {
+  white-space: nowrap;
+}
+
+@media (max-width: 1024px) {
+  .ana-filterbar, .ana-roster { position: relative; top: auto; }
 }
