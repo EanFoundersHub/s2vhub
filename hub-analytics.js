@@ -58,15 +58,15 @@ window.S2V_Analytics = (function () {
       const cls = ["ana-arc", clickable ? "clickable" : "", active ? "is-active" : ""].filter(Boolean).join(" ");
       const da = clickable ? `data-dim="${dim}" data-value="${attr(fval)}"` : "";
       const op = (dim && f[dim] != null && !active && clickable) ? 0.32 : 0.9;
-      const html = `<circle class="${cls}" ${da} cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="12" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-offset}" stroke-linecap="round" opacity="${op}"/>`;
+      const html = `<circle class="${cls}" ${da} cx="${cx}" cy="${cy}" r="${r}" fill="none" style="stroke:${seg.color}" stroke-width="12" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-offset}" stroke-linecap="round" opacity="${op}"/>`;
       offset += dash;
       return html;
     });
     return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" class="ana-donut">
-      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12"/>
+      <circle class="ana-donut-track" cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke-width="12"/>
       ${paths.join('')}
-      <text x="${cx}" y="${cy - 4}" text-anchor="middle" fill="white" font-size="22" font-weight="800">${segments.reduce((s, x) => s + x.value, 0)}</text>
-      <text x="${cx}" y="${cy + 14}" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9" font-weight="500">TOTAL</text>
+      <text class="ana-donut-total" x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="22" font-weight="800">${segments.reduce((s, x) => s + x.value, 0)}</text>
+      <text class="ana-donut-sub" x="${cx}" y="${cy + 14}" text-anchor="middle" font-size="9" font-weight="500">TOTAL</text>
     </svg>`;
   }
 
@@ -139,8 +139,10 @@ window.S2V_Analytics = (function () {
         <p class="muted">${subtitle}</p>
         <p class="ana-hint">Haz clic en cualquier segmento (dona, barra o indicador) para fijar esa variable y filtrar todo el tablero. Cada categoría muestra conteo y porcentaje.</p>
       </div>
-      ${filterBar}
-      ${S.rosterHtml()}
+      <div class="ana-sticky-context" aria-label="Contexto de filtros e iniciativas seleccionadas">
+        ${filterBar}
+        ${S.rosterHtml()}
+      </div>
       <div class="ana-kpi-row">
         <div class="ana-kpi base clickable${S.hasFilters() ? '' : ' is-active'}" data-clear="1"><strong>${nf}</strong><span>Iniciativas</span></div>
         <div class="${kpiCls('Semillero', 'Sí')}" data-dim="Semillero" data-value="Sí"><strong>${kSem}</strong>${share(kSem)}<span>De semillero</span></div>
@@ -159,8 +161,8 @@ window.S2V_Analytics = (function () {
         <div class="ana-card ana-card-wide"><h4>Objetivos de Desarrollo Sostenible (ODS)</h4><div class="ana-bars">${barChart(odsDist, CYAN, 'ODS')}</div></div>
         <div class="ana-card ana-card-wide"><h4>Sectores productivos</h4><div class="ana-bars">${barChart(sectDist, PURPLE, 'Sectores')}</div></div>
         <div class="ana-card"><h4>Programas académicos</h4><div class="ana-bars">${preDist.entries.length ? barChart(preDist, PINK, 'Pregrado') : '<div class="ana-empty">Datos parciales</div>'}</div></div>
-        <div class="ana-card"><h4>Origen: Semillero / Grupo</h4><div class="ana-donut-wrap">${donutSVG([{ label: 'Semillero / Grupo', value: semSi, color: TEAL, fval: 'Sí' }, { label: 'Independiente', value: sSem.length - semSi, color: 'rgba(255,255,255,0.12)', fval: 'No' }], 130, 'Semillero')}<div class="ana-legend">${legend([{ label: 'Semillero / Grupo', value: semSi, color: TEAL, fval: 'Sí' }, { label: 'Independiente', value: sSem.length - semSi, color: 'rgba(255,255,255,0.25)', fval: 'No' }], 'Semillero')}<div class="ana-semilleros-list">${sSem.filter(i => i.GrupoSemillero).map(i => `<span class="ana-tag">${i.GrupoSemillero}</span>`).join('')}</div></div></div></div>
-        <div class="ana-card"><h4>¿Han generado ingresos?</h4><div class="ana-donut-wrap">${donutSVG([{ label: 'Sí facturan', value: factSi, color: GOLD, fval: 'Sí' }, { label: 'Aún no', value: sFact.length - factSi, color: 'rgba(255,255,255,0.12)', fval: 'No' }], 130, 'HaFacturado')}<div class="ana-legend">${legend([{ label: 'Sí facturan', value: factSi, color: GOLD, fval: 'Sí' }, { label: 'Aún no', value: sFact.length - factSi, color: 'rgba(255,255,255,0.25)', fval: 'No' }], 'HaFacturado')}</div></div></div>
+        <div class="ana-card"><h4>Origen: Semillero / Grupo</h4><div class="ana-donut-wrap">${donutSVG([{ label: 'Semillero / Grupo', value: semSi, color: TEAL, fval: 'Sí' }, { label: 'Independiente', value: sSem.length - semSi, color: 'var(--donut-neutral)', fval: 'No' }], 130, 'Semillero')}<div class="ana-legend">${legend([{ label: 'Semillero / Grupo', value: semSi, color: TEAL, fval: 'Sí' }, { label: 'Independiente', value: sSem.length - semSi, color: 'var(--donut-neutral-legend)', fval: 'No' }], 'Semillero')}<div class="ana-semilleros-list">${sSem.filter(i => i.GrupoSemillero).map(i => `<span class="ana-tag">${i.GrupoSemillero}</span>`).join('')}</div></div></div></div>
+        <div class="ana-card"><h4>¿Han generado ingresos?</h4><div class="ana-donut-wrap">${donutSVG([{ label: 'Sí facturan', value: factSi, color: GOLD, fval: 'Sí' }, { label: 'Aún no', value: sFact.length - factSi, color: 'var(--donut-neutral)', fval: 'No' }], 130, 'HaFacturado')}<div class="ana-legend">${legend([{ label: 'Sí facturan', value: factSi, color: GOLD, fval: 'Sí' }, { label: 'Aún no', value: sFact.length - factSi, color: 'var(--donut-neutral-legend)', fval: 'No' }], 'HaFacturado')}</div></div></div>
         <div class="ana-card"><h4>Año de inicio</h4><div class="ana-bars">${barChart(anoDist, BLUE, 'AnoInicio')}</div></div>
         <div class="ana-card"><h4>Estado legal</h4><div class="ana-bars">${legalDist.entries.length ? barChart(legalDist, ORANGE, 'EstadoLegal') : '<div class="ana-empty">Datos parciales</div>'}</div></div>
       </div>`;

@@ -1,19 +1,28 @@
-Science2Venture · Selection Hub
-Versión ajustada
+Science2Venture Selection Hub - versión corregida
 
 Cambios incluidos:
-- Estructura limpia para GitHub Pages.
-- Partículas reactivas al movimiento del cursor restauradas y reforzadas.
-- Video pitch, evidencias y Anexo 1 ahora se abren en un visor modal dentro del sitio.
-- Los enlaces dejan de abrirse automáticamente en una nueva pestaña.
-- Barras de contexto "Filtrando por" e "Iniciativas en la selección" quedan sticky en Radiografía y Mapa por componentes.
-- Vista de detalle más ordenada, con encabezado sticky para mantener visible la iniciativa seleccionada.
+- Data actualizada con 31 iniciativas reales, sin registros test/prueba.
+- Estructura limpia para GitHub Pages: subir el contenido de esta carpeta a la raíz del repositorio.
+- Se reorganizó la vista de Iniciativas: filtros integrados en la columna izquierda, lista clara y ficha a la derecha.
+- Se mantiene movimiento de partículas con reacción al cursor.
+- Video pitch, evidencias y Anexo 1 abren en visor integrado dentro del sitio.
+- Algunas URL externas pueden bloquear iframe por permisos del proveedor; en esos casos el visor conserva el enlace original.
 
-Para GitHub Pages:
-1. Descomprimir el ZIP.
-2. Entrar a la carpeta Selection-Hub.
-3. Subir el contenido interno a la raíz del repositorio.
-4. Configurar Pages: Deploy from branch > main > /root.
+Estructura esperada en GitHub:
+/index.html
+/config.js
+/hub-demo-data.js
+/hub-app-demo.js
+/hub-components.js
+/hub-filter.js
+/hub-particles.js
+/hub-analytics.js
+/hub-styles.css
+/hub-analytics-styles.css
+/assets/
 
-Nota:
-Algunos recursos de Google Drive, OneDrive o SharePoint pueden bloquear la vista embebida por permisos del proveedor. En esos casos el modal conserva el enlace original como respaldo.
+
+Actualización UX adicional:
+- Visor de Video pitch ampliado en formato 16:9.
+- El enlace de respaldo abre en una pestaña nueva cuando el proveedor bloquea la vista previa.
+- Selector Light/Dark visible en el encabezado del dashboard.

@@ -97,8 +97,10 @@ window.S2V_Components = (function () {
         <p class="muted">${subtitle}</p>
         <p class="ana-hint">Desglose detallado de cada variable del formulario. Conteo y porcentaje por categoría; las preguntas de selección múltiple (marca <span class="cmp-multi">multi</span>) se cuentan opción por opción. Haz clic en cualquier barra para fijar esa variable en todo el tablero.</p>
       </div>
-      ${filterBar}
-      ${S.rosterHtml()}
+      <div class="ana-sticky-context" aria-label="Contexto de filtros e iniciativas seleccionadas">
+        ${filterBar}
+        ${S.rosterHtml()}
+      </div>
       <div class="cmp-groups">${groupsHtml}</div>`;
   }
 

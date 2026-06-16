@@ -1,14 +1,26 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Science2Venture · Selection Hub — DEMO</title>
+  <meta name="description" content="Selection Hub de la convocatoria Science2Venture (EAN · Impacta): radiografía, mapa por componentes y evaluación de iniciativas científico-tecnológicas.">
   <link rel="icon" href="assets/logo-ean-impacta-color.png">
+  <link rel="preload" as="image" href="assets/logo-ean-impacta-color.png">
   <link rel="preload" as="image" href="assets/logo-ean-impacta-white.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Tema antes del primer pintado (evita parpadeo) -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('s2v_theme');
+        if (t !== 'dark' && t !== 'light') t = 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="stylesheet" href="hub-styles.css">
   <link rel="stylesheet" href="hub-analytics-styles.css">
 </head>
@@ -24,9 +36,17 @@
   <main id="app" class="app-shell">
 
     <!-- ═══ LOGIN ═══ -->
-    <section id="loginView" class="login-view">
+    <section id="loginView" class="login-view" data-screen-label="Login">
+      <button class="theme-toggle login-toggle" type="button" data-theme-toggle aria-label="Cambiar tema claro/oscuro">
+        <svg class="ico ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+        <svg class="ico ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+        <span class="lbl-light">Modo claro</span>
+        <span class="lbl-dark">Modo oscuro</span>
+      </button>
+
       <div class="brand-row compact">
-        <img src="assets/logo-ean-impacta-white.png" alt="EAN · Impacta Emprendimiento Sostenible" class="brand-logo">
+        <img src="assets/logo-ean-impacta-color.png" alt="EAN · Impacta Emprendimiento Sostenible" class="brand-logo logo-light">
+        <img src="assets/logo-ean-impacta-white.png" alt="EAN · Impacta Emprendimiento Sostenible" class="brand-logo logo-dark">
       </div>
 
       <div class="login-grid">
@@ -76,18 +96,31 @@
     </section>
 
     <!-- ═══ DASHBOARD ═══ -->
-    <section id="dashboardView" class="dashboard-view hidden">
+    <section id="dashboardView" class="dashboard-view hidden" data-screen-label="Dashboard">
       <header class="dashboard-header">
         <div class="brand-block">
-          <img src="assets/logo-ean-impacta-white.png" alt="EAN · Impacta" class="dashboard-logo">
+          <img src="assets/logo-ean-impacta-color.png" alt="EAN · Impacta" class="dashboard-logo logo-light">
+          <img src="assets/logo-ean-impacta-white.png" alt="EAN · Impacta" class="dashboard-logo logo-dark">
           <div>
             <p class="eyebrow">Science2Venture</p>
             <h2>Selection Hub</h2>
           </div>
         </div>
-        <div class="user-chip">
-          <span id="userEmailLabel">Evaluador</span>
-          <button id="logoutBtn" type="button">Salir</button>
+        <div class="header-actions">
+          <div class="theme-segment" role="group" aria-label="Selector de tema">
+            <button type="button" data-theme-set="light">Light</button>
+            <button type="button" data-theme-set="dark">Dark</button>
+          </div>
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema claro/oscuro">
+            <svg class="ico ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+            <svg class="ico ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+            <span class="lbl-light">Claro</span>
+            <span class="lbl-dark">Oscuro</span>
+          </button>
+          <div class="user-chip">
+            <span id="userEmailLabel">Evaluador</span>
+            <button id="logoutBtn" type="button">Salir</button>
+          </div>
         </div>
       </header>
 
@@ -111,7 +144,7 @@
       </section>
 
       <!-- Tab navigation -->
-      <nav id="tabNav" class="tab-nav">
+      <nav id="tabNav" class="tab-nav" aria-label="Vistas del tablero">
         <button class="tab-btn active" data-tab="analytics" type="button">Radiografía</button>
         <button class="tab-btn" data-tab="componentes" type="button">Mapa por componentes</button>
         <button class="tab-btn" data-tab="iniciativas" type="button">Iniciativas</button>
@@ -125,40 +158,43 @@
 
       <!-- List + Detail Section -->
       <div id="listSection" class="hidden">
-        <section class="toolbar">
-          <label class="search-box">
-            <span>Buscar</span>
-            <input id="searchInput" type="search" placeholder="Nombre, ID, líder, sector, ODS…">
-          </label>
-          <label>
-            <span>Ruta TRL</span>
-            <select id="routeFilter">
-              <option value="">Todas</option>
-              <option value="TRL 1-3">TRL 1-3</option>
-              <option value="TRL 4-6">TRL 4-6</option>
-              <option value="TRL 7-9">TRL 7-9</option>
-            </select>
-          </label>
-          <label>
-            <span>Estado</span>
-            <select id="statusFilter">
-              <option value="">Todos</option>
-              <option value="Recibida">Recibida</option>
-              <option value="Pendiente">Pendiente</option>
-            </select>
-          </label>
-          <button id="reloadBtn" class="secondary-btn" type="button">Actualizar</button>
-        </section>
-
         <div class="content-grid">
           <section class="initiative-list-panel">
-            <div class="panel-heading">
+            <div class="panel-heading compact-heading">
               <div>
                 <p class="eyebrow">Postulaciones</p>
                 <h3>Iniciativas</h3>
               </div>
               <span id="visibleCount" class="count-chip">0</span>
             </div>
+
+            <section class="toolbar" aria-label="Filtros de iniciativas">
+              <label class="search-box">
+                <span>Buscar</span>
+                <input id="searchInput" type="search" placeholder="Nombre, ID, líder, sector, ODS…">
+              </label>
+              <div class="toolbar-row">
+                <label>
+                  <span>Ruta TRL</span>
+                  <select id="routeFilter">
+                    <option value="">Todas</option>
+                    <option value="TRL 1-3">TRL 1-3</option>
+                    <option value="TRL 4-6">TRL 4-6</option>
+                    <option value="TRL 7-9">TRL 7-9</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Estado</span>
+                  <select id="statusFilter">
+                    <option value="">Todos</option>
+                    <option value="Recibida">Recibida</option>
+                    <option value="Pendiente">Pendiente</option>
+                  </select>
+                </label>
+              </div>
+              <button id="reloadBtn" class="secondary-btn" type="button">Actualizar</button>
+            </section>
+
             <div id="initiativeList" class="initiative-list"></div>
           </section>
 
@@ -182,6 +218,26 @@
 
   </main>
 
+
+
+  <!-- Integrated evidence/video viewer -->
+  <div id="assetViewer" class="asset-viewer hidden" role="dialog" aria-modal="true" aria-labelledby="assetViewerTitle">
+    <div class="asset-viewer__backdrop" data-close-viewer></div>
+    <section class="asset-viewer__panel">
+      <header class="asset-viewer__header">
+        <div>
+          <p class="eyebrow">Visor integrado</p>
+          <h3 id="assetViewerTitle">Soporte</h3>
+        </div>
+        <button class="asset-viewer__close" type="button" data-close-viewer aria-label="Cerrar visor">×</button>
+      </header>
+      <div id="assetViewerBody" class="asset-viewer__body"></div>
+      <footer class="asset-viewer__footer">
+        <span>Si el proveedor bloquea la vista previa, abre el recurso en una pestaña nueva.</span>
+        <a id="assetViewerFallback" class="asset-viewer__external-btn" href="#" target="_blank" rel="noopener">Abrir en nueva pestaña</a>
+      </footer>
+    </section>
+  </div>
   <!-- Card Template -->
   <template id="initiativeCardTemplate">
     <article class="initiative-card">
@@ -195,6 +251,32 @@
       </button>
     </article>
   </template>
+
+  <!-- Theme toggle wiring -->
+  <script>
+    (function () {
+      function current() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
+      function apply(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        try { localStorage.setItem('s2v_theme', theme); } catch (e) {}
+        window.dispatchEvent(new CustomEvent('s2v:themechange', { detail: { theme: theme } }));
+      }
+      function syncControls() {
+        var theme = current();
+        document.querySelectorAll('[data-theme-set]').forEach(function (btn) {
+          btn.setAttribute('aria-pressed', btn.getAttribute('data-theme-set') === theme ? 'true' : 'false');
+        });
+      }
+      window.S2V_toggleTheme = function () { apply(current() === 'dark' ? 'light' : 'dark'); syncControls(); };
+      document.addEventListener('click', function (e) {
+        var explicit = e.target.closest('[data-theme-set]');
+        if (explicit) { apply(explicit.getAttribute('data-theme-set')); syncControls(); return; }
+        if (e.target.closest('[data-theme-toggle]')) window.S2V_toggleTheme();
+      });
+      document.addEventListener('DOMContentLoaded', syncControls);
+      window.addEventListener('s2v:themechange', syncControls);
+    })();
+  </script>
 
   <script src="config.js"></script>
   <script src="hub-demo-data.js"></script>
