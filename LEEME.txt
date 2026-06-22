@@ -1,28 +1,33 @@
-Science2Venture Selection Hub - versión corregida
+SCIENCE2VENTURE · SELECTION HUB
+DEMO DE EVALUACIÓN POR COMPONENTES
 
-Cambios incluidos:
-- Data actualizada con 31 iniciativas reales, sin registros test/prueba.
-- Estructura limpia para GitHub Pages: subir el contenido de esta carpeta a la raíz del repositorio.
-- Se reorganizó la vista de Iniciativas: filtros integrados en la columna izquierda, lista clara y ficha a la derecha.
-- Se mantiene movimiento de partículas con reacción al cursor.
-- Video pitch, evidencias y Anexo 1 abren en visor integrado dentro del sitio.
-- Algunas URL externas pueden bloquear iframe por permisos del proveedor; en esos casos el visor conserva el enlace original.
+QUÉ INCLUYE
+- 31 iniciativas reales de la versión de trabajo.
+- Dos vistas en el mismo HTML: Coordinación y Evaluador.
+- Registro demo de evaluadores y generación de códigos.
+- Asignación de uno o varios componentes a una persona.
+- Regla demo: cada componente de una iniciativa queda a cargo de un solo evaluador.
+- Comentario de coordinación por asignación.
+- Evaluación profunda con preguntas, escala 1 a 5 y ponderación automática.
+- Guardar borrador, enviar componente y reabrir desde coordinación.
+- Preparación de correo mediante el cliente de correo del equipo.
+- Tema Light/Dark, partículas y visor integrado de soportes.
 
-Estructura esperada en GitHub:
-/index.html
-/config.js
-/hub-demo-data.js
-/hub-app-demo.js
-/hub-components.js
-/hub-filter.js
-/hub-particles.js
-/hub-analytics.js
-/hub-styles.css
-/hub-analytics-styles.css
-/assets/
+ACCESOS DEMO
+Coordinación
+Correo: coordinacion@universidadean.edu.co
+Código: S2V-COORD
 
+Evaluador con dos componentes
+Correo: ana.martinez@demo.com
+Código: S2V-482731
 
-Actualización UX adicional:
-- Visor de Video pitch ampliado en formato 16:9.
-- El enlace de respaldo abre en una pestaña nueva cuando el proveedor bloquea la vista previa.
-- Selector Light/Dark visible en el encabezado del dashboard.
+Otros evaluadores
+Carlos Ruiz: carlos.ruiz@demo.com / S2V-615284
+Laura Gómez: laura.gomez@demo.com / S2V-307946
+
+IMPORTANTE
+Esta versión todavía utiliza localStorage para simular SharePoint. Los evaluadores, asignaciones y respuestas creadas en el demo quedan guardados solamente en el navegador utilizado. La siguiente fase es reemplazar este almacenamiento por los flujos de Power Automate y las listas de SharePoint.
+
+CARGUE EN GITHUB
+Descomprime el ZIP, entra a Selection-Hub y sube TODO el contenido interno a la raíz del repositorio. index.html debe quedar directamente en la raíz.

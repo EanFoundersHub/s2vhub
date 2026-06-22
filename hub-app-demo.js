@@ -2,21 +2,94 @@
   "use strict";
 
   const DEMO_DATA = window.S2V_DEMO_DATA;
-  const STORAGE_KEYS = { session: "s2v_demo_session" };
+  const STORAGE_KEYS = {
+    session: "s2v_demo_session_v2",
+    evaluators: "s2v_demo_evaluators_v2",
+    assignments: "s2v_demo_assignments_v2",
+    responses: "s2v_demo_component_responses_v2"
+  };
 
-  const EVAL_CRITERIA = [
-    { key: "calidadCientifica", label: "Calidad científica", max: 300, color: "#55c9cc" },
-    { key: "mercado", label: "Potencial de mercado", max: 300, color: "#7be1e4" },
-    { key: "innovacionPI", label: "Innovación / PI", max: 200, color: "#2ea8ab" },
-    { key: "equipo", label: "Equipo", max: 150, color: "#d4a853" },
-    { key: "impacto", label: "Impacto sostenible", max: 50, color: "#6bdfb0" }
+  const RUBRIC = [
+    {
+      key: "calidadCientifica", short: "Ciencia", label: "Calidad y solidez científica", max: 300, color: "#55c9cc",
+      description: "Examina la fundamentación, el rigor, las evidencias y la coherencia entre el TRL declarado y el avance demostrado.",
+      questions: [
+        { id: "sci_fundamentacion", label: "Fundamentación científica y pertinencia", prompt: "¿El proyecto parte de un problema, hipótesis o necesidad claramente definida y respaldada por conocimiento científico, técnico o evidencia verificable?", help: "Revisa antecedentes, relevancia del problema y relación entre conocimiento y solución.", weight: 60 },
+        { id: "sci_metodologia", label: "Rigor metodológico", prompt: "¿El proceso de investigación o desarrollo presenta una metodología coherente, documentada y adecuada para obtener los resultados reportados?", help: "Considera diseño metodológico, procedimientos, fuentes, controles y consistencia.", weight: 70 },
+        { id: "sci_resultados", label: "Robustez de los resultados", prompt: "¿Los resultados son suficientemente sólidos, verificables y consistentes para sustentar el desarrollo de la solución?", help: "Valora resultados medibles, repetibilidad, ensayos, prototipos, datos o publicaciones.", weight: 70 },
+        { id: "sci_trl", label: "Coherencia del TRL", prompt: "¿El nivel TRL declarado corresponde al estado de desarrollo demostrado mediante las evidencias presentadas?", help: "Diferencia entre lo ya realizado y lo que el equipo proyecta hacer.", weight: 70 },
+        { id: "sci_trazabilidad", label: "Credibilidad y trazabilidad", prompt: "¿Es posible identificar el origen del conocimiento, los responsables y la trazabilidad del proceso investigativo?", help: "Revisa grupo o semillero, autores, documentación e integridad de la información.", weight: 30 }
+      ]
+    },
+    {
+      key: "mercado", short: "Mercado", label: "Potencial comercial y de mercado", max: 300, color: "#7be1e4",
+      description: "Valora la necesidad de mercado, las validaciones, la propuesta de valor y una ruta de transferencia proporcional al TRL.",
+      questions: [
+        { id: "mkt_problema", label: "Relevancia del problema", prompt: "¿El equipo demuestra que existe un problema, necesidad u oportunidad relevante para usuarios, clientes, empresas o instituciones?", help: "Revisa claridad, frecuencia, intensidad y consecuencias del problema.", weight: 70 },
+        { id: "mkt_validacion", label: "Validación del problema y cliente", prompt: "¿El nivel de validación presentado es coherente con el TRL y confirma que el problema es real y significativo?", help: "Considera entrevistas, encuestas, estudios, pilotos, aliados o clientes.", weight: 70 },
+        { id: "mkt_valor", label: "Propuesta de valor y diferenciación", prompt: "¿La propuesta explica con claridad por qué la solución genera un beneficio superior o diferente frente a las alternativas?", help: "Valora beneficio, cliente objetivo, diferenciación y claridad de comunicación.", weight: 60 },
+        { id: "mkt_acceso", label: "Mercado y posibilidad de acceso", prompt: "¿Existe un mercado identificable y una ruta razonable para acceder a primeros usuarios, clientes o aliados?", help: "Revisa segmento, barreras, canales, decisores y restricciones.", weight: 50 },
+        { id: "mkt_transferencia", label: "Ruta de transferencia", prompt: "¿El equipo presenta una ruta coherente para transferir el conocimiento o la tecnología al mercado?", help: "Puede incluir spin-off, licenciamiento, venta, alianzas o prestación de servicios.", weight: 50 }
+      ]
+    },
+    {
+      key: "innovacionPI", short: "Innovación / PI", label: "Innovación y protección de PI", max: 200, color: "#2ea8ab",
+      description: "Examina la novedad, la ventaja difícil de replicar y la estrategia de protección y titularidad.",
+      questions: [
+        { id: "pi_novedad", label: "Nivel de novedad", prompt: "¿La solución presenta novedad científica, tecnológica, metodológica o de aplicación frente a alternativas existentes?", help: "Valora originalidad, combinación diferenciada y estado del arte.", weight: 60 },
+        { id: "pi_ventaja", label: "Ventaja competitiva", prompt: "¿La innovación puede convertirse en una ventaja difícil de replicar o sustituir?", help: "Considera barreras técnicas, datos, know-how, algoritmos, procesos o infraestructura.", weight: 50 },
+        { id: "pi_proteccion", label: "Potencial de protección", prompt: "¿Los resultados presentan potencial razonable de protección mediante propiedad intelectual o mecanismos de apropiación?", help: "Patente, software, diseño, secreto, marca, derecho de autor o know-how.", weight: 50 },
+        { id: "pi_titularidad", label: "Titularidad y riesgos", prompt: "¿La información permite identificar la titularidad y la ausencia de conflictos evidentes con terceros?", help: "Revisa contratos, licencias, autores, cesiones y libertad de operación.", weight: 40 }
+      ]
+    },
+    {
+      key: "equipo", short: "Equipo", label: "Equipo y capacidad de ejecución", max: 150, color: "#d4a853",
+      description: "Valora capacidades técnicas y de negocio, complementariedad, compromiso y apertura al acompañamiento.",
+      questions: [
+        { id: "eq_capacidad", label: "Capacidad científica y técnica", prompt: "¿El equipo cuenta con conocimiento, experiencia y capacidades suficientes para continuar desarrollando la solución?", help: "Formación, experiencia, publicaciones, proyectos y dominio sectorial.", weight: 45 },
+        { id: "eq_roles", label: "Complementariedad de roles", prompt: "¿Los integrantes cubren las capacidades necesarias para avanzar desde la investigación hacia el mercado?", help: "Liderazgo científico, tecnología, negocio, PI, operación y relacionamiento.", weight: 35 },
+        { id: "eq_ejecucion", label: "Capacidad de ejecución", prompt: "¿El equipo demuestra disponibilidad, organización y capacidad real para cumplir los hitos del proceso?", help: "Roles, responsables, recursos, tiempo e historial de ejecución.", weight: 30 },
+        { id: "eq_apertura", label: "Apertura al acompañamiento", prompt: "¿El equipo demuestra disposición para recibir retroalimentación y ajustar la iniciativa?", help: "Observa escucha, reconocimiento de brechas y capacidad de aplicar aprendizajes.", weight: 20 },
+        { id: "eq_vision", label: "Visión de transferencia", prompt: "¿El equipo comparte una visión clara sobre el futuro de la tecnología y su transferencia?", help: "Hitos, ambición realista, escalabilidad y posible conformación de spin-off.", weight: 20 }
+      ]
+    },
+    {
+      key: "impacto", short: "Impacto", label: "Impacto y sostenibilidad", max: 50, color: "#6bdfb0",
+      description: "Valora la claridad del cambio positivo, su medición y la posibilidad de sostenerlo en el tiempo.",
+      questions: [
+        { id: "imp_claridad", label: "Claridad del impacto", prompt: "¿La iniciativa identifica el cambio positivo que busca generar y los beneficiarios?", help: "Considera impacto económico, social o ambiental y población beneficiada.", weight: 20 },
+        { id: "imp_medicion", label: "Medición del impacto", prompt: "¿El equipo propone indicadores o mecanismos razonables para medir resultados?", help: "Revisa métricas, línea base, frecuencia y posibilidad de verificación.", weight: 15 },
+        { id: "imp_sostenibilidad", label: "Sostenibilidad de largo plazo", prompt: "¿La iniciativa presenta condiciones para sostener su operación e impacto más allá del acompañamiento?", help: "Viabilidad económica, recursos, riesgos y posibilidad de escala.", weight: 15 }
+      ]
+    }
   ];
+
+  const COORDINATOR = {
+    id: "coord-01", role: "coordinacion", name: "Coordinación Science2Venture",
+    email: "coordinacion@universidadean.edu.co", code: "S2V-COORD"
+  };
+
+  const DEMO_EVALUATORS = [
+    { id: "ev-ana", name: "Ana Martínez", email: "ana.martinez@demo.com", code: "S2V-482731", specialty: "Ciencia, innovación y propiedad intelectual", active: true },
+    { id: "ev-carlos", name: "Carlos Ruiz", email: "carlos.ruiz@demo.com", code: "S2V-615284", specialty: "Mercado y transferencia tecnológica", active: true },
+    { id: "ev-laura", name: "Laura Gómez", email: "laura.gomez@demo.com", code: "S2V-307946", specialty: "Equipo, impacto y sostenibilidad", active: true }
+  ];
+
+  const DEMO_ASSIGNMENTS = [
+    { id: "asig-001", evaluatorId: "ev-ana", initiativeId: "S2V-2026-01", criteria: ["calidadCientifica", "innovacionPI"], comment: "Revisa especialmente la coherencia entre el TRL declarado, las evidencias y el potencial de protección.", deadline: "2026-07-10", active: true },
+    { id: "asig-002", evaluatorId: "ev-carlos", initiativeId: "S2V-2026-01", criteria: ["mercado"], comment: "Valida que la oportunidad comercial sea proporcional al nivel de madurez de la iniciativa.", deadline: "2026-07-10", active: true },
+    { id: "asig-003", evaluatorId: "ev-laura", initiativeId: "S2V-2026-01", criteria: ["equipo", "impacto"], comment: "Observa complementariedad del equipo y claridad de los indicadores de impacto.", deadline: "2026-07-10", active: true },
+    { id: "asig-004", evaluatorId: "ev-ana", initiativeId: "S2V-2026-02", criteria: ["calidadCientifica"], comment: "Determina si la evidencia disponible sustenta el TRL reportado.", deadline: "2026-07-10", active: true },
+    { id: "asig-005", evaluatorId: "ev-carlos", initiativeId: "S2V-2026-02", criteria: ["mercado", "innovacionPI"], comment: "Evalúa la ruta de transferencia y la diferenciación frente a soluciones existentes.", deadline: "2026-07-10", active: true },
+    { id: "asig-006", evaluatorId: "ev-laura", initiativeId: "S2V-2026-02", criteria: ["equipo", "impacto"], comment: "Valora la capacidad de ejecución y la sostenibilidad del impacto.", deadline: "2026-07-10", active: true }
+  ];
+
   const RING_CIRCUMFERENCE = 2 * Math.PI * 52;
 
   const state = {
     raw: null, postulaciones: [], controlDocumental: [], miembrosEquipo: [],
-    filtered: [], selectedId: null, session: null, activeTab: "analytics",
-    crossIds: null
+    filtered: [], selectedId: null, session: null, role: null, activeTab: "analytics",
+    crossIds: null, evaluators: [], assignments: [], responses: {}
   };
 
   const $ = (s) => document.querySelector(s);
@@ -26,7 +99,7 @@
     loginView: $("#loginView"), dashboardView: $("#dashboardView"),
     loginForm: $("#loginForm"), correoEvaluador: $("#correoEvaluador"),
     codigoAcceso: $("#codigoAcceso"), loginMessage: $("#loginMessage"),
-    userEmailLabel: $("#userEmailLabel"), logoutBtn: $("#logoutBtn"),
+    userEmailLabel: $("#userEmailLabel"), userRoleLabel: $("#userRoleLabel"), logoutBtn: $("#logoutBtn"),
     metricPostulaciones: $("#metricPostulaciones"), metricControl: $("#metricControl"),
     metricMiembros: $("#metricMiembros"), metricEquidad: $("#metricEquidad"),
     searchInput: $("#searchInput"), routeFilter: $("#routeFilter"),
@@ -34,8 +107,8 @@
     initiativeList: $("#initiativeList"), visibleCount: $("#visibleCount"),
     detailPanel: $("#detailPanel"), cardTemplate: $("#initiativeCardTemplate"),
     tabNav: $("#tabNav"), analyticsPanel: $("#analyticsPanel"),
-    componentsPanel: $("#componentsPanel"),
-    listSection: $("#listSection")
+    componentsPanel: $("#componentsPanel"), evaluatorsPanel: $("#evaluatorsPanel"),
+    listSection: $("#listSection"), initiativePanelTitle: $("#initiativePanelTitle")
   };
 
   /* ── Utilities ── */
@@ -145,23 +218,101 @@
     els.loginMessage.className = `message ${type}`.trim();
   }
 
-  /* ── Auth (Demo: any credentials work) ── */
+  function readStore(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) { return fallback; }
+  }
+
+  function writeStore(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function ensureDemoStores() {
+    if (!localStorage.getItem(STORAGE_KEYS.evaluators)) writeStore(STORAGE_KEYS.evaluators, DEMO_EVALUATORS);
+    if (!localStorage.getItem(STORAGE_KEYS.assignments)) writeStore(STORAGE_KEYS.assignments, DEMO_ASSIGNMENTS);
+    if (!localStorage.getItem(STORAGE_KEYS.responses)) writeStore(STORAGE_KEYS.responses, {});
+    state.evaluators = readStore(STORAGE_KEYS.evaluators, DEMO_EVALUATORS);
+    state.assignments = readStore(STORAGE_KEYS.assignments, DEMO_ASSIGNMENTS);
+    state.responses = readStore(STORAGE_KEYS.responses, {});
+  }
+
+  function persistRoleData() {
+    writeStore(STORAGE_KEYS.evaluators, state.evaluators);
+    writeStore(STORAGE_KEYS.assignments, state.assignments);
+    writeStore(STORAGE_KEYS.responses, state.responses);
+  }
+
+  function rubricByKey(key) { return RUBRIC.find(c => c.key === key); }
+  function evaluatorById(id) { return state.evaluators.find(e => e.id === id); }
+  function assignmentsForEvaluator(id) { return state.assignments.filter(a => a.active !== false && a.evaluatorId === id); }
+  function assignmentsForInitiative(id) { return state.assignments.filter(a => a.active !== false && a.initiativeId === id); }
+  function currentEvaluator() { return state.role === "evaluador" ? evaluatorById(state.session?.userId) : null; }
+  function assignmentForCurrentEvaluator(id) { return assignmentsForEvaluator(state.session?.userId).find(a => a.initiativeId === id) || null; }
+  function responseKey(evaluatorId, initiativeId, criterionKey) { return `${evaluatorId}|${initiativeId}|${criterionKey}`; }
+  function getCriterionResponse(evaluatorId, initiativeId, criterionKey) {
+    return state.responses[responseKey(evaluatorId, initiativeId, criterionKey)] || { ratings: {}, comments: {}, criterionComment: "", confidentialNote: "", status: "pending", score: 0 };
+  }
+  function setCriterionResponse(evaluatorId, initiativeId, criterionKey, value) {
+    state.responses[responseKey(evaluatorId, initiativeId, criterionKey)] = value;
+    writeStore(STORAGE_KEYS.responses, state.responses);
+  }
+
+  function scoreQuestion(rating, weight) {
+    const r = Number(rating) || 0;
+    if (!r) return 0;
+    return ((r - 1) / 4) * weight;
+  }
+
+  function scoreCriterion(criterion, ratings) {
+    return criterion.questions.reduce((total, q) => total + scoreQuestion(ratings?.[q.id], q.weight), 0);
+  }
+
+  function criterionStatus(evaluatorId, initiativeId, criterionKey) {
+    return getCriterionResponse(evaluatorId, initiativeId, criterionKey).status || "pending";
+  }
+
+  function statusLabel(status) {
+    return status === "sent" ? "Enviada" : status === "draft" ? "Borrador" : "Pendiente";
+  }
+
+  function formatDate(value) {
+    if (!value) return "Sin fecha";
+    try { return new Intl.DateTimeFormat("es-CO", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${value}T12:00:00`)); }
+    catch { return value; }
+  }
+
+  /* ── Auth demo por roles ── */
   async function login(e) {
     e.preventDefault();
-    const correo = clean(els.correoEvaluador.value);
+    const correo = clean(els.correoEvaluador.value).toLowerCase();
     const codigo = clean(els.codigoAcceso.value);
     const btn = els.loginForm.querySelector("button[type='submit']");
     if (!correo || !codigo) { setMessage("Completa correo y código.", "error"); return; }
     btn.disabled = true;
     btn.classList.add("loading");
-    setMessage("Cargando datos de la convocatoria…", "");
+    setMessage("Validando acceso…", "");
+    await new Promise(r => setTimeout(r, 450));
 
-    // Simulate loading
-    await new Promise(r => setTimeout(r, 800));
+    let session = null;
+    if (correo === COORDINATOR.email.toLowerCase() && codigo === COORDINATOR.code) {
+      session = { role: "coordinacion", userId: COORDINATOR.id, name: COORDINATOR.name, email: COORDINATOR.email };
+    } else {
+      const evaluator = state.evaluators.find(ev => ev.active !== false && ev.email.toLowerCase() === correo && ev.code === codigo);
+      if (evaluator) session = { role: "evaluador", userId: evaluator.id, name: evaluator.name, email: evaluator.email };
+    }
 
-    const session = { correoEvaluador: correo, codigoAcceso: codigo };
+    if (!session) {
+      setMessage("Credenciales no válidas. Usa uno de los accesos demo indicados.", "error");
+      btn.disabled = false;
+      btn.classList.remove("loading");
+      return;
+    }
+
     state.session = session;
-    localStorage.setItem(STORAGE_KEYS.session, JSON.stringify({ correoEvaluador: correo }));
+    state.role = session.role;
+    writeStore(STORAGE_KEYS.session, session);
     loadData(DEMO_DATA);
     showDashboard();
     setMessage("", "");
@@ -169,28 +320,48 @@
     btn.classList.remove("loading");
   }
 
+  function configureRoleView() {
+    const coordinator = state.role === "coordinacion";
+    document.body.classList.toggle("role-coordinator", coordinator);
+    document.body.classList.toggle("role-evaluator", !coordinator);
+    $$(".coordinator-only").forEach(el => el.classList.toggle("hidden", !coordinator));
+    const tabAnalytics = $('.tab-btn[data-tab="analytics"]');
+    const tabComponents = $('.tab-btn[data-tab="componentes"]');
+    const tabInitiatives = $('.tab-btn[data-tab="iniciativas"]');
+    if (tabAnalytics) tabAnalytics.classList.toggle("hidden", !coordinator);
+    if (tabComponents) tabComponents.classList.toggle("hidden", !coordinator);
+    if (tabInitiatives) tabInitiatives.textContent = coordinator ? "Iniciativas" : "Mis evaluaciones";
+    if (els.initiativePanelTitle) els.initiativePanelTitle.textContent = coordinator ? "Iniciativas" : "Iniciativas asignadas";
+  }
+
   function showDashboard() {
-    els.userEmailLabel.textContent = state.session?.correoEvaluador || "Evaluador";
+    els.userEmailLabel.textContent = state.session?.name || state.session?.email || "Usuario";
+    if (els.userRoleLabel) els.userRoleLabel.textContent = state.role === "coordinacion" ? "Coordinación" : "Evaluador por componentes";
+    configureRoleView();
     els.loginView.classList.add("leaving");
     setTimeout(() => {
       els.loginView.classList.add("hidden");
       els.loginView.classList.remove("leaving");
       els.dashboardView.classList.remove("hidden");
       staggerIn(".metric-card", 70);
-      // Render analytics + wire cross-filter (shared store)
-      if (window.S2V_Filter && !state._crossWired) {
-        state._crossWired = true;
-        window.S2V_Filter.subscribe(handleCrossFilter);
+      if (state.role === "coordinacion") {
+        if (window.S2V_Filter && !state._crossWired) {
+          state._crossWired = true;
+          window.S2V_Filter.subscribe(handleCrossFilter);
+        }
+        if (window.S2V_Analytics) window.S2V_Analytics.render(els.analyticsPanel, state.postulaciones);
+        switchTab("analytics");
+      } else {
+        switchTab("iniciativas");
       }
-      if (window.S2V_Analytics) {
-        window.S2V_Analytics.render(els.analyticsPanel, state.postulaciones);
-      }
-      switchTab("analytics");
-    }, 420);
+      renderMetrics();
+      applyFilters();
+    }, 320);
   }
 
   function showLogin() {
     state.session = null;
+    state.role = null;
     localStorage.removeItem(STORAGE_KEYS.session);
     els.dashboardView.classList.add("hidden");
     els.loginView.classList.remove("hidden");
@@ -208,14 +379,15 @@
 
   /* ── Tabs ── */
   function switchTab(tab) {
+    if (state.role === "evaluador" && tab !== "iniciativas") tab = "iniciativas";
     state.activeTab = tab;
     $$(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
     els.analyticsPanel.classList.toggle("hidden", tab !== "analytics");
     els.componentsPanel.classList.toggle("hidden", tab !== "componentes");
     els.listSection.classList.toggle("hidden", tab !== "iniciativas");
-    if (tab === "componentes" && window.S2V_Components) {
-      window.S2V_Components.render(els.componentsPanel);
-    }
+    if (els.evaluatorsPanel) els.evaluatorsPanel.classList.toggle("hidden", tab !== "evaluadores");
+    if (tab === "componentes" && window.S2V_Components) window.S2V_Components.render(els.componentsPanel);
+    if (tab === "evaluadores") renderEvaluatorsPanel();
   }
 
   /* ── Data ── */
@@ -230,11 +402,32 @@
   }
 
   function renderMetrics() {
+    const labels = $$(".summary-grid .metric-label");
+    if (state.role === "evaluador") {
+      const evaluatorId = state.session?.userId;
+      const assignments = assignmentsForEvaluator(evaluatorId);
+      const initiativeIds = new Set(assignments.map(a => a.initiativeId));
+      const totalCriteria = assignments.reduce((n, a) => n + a.criteria.length, 0);
+      let sent = 0;
+      assignments.forEach(a => a.criteria.forEach(key => { if (criterionStatus(evaluatorId, a.initiativeId, key) === "sent") sent += 1; }));
+      if (labels[0]) labels[0].textContent = "Iniciativas asignadas";
+      if (labels[1]) labels[1].textContent = "Componentes asignados";
+      if (labels[2]) labels[2].textContent = "Componentes enviados";
+      if (labels[3]) labels[3].textContent = "Pendientes / borrador";
+      animateNumber(els.metricPostulaciones, initiativeIds.size);
+      animateNumber(els.metricControl, totalCriteria);
+      animateNumber(els.metricMiembros, sent);
+      animateNumber(els.metricEquidad, Math.max(totalCriteria - sent, 0));
+      return;
+    }
+    if (labels[0]) labels[0].textContent = "Postulaciones";
+    if (labels[1]) labels[1].textContent = "Control documental";
+    if (labels[2]) labels[2].textContent = "Miembros equipo";
+    if (labels[3]) labels[3].textContent = "Evaluadores activos";
     animateNumber(els.metricPostulaciones, state.postulaciones.length);
     animateNumber(els.metricControl, state.controlDocumental.length);
     animateNumber(els.metricMiembros, state.miembrosEquipo.length);
-    const equity = state.postulaciones.filter(i => parseInt(i.MujeresEquipo) >= 2).length;
-    animateNumber(els.metricEquidad, equity);
+    animateNumber(els.metricEquidad, state.evaluators.filter(e => e.active !== false).length);
   }
 
   function animateNumber(el, target) {
@@ -257,8 +450,13 @@
     const route = els.routeFilter.value;
     const status = els.statusFilter.value;
     const cross = state.crossIds;
-    state.filtered = state.postulaciones.filter(item => {
-      if (cross && !cross.has(initiativeIdOf(item))) return false;
+    let base = state.postulaciones;
+    if (state.role === "evaluador") {
+      const allowed = new Set(assignmentsForEvaluator(state.session?.userId).map(a => a.initiativeId));
+      base = base.filter(item => allowed.has(initiativeIdOf(item)));
+    }
+    state.filtered = base.filter(item => {
+      if (state.role === "coordinacion" && cross && !cross.has(initiativeIdOf(item))) return false;
       const h = [initiativeIdOf(item), initiativeNameOf(item), item.NombreLider, item.CorreoLider, item.Ciudad, trlOf(item), routeOf(item), statusOf(item), item.Enfoque, item.SectoresTexto, item.ODSTexto].join(" ").toLowerCase();
       return (!q || h.includes(q)) && (!route || routeOf(item).includes(route)) && (!status || statusOf(item).includes(status));
     });
@@ -284,14 +482,14 @@
     animateNumber(els.metricPostulaciones, subset.length);
     animateNumber(els.metricControl, state.controlDocumental.filter(c => ids.has(clean(c.IDIniciativa))).length);
     animateNumber(els.metricMiembros, state.miembrosEquipo.filter(m => ids.has(clean(m.IDIniciativa))).length);
-    animateNumber(els.metricEquidad, subset.filter(i => parseInt(i.MujeresEquipo) >= 2).length);
+    animateNumber(els.metricEquidad, state.evaluators.filter(e => e.active !== false).length);
   }
 
   function renderInitiativeList() {
     els.initiativeList.innerHTML = "";
     els.visibleCount.textContent = `${state.filtered.length}`;
     if (!state.filtered.length) {
-      els.initiativeList.innerHTML = '<div class="alert-box">No hay iniciativas que coincidan con los filtros.</div>';
+      els.initiativeList.innerHTML = '<div class="alert-box">No hay iniciativas que coincidan con los filtros o asignaciones.</div>';
       return;
     }
     for (const item of state.filtered) {
@@ -303,11 +501,18 @@
       node.querySelector(".id-label").textContent = id;
       node.querySelector("h4").textContent = initiativeNameOf(item);
       node.querySelector("p").textContent = shortText(item.DescripcionCorta || item.PropuestaValor || item.NombreLider);
-      node.querySelector(".badge-row").innerHTML = [
-        badge(routeOf(item), "cyan"), badge(trlOf(item)),
-        badge(item.Enfoque || "Sin enfoque"),
-        badge(statusOf(item))
-      ].join("");
+      const badges = [badge(routeOf(item), "cyan"), badge(trlOf(item)), badge(statusOf(item))];
+      if (state.role === "evaluador") {
+        const assignment = assignmentForCurrentEvaluator(id);
+        const sent = assignment ? assignment.criteria.filter(k => criterionStatus(state.session.userId, id, k) === "sent").length : 0;
+        const total = assignment?.criteria.length || 0;
+        if (assignment) assignment.criteria.forEach(k => badges.push(badge(rubricByKey(k)?.short || k, "assignment")));
+        badges.push(badge(`${sent}/${total} enviados`, sent === total && total ? "done" : "progress"));
+      } else {
+        const assigned = new Set(assignmentsForInitiative(id).flatMap(a => a.criteria));
+        badges.push(badge(`${assigned.size}/5 componentes`, assigned.size === 5 ? "done" : "progress"));
+      }
+      node.querySelector(".badge-row").innerHTML = badges.join("");
       button.addEventListener("click", () => { selectInitiative(id); switchTab("iniciativas"); });
       els.initiativeList.appendChild(node);
     }
@@ -359,6 +564,8 @@
           ${viewerButton("Anexo 1", item.Anexo1URL)}
         </div>
       </div>
+
+      ${renderAssignmentBanner(id)}
 
       <section class="detail-section" style="animation-delay:0.05s">
         <h4>Información general</h4>
@@ -487,112 +694,495 @@
         </div>` : '<div class="alert-box">Sin control documental.</div>'}
       </section>
 
-      ${renderEvaluation(id)}
+      ${renderRoleEvaluation(id)}
     `;
-    attachEvalListeners(id);
+    attachRoleEvaluationListeners(id);
   }
 
-  /* ── Evaluation ── */
-  function getEvalKey(id) { return `s2v_eval_demo_${id}`; }
-  function loadEval(id) { try { return JSON.parse(localStorage.getItem(getEvalKey(id))) || {}; } catch { return {}; } }
-  function saveEvalData(id, data) { localStorage.setItem(getEvalKey(id), JSON.stringify(data)); }
-
-  function renderEvaluation(id) {
-    const saved = loadEval(id);
-    const total = EVAL_CRITERIA.reduce((s, c) => s + (saved[c.key] || 0), 0);
-    const offset = RING_CIRCUMFERENCE * (1 - total / 1000);
-    const ringColor = total < 400 ? "#ef6b6b" : total < 700 ? "#f0c85c" : "#55c9cc";
-    let criteriaHtml = "";
-    for (const c of EVAL_CRITERIA) {
-      const val = saved[c.key] || 0;
-      const pct = ((val / c.max) * 100).toFixed(1);
-      const bg = `linear-gradient(to right, ${c.color} 0%, ${c.color} ${pct}%, var(--track) ${pct}%)`;
-      criteriaHtml += `
-        <div class="criterion" data-key="${c.key}" data-max="${c.max}">
-          <div class="criterion-head">
-            <span class="criterion-name">${c.label}</span>
-            <span class="criterion-value"><strong>${val}</strong> / ${c.max}</span>
+  /* ── Evaluation by component + coordinator management ── */
+  function renderAssignmentBanner(id) {
+    if (state.role === "evaluador") {
+      const assignment = assignmentForCurrentEvaluator(id);
+      if (!assignment) return "";
+      const chips = assignment.criteria.map(key => {
+        const c = rubricByKey(key);
+        const status = criterionStatus(state.session.userId, id, key);
+        return `<span class="assignment-chip ${status}">${esc(c?.short || key)} · ${statusLabel(status)}</span>`;
+      }).join("");
+      return `
+        <section class="assignment-banner evaluator-banner">
+          <div>
+            <p class="eyebrow">Tu asignación</p>
+            <h4>${assignment.criteria.length > 1 ? "Tienes varios componentes asignados" : "Componente asignado"}</h4>
+            <div class="assignment-chip-row">${chips}</div>
           </div>
-          <input type="range" min="0" max="${c.max}" step="5" value="${val}"
-                 data-key="${c.key}" data-color="${c.color}" style="background:${bg}">
-        </div>`;
+          <div class="assignment-guidance">
+            <span>Indicación de coordinación</span>
+            <p>${esc(assignment.comment || "Sin comentario adicional.")}</p>
+            <small>Fecha límite: ${esc(formatDate(assignment.deadline))}</small>
+          </div>
+        </section>`;
     }
+
+    const assignments = assignmentsForInitiative(id);
+    const covered = new Set(assignments.flatMap(a => a.criteria));
     return `
-      <section class="detail-section eval-section" style="animation-delay:0.3s">
-        <div class="eval-header">
-          <h4>Evaluación del panel</h4>
-          <div class="score-ring-wrap">
-            <svg class="score-ring" viewBox="0 0 120 120">
-              <circle class="score-ring-bg" cx="60" cy="60" r="52"/>
-              <circle class="score-ring-fill" cx="60" cy="60" r="52"
-                stroke-dasharray="${RING_CIRCUMFERENCE}" stroke-dashoffset="${offset}"
-                style="stroke:${ringColor}" id="evalRingFill"/>
-            </svg>
-            <div class="score-ring-text">
-              <strong id="evalTotal">${total}</strong>
-              <span>/ 1000</span>
-            </div>
+      <section class="assignment-banner coordinator-banner">
+        <div>
+          <p class="eyebrow">Cobertura del panel</p>
+          <h4>${covered.size}/5 componentes asignados</h4>
+          <div class="assignment-chip-row">
+            ${RUBRIC.map(c => `<span class="assignment-chip ${covered.has(c.key) ? "assigned" : "unassigned"}">${esc(c.short)}</span>`).join("")}
           </div>
         </div>
-        <div class="eval-criteria">${criteriaHtml}</div>
-        <label class="eval-notes-label">
-          <span>Observaciones del evaluador</span>
-          <textarea id="evalNotes" rows="3" placeholder="Notas adicionales…">${esc(saved.observaciones || "")}</textarea>
-        </label>
-        <div class="eval-actions">
-          <button class="secondary-btn" id="evalResetBtn" type="button">Limpiar</button>
-          <button class="primary-btn" id="evalSaveBtn" type="button">
-            <span>Guardar evaluación</span>
-            <svg width="18" height="18" fill="none" viewBox="0 0 18 18"><path d="M3.75 9h10.5M9.75 4.5 14.25 9l-4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>
-        <div id="evalFeedback"></div>
+        <button type="button" class="secondary-btn" data-open-management="true">Gestionar asignaciones</button>
       </section>`;
   }
 
-  function attachEvalListeners(initiativeId) {
-    const sliders = $$(".eval-section input[type='range']");
-    if (!sliders.length) return;
-    function updateUI() {
-      let total = 0;
-      for (const s of sliders) {
-        const val = parseInt(s.value, 10);
-        const max = parseInt(s.closest(".criterion").dataset.max, 10);
-        const color = s.dataset.color;
-        const pct = ((val / max) * 100).toFixed(1);
-        s.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, var(--track) ${pct}%)`;
-        s.closest(".criterion").querySelector(".criterion-value strong").textContent = val;
-        total += val;
-      }
-      const totalEl = $("#evalTotal");
-      const ringEl = $("#evalRingFill");
-      if (totalEl) totalEl.textContent = total;
-      if (ringEl) {
-        ringEl.style.strokeDashoffset = RING_CIRCUMFERENCE * (1 - total / 1000);
-        ringEl.style.stroke = total < 400 ? "#ef6b6b" : total < 700 ? "#f0c85c" : "#55c9cc";
-      }
-    }
-    sliders.forEach(s => s.addEventListener("input", updateUI));
-    const saveBtn = $("#evalSaveBtn"), resetBtn = $("#evalResetBtn"),
-          notesEl = $("#evalNotes"), feedbackEl = $("#evalFeedback");
-    if (saveBtn) saveBtn.addEventListener("click", () => {
-      const evaluation = {};
-      sliders.forEach(s => { evaluation[s.dataset.key] = parseInt(s.value, 10); });
-      evaluation.observaciones = notesEl ? notesEl.value : "";
-      evaluation.timestamp = new Date().toISOString();
-      evaluation.evaluador = state.session?.correoEvaluador || "";
-      saveEvalData(initiativeId, evaluation);
-      if (feedbackEl) {
-        feedbackEl.innerHTML = '<div class="eval-saved-msg">✓ Evaluación guardada localmente</div>';
-        setTimeout(() => { feedbackEl.innerHTML = ""; }, 3000);
-      }
-    });
-    if (resetBtn) resetBtn.addEventListener("click", () => {
-      sliders.forEach(s => { s.value = 0; });
-      if (notesEl) notesEl.value = "";
-      updateUI();
-    });
+  function renderRoleEvaluation(id) {
+    return state.role === "coordinacion" ? renderCoordinatorEvaluationOverview(id) : renderEvaluatorEvaluation(id);
   }
+
+  function renderCoordinatorEvaluationOverview(id) {
+    const assignments = assignmentsForInitiative(id);
+    let totalScore = 0;
+    let maxAssigned = 0;
+    const cards = RUBRIC.map(criterion => {
+      const assignment = assignments.find(a => a.criteria.includes(criterion.key));
+      if (!assignment) {
+        return `
+          <article class="component-status-card unassigned">
+            <div class="component-status-head">
+              <span class="component-dot" style="--component-color:${criterion.color}"></span>
+              <div><strong>${esc(criterion.label)}</strong><small>${criterion.max} puntos</small></div>
+            </div>
+            <span class="status-pill pending">Sin asignar</span>
+          </article>`;
+      }
+      const evaluator = evaluatorById(assignment.evaluatorId);
+      const response = getCriterionResponse(assignment.evaluatorId, id, criterion.key);
+      const score = Number(response.score || scoreCriterion(criterion, response.ratings || {}));
+      totalScore += score;
+      maxAssigned += criterion.max;
+      return `
+        <article class="component-status-card ${response.status || "pending"}">
+          <div class="component-status-head">
+            <span class="component-dot" style="--component-color:${criterion.color}"></span>
+            <div><strong>${esc(criterion.label)}</strong><small>${criterion.max} puntos</small></div>
+          </div>
+          <div class="component-assignee">
+            <span>${esc(evaluator?.name || "Evaluador no disponible")}</span>
+            <small>${esc(evaluator?.email || "")}</small>
+          </div>
+          <div class="component-status-foot">
+            <span class="status-pill ${response.status || "pending"}">${statusLabel(response.status)}</span>
+            <strong>${score.toFixed(1)} / ${criterion.max}</strong>
+          </div>
+          ${assignment.comment ? `<p class="component-comment">${esc(assignment.comment)}</p>` : ""}
+        </article>`;
+    }).join("");
+
+    return `
+      <section class="detail-section eval-section coordinator-eval-overview" style="animation-delay:0.3s">
+        <div class="eval-header">
+          <div>
+            <p class="eyebrow">Seguimiento de evaluación</p>
+            <h4>Avance por componentes</h4>
+            <p class="muted">Cada componente se asigna a una sola persona. Una persona puede asumir varios componentes.</p>
+          </div>
+          <div class="score-summary-box">
+            <strong>${totalScore.toFixed(1)}</strong>
+            <span>/ ${maxAssigned || 1000} evaluados</span>
+          </div>
+        </div>
+        <div class="component-status-grid">${cards}</div>
+        <div class="eval-actions">
+          <button class="primary-btn" type="button" data-open-management="true"><span>Gestionar evaluadores</span></button>
+        </div>
+      </section>`;
+  }
+
+  function renderEvaluatorEvaluation(id) {
+    const assignment = assignmentForCurrentEvaluator(id);
+    if (!assignment) {
+      return `<section class="detail-section eval-section"><div class="alert-box">Esta iniciativa no está asignada a tu usuario.</div></section>`;
+    }
+    const orderedCriteria = RUBRIC.filter(c => assignment.criteria.includes(c.key));
+    const nav = orderedCriteria.map(c => {
+      const response = getCriterionResponse(state.session.userId, id, c.key);
+      return `<a href="#criterion-${c.key}" class="criterion-nav-chip ${response.status || "pending"}">${esc(c.short)} · ${statusLabel(response.status)}</a>`;
+    }).join("");
+    return `
+      <section class="detail-section eval-section component-evaluation" style="animation-delay:0.3s">
+        <div class="eval-header component-eval-intro">
+          <div>
+            <p class="eyebrow">Evaluación por componentes</p>
+            <h4>${orderedCriteria.length > 1 ? `${orderedCriteria.length} componentes asignados` : "1 componente asignado"}</h4>
+            <p class="muted">Califica únicamente los componentes asignados. Los demás serán evaluados por otras personas del panel.</p>
+          </div>
+          <div class="scale-legend">
+            <span>1 Nulo</span><span>2 Bajo</span><span>3 Medio</span><span>4 Alto</span><span>5 Muy alto</span>
+          </div>
+        </div>
+        <nav class="criterion-jump-nav">${nav}</nav>
+        <div class="criterion-evaluation-stack">
+          ${orderedCriteria.map(c => renderRubricCriterion(id, c)).join("")}
+        </div>
+      </section>`;
+  }
+
+  function renderRubricCriterion(initiativeId, criterion) {
+    const response = getCriterionResponse(state.session.userId, initiativeId, criterion.key);
+    const score = Number(response.score || scoreCriterion(criterion, response.ratings || {}));
+    const locked = response.status === "sent";
+    return `
+      <article class="criterion-eval-card ${locked ? "submitted" : ""}" id="criterion-${criterion.key}" data-criterion="${criterion.key}">
+        <header class="criterion-eval-card__header" style="--criterion-color:${criterion.color}">
+          <div>
+            <p class="eyebrow">${esc(criterion.short)}</p>
+            <h5>${esc(criterion.label)}</h5>
+            <p>${esc(criterion.description)}</p>
+          </div>
+          <div class="criterion-score-box">
+            <strong data-criterion-score>${score.toFixed(1)}</strong>
+            <span>/ ${criterion.max}</span>
+            <small class="status-pill ${response.status || "pending"}">${statusLabel(response.status)}</small>
+          </div>
+        </header>
+        <div class="rubric-question-list">
+          ${criterion.questions.map((q, index) => renderRubricQuestion(q, response, index, locked)).join("")}
+        </div>
+        <div class="criterion-comments-grid">
+          <label>
+            <span>Conclusión del componente <b>*</b></span>
+            <textarea rows="4" data-criterion-comment placeholder="Resume fortalezas, brechas y fundamento de tu calificación." ${locked ? "disabled" : ""}>${esc(response.criterionComment || "")}</textarea>
+          </label>
+          <label>
+            <span>Nota confidencial para coordinación</span>
+            <textarea rows="4" data-confidential-note placeholder="Esta nota no se comparte con el equipo postulante." ${locked ? "disabled" : ""}>${esc(response.confidentialNote || "")}</textarea>
+          </label>
+        </div>
+        <footer class="criterion-eval-actions">
+          <div class="criterion-feedback" role="status"></div>
+          ${locked ? `
+            <div class="submitted-lock"><strong>Evaluación enviada</strong><span>Solo coordinación puede reabrir este componente.</span></div>` : `
+            <button class="secondary-btn" type="button" data-save-draft="${criterion.key}">Guardar borrador</button>
+            <button class="primary-btn" type="button" data-submit-criterion="${criterion.key}"><span>Enviar componente</span></button>`}
+        </footer>
+      </article>`;
+  }
+
+  function renderRubricQuestion(question, response, index, locked) {
+    const selected = Number(response.ratings?.[question.id] || 0);
+    const comment = response.comments?.[question.id] || "";
+    const questionScore = scoreQuestion(selected, question.weight);
+    return `
+      <section class="rubric-question" data-question="${question.id}" data-weight="${question.weight}">
+        <div class="rubric-question__heading">
+          <span class="question-index">${index + 1}</span>
+          <div>
+            <h6>${esc(question.label)} <small>${question.weight} pts</small></h6>
+            <p>${esc(question.prompt)}</p>
+            <span class="question-help">${esc(question.help)}</span>
+          </div>
+          <strong class="question-score" data-question-score>${questionScore.toFixed(1)} / ${question.weight}</strong>
+        </div>
+        <div class="rating-scale" role="radiogroup" aria-label="Calificación de ${attr(question.label)}">
+          ${[1,2,3,4,5].map(value => `<button type="button" class="rating-option ${selected === value ? "active" : ""}" data-rating="${value}" aria-pressed="${selected === value ? "true" : "false"}" ${locked ? "disabled" : ""}><strong>${value}</strong><span>${["Nulo","Bajo","Medio","Alto","Muy alto"][value-1]}</span></button>`).join("")}
+        </div>
+        <label class="question-comment-label">
+          <span>Justificación ${selected === 1 || selected === 5 ? "(obligatoria para extremos)" : ""}</span>
+          <textarea rows="2" data-question-comment placeholder="Explica la evidencia que sustenta tu valoración." ${locked ? "disabled" : ""}>${esc(comment)}</textarea>
+        </label>
+      </section>`;
+  }
+
+  function collectCriterionResponse(card, criterion, strict) {
+    const ratings = {};
+    const comments = {};
+    const errors = [];
+    card.querySelectorAll(".rubric-question").forEach(block => {
+      const questionId = block.dataset.question;
+      const active = block.querySelector(".rating-option.active");
+      const rating = active ? Number(active.dataset.rating) : 0;
+      const comment = block.querySelector("[data-question-comment]")?.value.trim() || "";
+      ratings[questionId] = rating;
+      comments[questionId] = comment;
+      if (strict && !rating) errors.push("Debes calificar todas las preguntas.");
+      if (strict && (rating === 1 || rating === 5) && !comment) errors.push("Justifica las calificaciones 1 y 5.");
+    });
+    const criterionComment = card.querySelector("[data-criterion-comment]")?.value.trim() || "";
+    const confidentialNote = card.querySelector("[data-confidential-note]")?.value.trim() || "";
+    if (strict && !criterionComment) errors.push("Incluye una conclusión general del componente.");
+    return { ratings, comments, criterionComment, confidentialNote, errors: [...new Set(errors)], score: scoreCriterion(criterion, ratings) };
+  }
+
+  function attachRoleEvaluationListeners(initiativeId) {
+    document.querySelectorAll("[data-open-management]").forEach(btn => btn.addEventListener("click", () => switchTab("evaluadores")));
+    if (state.role !== "evaluador") return;
+    document.querySelectorAll(".criterion-eval-card").forEach(card => {
+      const criterion = rubricByKey(card.dataset.criterion);
+      if (!criterion || card.classList.contains("submitted")) return;
+      card.querySelectorAll(".rating-option").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const group = btn.closest(".rating-scale");
+          group.querySelectorAll(".rating-option").forEach(option => {
+            option.classList.toggle("active", option === btn);
+            option.setAttribute("aria-pressed", option === btn ? "true" : "false");
+          });
+          const question = btn.closest(".rubric-question");
+          const weight = Number(question.dataset.weight);
+          question.querySelector("[data-question-score]").textContent = `${scoreQuestion(Number(btn.dataset.rating), weight).toFixed(1)} / ${weight}`;
+          const current = collectCriterionResponse(card, criterion, false);
+          card.querySelector("[data-criterion-score]").textContent = current.score.toFixed(1);
+        });
+      });
+    });
+
+    document.querySelectorAll("[data-save-draft]").forEach(btn => btn.addEventListener("click", () => saveCriterionFromCard(initiativeId, btn.dataset.saveDraft, false)));
+    document.querySelectorAll("[data-submit-criterion]").forEach(btn => btn.addEventListener("click", () => saveCriterionFromCard(initiativeId, btn.dataset.submitCriterion, true)));
+  }
+
+  function saveCriterionFromCard(initiativeId, criterionKey, submit) {
+    const criterion = rubricByKey(criterionKey);
+    const card = document.querySelector(`.criterion-eval-card[data-criterion="${criterionKey}"]`);
+    if (!criterion || !card) return;
+    const collected = collectCriterionResponse(card, criterion, submit);
+    const feedback = card.querySelector(".criterion-feedback");
+    if (submit && collected.errors.length) {
+      feedback.innerHTML = `<div class="eval-error-msg">${collected.errors.map(esc).join(" ")}</div>`;
+      return;
+    }
+    const previous = getCriterionResponse(state.session.userId, initiativeId, criterionKey);
+    const now = new Date().toISOString();
+    const value = {
+      ...previous,
+      ratings: collected.ratings,
+      comments: collected.comments,
+      criterionComment: collected.criterionComment,
+      confidentialNote: collected.confidentialNote,
+      score: collected.score,
+      status: submit ? "sent" : "draft",
+      updatedAt: now,
+      sentAt: submit ? now : previous.sentAt || null,
+      evaluatorId: state.session.userId,
+      initiativeId,
+      criterionKey
+    };
+    setCriterionResponse(state.session.userId, initiativeId, criterionKey, value);
+    feedback.innerHTML = `<div class="eval-saved-msg">✓ ${submit ? "Componente enviado" : "Borrador guardado"}</div>`;
+    renderMetrics();
+    setTimeout(() => renderDetail(initiativeId), submit ? 450 : 800);
+  }
+
+  function renderEvaluatorsPanel() {
+    if (!els.evaluatorsPanel || state.role !== "coordinacion") return;
+    const activeEvaluators = state.evaluators.filter(e => e.active !== false);
+    const assignedComponents = state.assignments.reduce((sum, a) => sum + (a.criteria?.length || 0), 0);
+    let sentComponents = 0;
+    state.assignments.forEach(a => a.criteria.forEach(key => { if (criterionStatus(a.evaluatorId, a.initiativeId, key) === "sent") sentComponents += 1; }));
+    const evaluatorOptions = activeEvaluators.map(e => `<option value="${e.id}">${esc(e.name)} · ${esc(e.specialty || "Sin especialidad")}</option>`).join("");
+    const initiativeOptions = state.postulaciones.map(i => `<option value="${attr(initiativeIdOf(i))}">${esc(initiativeIdOf(i))} · ${esc(initiativeNameOf(i))}</option>`).join("");
+
+    els.evaluatorsPanel.innerHTML = `
+      <section class="management-shell">
+        <header class="management-hero">
+          <div>
+            <p class="eyebrow">Coordinación</p>
+            <h3>Gestión de evaluadores por componentes</h3>
+            <p>Cada componente se asigna a una sola persona por iniciativa. Una persona puede recibir uno o varios componentes.</p>
+          </div>
+          <div class="demo-backend-note"><strong>Modo demo</strong><span>Los cambios se guardan en este navegador. La conexión con SharePoint se implementará en el siguiente paso.</span></div>
+        </header>
+
+        <div class="management-metrics">
+          <article><span>Evaluadores activos</span><strong>${activeEvaluators.length}</strong></article>
+          <article><span>Asignaciones</span><strong>${state.assignments.length}</strong></article>
+          <article><span>Componentes asignados</span><strong>${assignedComponents}</strong></article>
+          <article><span>Componentes enviados</span><strong>${sentComponents}</strong></article>
+        </div>
+
+        <div id="managementFeedback"></div>
+
+        <div class="management-forms-grid">
+          <form id="evaluatorCreateForm" class="management-card">
+            <div class="management-card__head"><span>01</span><div><h4>Registrar evaluador</h4><p>Crea el acceso que después alimentará el flujo de invitación.</p></div></div>
+            <label><span>Nombre completo</span><input name="name" required placeholder="Nombre del evaluador"></label>
+            <label><span>Correo electrónico</span><input name="email" type="email" required placeholder="correo@dominio.com"></label>
+            <label><span>Especialidad o perfil</span><input name="specialty" required placeholder="Ej. transferencia tecnológica"></label>
+            <button class="primary-btn" type="submit"><span>Crear evaluador</span></button>
+          </form>
+
+          <form id="assignmentCreateForm" class="management-card assignment-form">
+            <div class="management-card__head"><span>02</span><div><h4>Asignar componentes</h4><p>Selecciona una iniciativa y uno o varios componentes para la misma persona.</p></div></div>
+            <div class="management-form-row">
+              <label><span>Evaluador</span><select name="evaluatorId" required><option value="">Seleccionar…</option>${evaluatorOptions}</select></label>
+              <label><span>Fecha límite</span><input name="deadline" type="date" value="2026-07-10" required></label>
+            </div>
+            <label><span>Iniciativa</span><select name="initiativeId" required><option value="">Seleccionar…</option>${initiativeOptions}</select></label>
+            <fieldset class="criteria-checkboxes"><legend>Componentes a asignar</legend>${RUBRIC.map(c => `<label><input type="checkbox" name="criteria" value="${c.key}"><span style="--criterion-color:${c.color}">${esc(c.label)} <small>${c.max} pts</small></span></label>`).join("")}</fieldset>
+            <label><span>Comentario para el evaluador</span><textarea name="comment" rows="3" placeholder="Indicación particular para esta iniciativa."></textarea></label>
+            <button class="primary-btn" type="submit"><span>Guardar asignación</span></button>
+          </form>
+        </div>
+
+        <section class="management-section">
+          <div class="management-section__head"><div><p class="eyebrow">Accesos</p><h4>Evaluadores registrados</h4></div><span>${activeEvaluators.length} activos</span></div>
+          <div class="evaluator-roster">${state.evaluators.map(renderEvaluatorRosterCard).join("")}</div>
+        </section>
+
+        <section class="management-section">
+          <div class="management-section__head"><div><p class="eyebrow">Distribución</p><h4>Asignaciones vigentes</h4></div><span>${state.assignments.length} registros</span></div>
+          <div class="assignment-table-wrap"><table class="assignment-table"><thead><tr><th>Iniciativa</th><th>Evaluador</th><th>Componentes</th><th>Fecha límite</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${state.assignments.map(renderAssignmentRow).join("")}</tbody></table></div>
+        </section>
+      </section>`;
+    attachManagementListeners();
+  }
+
+  function renderEvaluatorRosterCard(evaluator) {
+    const assignments = assignmentsForEvaluator(evaluator.id);
+    const components = assignments.reduce((sum, a) => sum + a.criteria.length, 0);
+    return `
+      <article class="evaluator-roster-card ${evaluator.active === false ? "inactive" : ""}">
+        <div class="avatar-initials">${esc(evaluator.name.split(/\s+/).slice(0,2).map(x => x[0]).join(""))}</div>
+        <div class="evaluator-roster-main"><strong>${esc(evaluator.name)}</strong><span>${esc(evaluator.email)}</span><small>${esc(evaluator.specialty || "Sin especialidad")}</small></div>
+        <div class="credential-box"><span>Código demo</span><code>${esc(evaluator.code)}</code></div>
+        <div class="roster-count"><strong>${assignments.length}</strong><span>iniciativas</span><small>${components} componentes</small></div>
+        <div class="roster-actions">
+          <button type="button" class="secondary-btn compact-btn" data-copy-invite="${evaluator.id}">Copiar acceso</button>
+          <button type="button" class="secondary-btn compact-btn" data-mail-invite="${evaluator.id}">Preparar correo</button>
+          <button type="button" class="text-btn" data-toggle-evaluator="${evaluator.id}">${evaluator.active === false ? "Activar" : "Desactivar"}</button>
+        </div>
+      </article>`;
+  }
+
+  function renderAssignmentRow(assignment) {
+    const evaluator = evaluatorById(assignment.evaluatorId);
+    const initiative = state.postulaciones.find(i => initiativeIdOf(i) === assignment.initiativeId);
+    const statuses = assignment.criteria.map(key => criterionStatus(assignment.evaluatorId, assignment.initiativeId, key));
+    const sent = statuses.filter(s => s === "sent").length;
+    const status = sent === assignment.criteria.length ? "sent" : statuses.some(s => s === "draft") ? "draft" : "pending";
+    const reopenButtons = assignment.criteria.filter(key => criterionStatus(assignment.evaluatorId, assignment.initiativeId, key) === "sent").map(key => `<button type="button" class="text-btn" data-reopen="${assignment.id}|${key}">Reabrir ${esc(rubricByKey(key)?.short || key)}</button>`).join("");
+    return `
+      <tr>
+        <td><strong>${esc(assignment.initiativeId)}</strong><span>${esc(shortText(initiativeNameOf(initiative || {}), 55))}</span></td>
+        <td><strong>${esc(evaluator?.name || "Sin evaluador")}</strong><span>${esc(evaluator?.email || "")}</span></td>
+        <td><div class="assignment-chip-row">${assignment.criteria.map(key => `<span class="assignment-chip ${criterionStatus(assignment.evaluatorId, assignment.initiativeId, key)}">${esc(rubricByKey(key)?.short || key)}</span>`).join("")}</div></td>
+        <td>${esc(formatDate(assignment.deadline))}</td>
+        <td><span class="status-pill ${status}">${sent}/${assignment.criteria.length} enviados</span></td>
+        <td><div class="table-actions">${reopenButtons}<button type="button" class="text-btn danger" data-remove-assignment="${assignment.id}">Eliminar</button></div></td>
+      </tr>`;
+  }
+
+  function generateAccessCode() {
+    return `S2V-${Math.floor(100000 + Math.random() * 900000)}`;
+  }
+
+  function managementMessage(text, error = false) {
+    const box = document.getElementById("managementFeedback");
+    if (!box) return;
+    box.innerHTML = `<div class="${error ? "eval-error-msg" : "eval-saved-msg"}">${esc(text)}</div>`;
+    setTimeout(() => { if (box) box.innerHTML = ""; }, 5000);
+  }
+
+  function attachManagementListeners() {
+    const createForm = document.getElementById("evaluatorCreateForm");
+    const assignmentForm = document.getElementById("assignmentCreateForm");
+    if (createForm) createForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const fd = new FormData(createForm);
+      const email = clean(fd.get("email")).toLowerCase();
+      if (state.evaluators.some(ev => ev.email.toLowerCase() === email)) { managementMessage("Ya existe un evaluador con ese correo.", true); return; }
+      const evaluator = { id: `ev-${Date.now()}`, name: clean(fd.get("name")), email, specialty: clean(fd.get("specialty")), code: generateAccessCode(), active: true };
+      state.evaluators.push(evaluator);
+      persistRoleData();
+      renderMetrics();
+      renderEvaluatorsPanel();
+      managementMessage(`Evaluador creado. Código: ${evaluator.code}`);
+    });
+
+    if (assignmentForm) assignmentForm.addEventListener("submit", e => {
+      e.preventDefault();
+      const fd = new FormData(assignmentForm);
+      const evaluatorId = clean(fd.get("evaluatorId"));
+      const initiativeId = clean(fd.get("initiativeId"));
+      const criteria = fd.getAll("criteria").map(clean).filter(Boolean);
+      if (!evaluatorId || !initiativeId || !criteria.length) { managementMessage("Selecciona evaluador, iniciativa y al menos un componente.", true); return; }
+
+      state.assignments.forEach(a => {
+        if (a.initiativeId === initiativeId && a.evaluatorId !== evaluatorId) a.criteria = a.criteria.filter(key => !criteria.includes(key));
+      });
+      state.assignments = state.assignments.filter(a => a.criteria.length > 0);
+      let assignment = state.assignments.find(a => a.initiativeId === initiativeId && a.evaluatorId === evaluatorId);
+      if (assignment) {
+        assignment.criteria = [...new Set([...assignment.criteria, ...criteria])];
+        assignment.comment = clean(fd.get("comment"));
+        assignment.deadline = clean(fd.get("deadline"));
+        assignment.active = true;
+      } else {
+        assignment = { id: `asig-${Date.now()}`, evaluatorId, initiativeId, criteria, comment: clean(fd.get("comment")), deadline: clean(fd.get("deadline")), active: true };
+        state.assignments.push(assignment);
+      }
+      persistRoleData();
+      renderEvaluatorsPanel();
+      renderInitiativeList();
+      managementMessage("Asignación guardada. La cobertura por componente fue actualizada.");
+    });
+
+    els.evaluatorsPanel.onclick = async e => {
+      const copyBtn = e.target.closest("[data-copy-invite]");
+      const mailBtn = e.target.closest("[data-mail-invite]");
+      const toggleBtn = e.target.closest("[data-toggle-evaluator]");
+      const removeBtn = e.target.closest("[data-remove-assignment]");
+      const reopenBtn = e.target.closest("[data-reopen]");
+      if (copyBtn) {
+        const evaluator = evaluatorById(copyBtn.dataset.copyInvite);
+        const text = invitationText(evaluator);
+        try { await navigator.clipboard.writeText(text); managementMessage("Acceso e invitación copiados."); }
+        catch { managementMessage("No fue posible copiar automáticamente.", true); }
+      }
+      if (mailBtn) {
+        const evaluator = evaluatorById(mailBtn.dataset.mailInvite);
+        const subject = encodeURIComponent("Invitación como evaluador(a) · Science2Venture");
+        const body = encodeURIComponent(invitationText(evaluator));
+        window.location.href = `mailto:${encodeURIComponent(evaluator.email)}?subject=${subject}&body=${body}`;
+      }
+      if (toggleBtn) {
+        const evaluator = evaluatorById(toggleBtn.dataset.toggleEvaluator);
+        evaluator.active = evaluator.active === false;
+        persistRoleData();
+        renderEvaluatorsPanel();
+      }
+      if (removeBtn) {
+        state.assignments = state.assignments.filter(a => a.id !== removeBtn.dataset.removeAssignment);
+        persistRoleData();
+        renderEvaluatorsPanel();
+        renderInitiativeList();
+      }
+      if (reopenBtn) {
+        const [assignmentId, criterionKey] = reopenBtn.dataset.reopen.split("|");
+        const assignment = state.assignments.find(a => a.id === assignmentId);
+        if (assignment) {
+          const key = responseKey(assignment.evaluatorId, assignment.initiativeId, criterionKey);
+          if (state.responses[key]) state.responses[key].status = "draft";
+          persistRoleData();
+          renderEvaluatorsPanel();
+          managementMessage("Componente reabierto para edición.");
+        }
+      }
+    };
+  }
+
+  function invitationText(evaluator) {
+    const assignments = assignmentsForEvaluator(evaluator.id);
+    const detail = assignments.map(a => {
+      const initiative = state.postulaciones.find(i => initiativeIdOf(i) === a.initiativeId);
+      const criteria = a.criteria.map(key => rubricByKey(key)?.label || key).join(", ");
+      return `• ${a.initiativeId} · ${initiativeNameOf(initiative || {})}\n  Componentes: ${criteria}\n  Fecha límite: ${formatDate(a.deadline)}`;
+    }).join("\n\n");
+    return `Hola ${evaluator.name},\n\nGracias por acompañarnos como evaluador(a) de Science2Venture. Te hemos asignado los siguientes componentes:\n\n${detail || "Aún no tienes asignaciones registradas."}\n\nAcceso al Selection Hub:\nURL: ${window.location.href}\nUsuario: ${evaluator.email}\nCódigo: ${evaluator.code}\n\nLa información de las iniciativas es confidencial y debe usarse únicamente para el proceso de evaluación.\n\nEquipo Science2Venture`;
+  }
+
 
   /* ── Animation ── */
   function staggerIn(selector, delay = 50) {
@@ -609,18 +1199,22 @@
 
   /* ── Init ── */
   function init() {
-    const storedSession = localStorage.getItem(STORAGE_KEYS.session);
-    if (storedSession) {
-      try { const p = JSON.parse(storedSession); if (p?.correoEvaluador) els.correoEvaluador.value = p.correoEvaluador; } catch {}
-    }
+    ensureDemoStores();
+    const storedSession = readStore(STORAGE_KEYS.session, null);
+    if (storedSession?.email) els.correoEvaluador.value = storedSession.email;
     els.loginForm.addEventListener("submit", login);
     els.logoutBtn.addEventListener("click", showLogin);
-    els.reloadBtn.addEventListener("click", () => { loadData(DEMO_DATA); if (state.selectedId) renderDetail(state.selectedId); });
+    els.reloadBtn.addEventListener("click", () => {
+      ensureDemoStores();
+      loadData(DEMO_DATA);
+      renderMetrics();
+      if (state.selectedId) renderDetail(state.selectedId);
+      if (state.activeTab === "evaluadores") renderEvaluatorsPanel();
+    });
     els.searchInput.addEventListener("input", applyFilters);
     els.routeFilter.addEventListener("change", applyFilters);
     els.statusFilter.addEventListener("change", applyFilters);
 
-    // Tab navigation
     $$(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => switchTab(btn.dataset.tab));
     });
@@ -635,7 +1229,6 @@
     });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAssetViewer(); });
 
-    // Roster chips (from analytics / components) open an initiative profile
     window.S2V_Nav = (id) => {
       if (!id) return;
       selectInitiative(id);
@@ -645,6 +1238,7 @@
       });
     };
   }
+
 
   document.addEventListener("DOMContentLoaded", init);
 })();
