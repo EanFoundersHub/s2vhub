@@ -1,41 +1,55 @@
 SCIENCE2VENTURE — SELECTION HUB (EAN · Impacta)
 ================================================
 
-Sitio estático autónomo. No requiere servidor ni build: son archivos
-HTML/CSS/JS planos.
+Sitio estático autónomo. No requiere build: son archivos HTML/CSS/JS planos.
 
-CÓMO MONTARLO
--------------
-1. Sube TODA esta carpeta tal cual a tu hosting estático
-   (Netlify, Vercel, GitHub Pages, Cloudflare Pages, S3, IIS, Apache, etc.).
-2. El punto de entrada es  index.html.
-3. Acceso de demo:
-      - Correo: cualquiera (p. ej. evaluador@ean.edu.co)
-      - Código: el definido en config.js (CODIGO_DEMO)
+CÓMO MONTARLO EN GITHUB PAGES
+-----------------------------
+1. Sube TODO el contenido de esta carpeta a la raíz del repositorio.
+2. Verifica que index.html quede directamente en la raíz.
+3. En Settings > Pages usa: Deploy from a branch > main > /root.
+4. Espera el despliegue y actualiza con Ctrl + F5.
 
-Para verlo en local basta con abrir index.html en el navegador, o servir
-la carpeta:  npx serve .   /   python -m http.server
+ACCESOS DEMO
+------------
+Coordinación
+  Correo: coordinacion@universidadean.edu.co
+  Código: S2V-COORD
+
+Evaluador con varios componentes
+  Correo: ana.martinez@demo.com
+  Código: S2V-482731
 
 CONTENIDO
 ---------
-index.html               Hub (login + tablero + evaluación)
-hub-demo-data.js         Datos reales de la convocatoria (22 postulaciones)
-hub-analytics.js         Tablero analítico con FILTRADO CRUZADO (cross-filter)
-hub-app-demo.js          Lógica de la app (lista, detalle, evaluación)
+index.html               Punto de entrada del Hub
+hub-demo-data.js         32 iniciativas, 32 controles documentales y 75 integrantes
+hub-analytics.js         Radiografía y filtrado cruzado
+hub-components.js        Mapa por componentes
+hub-app-demo.js          Roles, asignaciones, evaluación y ranking
 hub-particles.js         Fondo animado
-hub-styles.css           Estilos base
+hub-styles.css           Estilos base, evaluación y resultados
 hub-analytics-styles.css Estilos del tablero analítico
-config.js                Configuración (código de acceso / endpoints)
+config.js                Configuración de endpoints
 assets/                  Logos
 
-FILTRADO CRUZADO
-----------------
-En el tablero, haz clic en cualquier segmento (dona, barra o indicador)
-para fijar esa variable: todo el tablero, las métricas y la lista de
-iniciativas se recalculan sobre ese segmento. Los filtros se apilan;
-usa los chips o "Limpiar todo" para quitarlos.
+VISTAS DE COORDINACIÓN
+----------------------
+- Radiografía
+- Mapa por componentes
+- Iniciativas
+- Resultados y ranking
+- Gestión de evaluadores
+
+RESULTADOS Y RANKING
+--------------------
+La vista consolida las calificaciones guardadas en el navegador, muestra el
+avance de los cinco componentes, puntajes provisionales, bono de equidad,
+total definitivo y ordenamiento de mayor a menor. El resultado final solo se
+considera completo cuando los cinco componentes han sido enviados.
 
 NOTA
 ----
-Esta es la versión DEMO con datos embebidos (modo solo lectura). Para
-conectar a la fuente en vivo, ajusta los endpoints en config.js.
+Esta es una versión DEMO. Evaluadores, asignaciones y respuestas se guardan en
+localStorage. La conexión con SharePoint y Power Automate todavía debe reemplazar
+ese almacenamiento local para la operación institucional.

@@ -89,7 +89,8 @@
   const state = {
     raw: null, postulaciones: [], controlDocumental: [], miembrosEquipo: [],
     filtered: [], selectedId: null, session: null, role: null, activeTab: "analytics",
-    crossIds: null, evaluators: [], assignments: [], responses: {}
+    crossIds: null, evaluators: [], assignments: [], responses: {},
+    resultsFilters: { search: "", status: "", route: "", sort: "score-desc" }, resultExpandedId: null
   };
 
   const $ = (s) => document.querySelector(s);
@@ -107,7 +108,7 @@
     initiativeList: $("#initiativeList"), visibleCount: $("#visibleCount"),
     detailPanel: $("#detailPanel"), cardTemplate: $("#initiativeCardTemplate"),
     tabNav: $("#tabNav"), analyticsPanel: $("#analyticsPanel"),
-    componentsPanel: $("#componentsPanel"), evaluatorsPanel: $("#evaluatorsPanel"),
+    componentsPanel: $("#componentsPanel"), resultsPanel: $("#resultsPanel"), evaluatorsPanel: $("#evaluatorsPanel"),
     listSection: $("#listSection"), initiativePanelTitle: $("#initiativePanelTitle")
   };
 
@@ -385,8 +386,10 @@
     els.analyticsPanel.classList.toggle("hidden", tab !== "analytics");
     els.componentsPanel.classList.toggle("hidden", tab !== "componentes");
     els.listSection.classList.toggle("hidden", tab !== "iniciativas");
+    if (els.resultsPanel) els.resultsPanel.classList.toggle("hidden", tab !== "resultados");
     if (els.evaluatorsPanel) els.evaluatorsPanel.classList.toggle("hidden", tab !== "evaluadores");
     if (tab === "componentes" && window.S2V_Components) window.S2V_Components.render(els.componentsPanel);
+    if (tab === "resultados") renderResultsPanel();
     if (tab === "evaluadores") renderEvaluatorsPanel();
   }
 
@@ -1019,6 +1022,238 @@
     setTimeout(() => renderDetail(initiativeId), submit ? 450 : 800);
   }
 
+
+  /* ── Resultados y ranking de coordinación ── */
+  function appliesEquityBonus(item) {
+    const value = choice(item?.BonoEquidadAplica, "").toLowerCase();
+    return value === "sí" || value === "si" || value === "true" || value === "aplica" || value.startsWith("sí,") || value.startsWith("si,");
+  }
+
+  function buildInitiativeResult(item) {
+    const initiativeId = initiativeIdOf(item);
+    const assignments = assignmentsForInitiative(initiativeId);
+    const components = RUBRIC.map(criterion => {
+      const assignment = assignments.find(a => a.criteria.includes(criterion.key));
+      if (!assignment) {
+        return { criterion, assignment: null, evaluator: null, response: null, status: "unassigned", score: 0 };
+      }
+      const response = getCriterionResponse(assignment.evaluatorId, initiativeId, criterion.key);
+      const calculated = scoreCriterion(criterion, response.ratings || {});
+      const score = Number.isFinite(Number(response.score)) && Number(response.score) > 0 ? Number(response.score) : calculated;
+      return {
+        criterion,
+        assignment,
+        evaluator: evaluatorById(assignment.evaluatorId),
+        response,
+        status: response.status || "pending",
+        score: Math.max(0, Math.min(score, criterion.max))
+      };
+    });
+    const assignedCount = components.filter(c => c.assignment).length;
+    const sentCount = components.filter(c => c.status === "sent").length;
+    const draftCount = components.filter(c => c.status === "draft").length;
+    const sentBase = components.filter(c => c.status === "sent").reduce((sum, c) => sum + c.score, 0);
+    const provisionalBase = components.filter(c => c.status === "sent" || c.status === "draft").reduce((sum, c) => sum + c.score, 0);
+    const complete = sentCount === RUBRIC.length;
+    const status = complete ? "complete" : (sentCount || draftCount) ? "in-progress" : assignedCount ? "assigned" : "unassigned";
+    const bonus = complete && appliesEquityBonus(item) && sentBase <= 800 ? 50 : 0;
+    const finalScore = complete ? sentBase + bonus : null;
+    return {
+      item, initiativeId, name: initiativeNameOf(item), route: routeOf(item), trl: trlOf(item),
+      components, assignedCount, sentCount, draftCount, complete, status,
+      baseScore: sentBase, provisionalScore: provisionalBase, bonus, finalScore,
+      rankScore: complete ? finalScore : provisionalBase
+    };
+  }
+
+  function resultStatusLabel(status) {
+    if (status === "complete") return "Completa";
+    if (status === "in-progress") return "En curso";
+    if (status === "assigned") return "Asignada";
+    return "Sin asignar";
+  }
+
+  function resultStatusClass(status) {
+    if (status === "complete") return "sent";
+    if (status === "in-progress") return "draft";
+    return "pending";
+  }
+
+  function resultsData() {
+    return state.postulaciones.map(buildInitiativeResult);
+  }
+
+  function sortResults(rows, sort) {
+    const copy = [...rows];
+    if (sort === "name-asc") return copy.sort((a, b) => a.name.localeCompare(b.name, "es"));
+    if (sort === "progress-desc") return copy.sort((a, b) => b.sentCount - a.sentCount || b.rankScore - a.rankScore || a.name.localeCompare(b.name, "es"));
+    if (sort === "score-asc") return copy.sort((a, b) => a.rankScore - b.rankScore || a.name.localeCompare(b.name, "es"));
+    return copy.sort((a, b) => {
+      if (a.complete !== b.complete) return a.complete ? -1 : 1;
+      if (b.rankScore !== a.rankScore) return b.rankScore - a.rankScore;
+      if (b.sentCount !== a.sentCount) return b.sentCount - a.sentCount;
+      return a.name.localeCompare(b.name, "es");
+    });
+  }
+
+  function resultComponentCell(component) {
+    if (!component.assignment) return `<td><span class="result-component-score is-empty" title="Sin evaluador asignado">—</span></td>`;
+    const status = component.status || "pending";
+    const shownScore = status === "sent" || status === "draft" ? component.score.toFixed(1) : "—";
+    const evaluator = component.evaluator?.name || "Evaluador";
+    return `<td><span class="result-component-score ${status}" title="${attr(evaluator)} · ${attr(statusLabel(status))}"><strong>${shownScore}</strong><small>/${component.criterion.max}</small></span></td>`;
+  }
+
+  function renderResultBreakdown(row) {
+    const cards = row.components.map(component => {
+      const response = component.response || {};
+      const evaluator = component.evaluator;
+      return `
+        <article class="result-breakdown-card" style="--result-color:${component.criterion.color}">
+          <div class="result-breakdown-head">
+            <span class="component-dot" style="--component-color:${component.criterion.color}"></span>
+            <div><strong>${esc(component.criterion.label)}</strong><small>${esc(evaluator?.name || "Sin evaluador asignado")}</small></div>
+            <span class="status-pill ${component.assignment ? (component.status || "pending") : "pending"}">${component.assignment ? statusLabel(component.status) : "Sin asignar"}</span>
+          </div>
+          <div class="result-breakdown-score"><strong>${component.score.toFixed(1)}</strong><span>/ ${component.criterion.max}</span></div>
+          <div class="result-breakdown-copy">
+            <p><b>Conclusión visible:</b> ${esc(response.criterionComment || "Aún no registrada.")}</p>
+            <p><b>Nota confidencial:</b> ${esc(response.confidentialNote || "Aún no registrada.")}</p>
+          </div>
+        </article>`;
+    }).join("");
+    return `
+      <tr class="result-detail-row">
+        <td colspan="14">
+          <div class="result-detail-shell">
+            <div class="result-detail-title">
+              <div><p class="eyebrow">Desglose de calificación</p><h4>${esc(row.name)}</h4></div>
+              <div class="result-total-summary"><span>Base</span><strong>${row.complete ? row.baseScore.toFixed(1) : row.provisionalScore.toFixed(1)}</strong><small>${row.complete ? `+ ${row.bonus} bono · ${row.finalScore.toFixed(1)} final` : "puntaje provisional"}</small></div>
+            </div>
+            <div class="result-breakdown-grid">${cards}</div>
+          </div>
+        </td>
+      </tr>`;
+  }
+
+  function renderResultRow(row, index) {
+    const progressPct = (row.sentCount / RUBRIC.length) * 100;
+    const expanded = state.resultExpandedId === row.initiativeId;
+    const baseDisplay = row.complete ? row.baseScore.toFixed(1) : row.provisionalScore ? row.provisionalScore.toFixed(1) : "—";
+    const totalDisplay = row.complete ? row.finalScore.toFixed(1) : "—";
+    return `
+      <tr class="result-main-row ${row.complete ? "is-complete" : "is-provisional"}">
+        <td><span class="rank-badge">${index + 1}</span></td>
+        <td class="result-name-cell"><strong>${esc(row.name)}</strong><small>${esc(row.initiativeId)}</small></td>
+        <td><div class="result-route"><span>${esc(row.route)}</span><small>${esc(row.trl)}</small></div></td>
+        <td><div class="result-progress"><div><strong>${row.sentCount}/5</strong><small>${row.assignedCount}/5 asignados</small></div><span><i style="width:${progressPct}%"></i></span></div></td>
+        ${row.components.map(resultComponentCell).join("")}
+        <td><div class="result-base-score"><strong>${baseDisplay}</strong><small>${row.complete ? "/1000" : "provisional"}</small></div></td>
+        <td><span class="result-bonus ${row.bonus ? "applied" : ""}">${row.complete ? `+${row.bonus}` : "—"}</span></td>
+        <td><div class="result-final-score ${row.complete ? "ready" : ""}"><strong>${totalDisplay}</strong><small>${row.complete ? "/1050" : "Pendiente"}</small></div></td>
+        <td><span class="status-pill ${resultStatusClass(row.status)}">${resultStatusLabel(row.status)}</span></td>
+        <td><div class="table-actions result-actions"><button type="button" class="text-btn" data-toggle-result="${attr(row.initiativeId)}">${expanded ? "Ocultar" : "Desglose"}</button><button type="button" class="text-btn" data-view-result="${attr(row.initiativeId)}">Ver ficha</button></div></td>
+      </tr>
+      ${expanded ? renderResultBreakdown(row) : ""}`;
+  }
+
+  function filteredResults(rows) {
+    const filters = state.resultsFilters || {};
+    const search = clean(filters.search).toLowerCase();
+    const filtered = rows.filter(row => {
+      const matchesSearch = !search || `${row.initiativeId} ${row.name} ${row.route} ${row.trl}`.toLowerCase().includes(search);
+      const matchesStatus = !filters.status || row.status === filters.status;
+      const matchesRoute = !filters.route || row.route === filters.route;
+      return matchesSearch && matchesStatus && matchesRoute;
+    });
+    return sortResults(filtered, filters.sort || "score-desc");
+  }
+
+  function updateResultsView() {
+    if (!els.resultsPanel) return;
+    const rows = resultsData();
+    const visibleRows = filteredResults(rows);
+    const complete = rows.filter(r => r.complete);
+    const inProgress = rows.filter(r => r.status === "in-progress");
+    const notStarted = rows.filter(r => r.status === "assigned" || r.status === "unassigned");
+    const average = complete.length ? complete.reduce((sum, r) => sum + r.finalScore, 0) / complete.length : 0;
+    const kpiMount = els.resultsPanel.querySelector("#resultsKpiMount");
+    const componentMount = els.resultsPanel.querySelector("#resultsComponentMount");
+    const tableMount = els.resultsPanel.querySelector("#resultsTableMount");
+    const countMount = els.resultsPanel.querySelector("#resultsVisibleCount");
+    if (kpiMount) kpiMount.innerHTML = `
+      <article class="results-kpi-card"><span>Iniciativas</span><strong>${rows.length}</strong><small>en el proceso</small></article>
+      <article class="results-kpi-card success"><span>Evaluación completa</span><strong>${complete.length}</strong><small>5 de 5 componentes</small></article>
+      <article class="results-kpi-card warning"><span>En curso</span><strong>${inProgress.length}</strong><small>con borrador o envío parcial</small></article>
+      <article class="results-kpi-card"><span>Sin iniciar</span><strong>${notStarted.length}</strong><small>asignadas o sin cobertura</small></article>
+      <article class="results-kpi-card accent"><span>Promedio final</span><strong>${complete.length ? average.toFixed(1) : "—"}</strong><small>${complete.length ? "sobre 1050" : "sin evaluaciones completas"}</small></article>`;
+    if (componentMount) componentMount.innerHTML = RUBRIC.map(criterion => {
+      const sent = rows.map(r => r.components.find(c => c.criterion.key === criterion.key)).filter(c => c?.status === "sent");
+      const avg = sent.length ? sent.reduce((sum, c) => sum + c.score, 0) / sent.length : 0;
+      const pct = criterion.max ? (avg / criterion.max) * 100 : 0;
+      return `<article class="results-component-card" style="--result-color:${criterion.color}"><div><span>${esc(criterion.short)}</span><strong>${sent.length ? avg.toFixed(1) : "—"}<small> / ${criterion.max}</small></strong></div><p>${sent.length} evaluaciones enviadas</p><span class="results-component-bar"><i style="width:${Math.min(100, pct)}%"></i></span></article>`;
+    }).join("");
+    if (countMount) countMount.textContent = `${visibleRows.length} ${visibleRows.length === 1 ? "iniciativa" : "iniciativas"}`;
+    if (tableMount) tableMount.innerHTML = visibleRows.length ? `
+      <div class="results-table-wrap">
+        <table class="results-table">
+          <thead><tr><th>#</th><th>Iniciativa</th><th>Ruta</th><th>Avance</th><th>Ciencia</th><th>Mercado</th><th>Innovación PI</th><th>Equipo</th><th>Impacto</th><th>Base</th><th>Bono</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody>${visibleRows.map(renderResultRow).join("")}</tbody>
+        </table>
+      </div>` : `<div class="results-empty"><strong>No hay resultados con estos filtros.</strong><span>Ajusta la búsqueda o el estado para volver a ver iniciativas.</span></div>`;
+  }
+
+  function renderResultsPanel() {
+    if (!els.resultsPanel || state.role !== "coordinacion") return;
+    const filters = state.resultsFilters || { search: "", status: "", route: "", sort: "score-desc" };
+    els.resultsPanel.innerHTML = `
+      <section class="results-shell">
+        <header class="results-hero">
+          <div><p class="eyebrow">Coordinación · Consolidado</p><h3>Resultados y ranking</h3><p>Consulta el avance de las calificaciones, compara los cinco componentes y ordena las iniciativas de mayor a menor puntaje. Las evaluaciones incompletas aparecen como provisionales.</p></div>
+          <div class="results-method-note"><strong>Regla del demo</strong><span>El total definitivo se muestra cuando los 5 componentes están enviados. El bono de equidad se aplica con base ≤ 800.</span></div>
+        </header>
+        <div id="resultsKpiMount" class="results-kpi-grid"></div>
+        <section class="results-component-summary"><div class="results-section-heading"><div><p class="eyebrow">Promedios</p><h4>Resultado por componente</h4></div></div><div id="resultsComponentMount" class="results-component-grid"></div></section>
+        <section class="results-ranking-card">
+          <div class="results-ranking-head"><div><p class="eyebrow">Clasificación</p><h4>Ranking de iniciativas</h4></div><span id="resultsVisibleCount" class="count-chip">0 iniciativas</span></div>
+          <div class="results-toolbar">
+            <label class="results-search"><span>Buscar</span><input id="resultsSearch" type="search" value="${attr(filters.search || "")}" placeholder="Nombre o código de iniciativa"></label>
+            <label><span>Estado</span><select id="resultsStatus"><option value="">Todos</option><option value="complete" ${filters.status === "complete" ? "selected" : ""}>Completas</option><option value="in-progress" ${filters.status === "in-progress" ? "selected" : ""}>En curso</option><option value="assigned" ${filters.status === "assigned" ? "selected" : ""}>Asignadas sin iniciar</option><option value="unassigned" ${filters.status === "unassigned" ? "selected" : ""}>Sin asignar</option></select></label>
+            <label><span>Ruta</span><select id="resultsRoute"><option value="">Todas</option><option value="TRL 1-3" ${filters.route === "TRL 1-3" ? "selected" : ""}>TRL 1-3</option><option value="TRL 4-6" ${filters.route === "TRL 4-6" ? "selected" : ""}>TRL 4-6</option><option value="TRL 7-9" ${filters.route === "TRL 7-9" ? "selected" : ""}>TRL 7-9</option></select></label>
+            <label><span>Ordenar</span><select id="resultsSort"><option value="score-desc" ${filters.sort === "score-desc" ? "selected" : ""}>Mayor a menor puntaje</option><option value="score-asc" ${filters.sort === "score-asc" ? "selected" : ""}>Menor a mayor puntaje</option><option value="progress-desc" ${filters.sort === "progress-desc" ? "selected" : ""}>Mayor avance</option><option value="name-asc" ${filters.sort === "name-asc" ? "selected" : ""}>Nombre A–Z</option></select></label>
+            <button id="resultsReset" type="button" class="secondary-btn">Limpiar filtros</button>
+          </div>
+          <div id="resultsTableMount"></div>
+        </section>
+      </section>`;
+    const search = els.resultsPanel.querySelector("#resultsSearch");
+    const status = els.resultsPanel.querySelector("#resultsStatus");
+    const route = els.resultsPanel.querySelector("#resultsRoute");
+    const sort = els.resultsPanel.querySelector("#resultsSort");
+    if (search) search.addEventListener("input", () => { state.resultsFilters.search = search.value; updateResultsView(); });
+    if (status) status.addEventListener("change", () => { state.resultsFilters.status = status.value; updateResultsView(); });
+    if (route) route.addEventListener("change", () => { state.resultsFilters.route = route.value; updateResultsView(); });
+    if (sort) sort.addEventListener("change", () => { state.resultsFilters.sort = sort.value; updateResultsView(); });
+    const reset = els.resultsPanel.querySelector("#resultsReset");
+    if (reset) reset.addEventListener("click", () => { state.resultsFilters = { search: "", status: "", route: "", sort: "score-desc" }; state.resultExpandedId = null; renderResultsPanel(); });
+    els.resultsPanel.onclick = e => {
+      const toggle = e.target.closest("[data-toggle-result]");
+      const view = e.target.closest("[data-view-result]");
+      if (toggle) {
+        const id = toggle.dataset.toggleResult;
+        state.resultExpandedId = state.resultExpandedId === id ? null : id;
+        updateResultsView();
+      }
+      if (view) {
+        const id = view.dataset.viewResult;
+        selectInitiative(id);
+        switchTab("iniciativas");
+        requestAnimationFrame(() => els.listSection.scrollIntoView({ behavior: "smooth", block: "start" }));
+      }
+    };
+    updateResultsView();
+  }
+
   function renderEvaluatorsPanel() {
     if (!els.evaluatorsPanel || state.role !== "coordinacion") return;
     const activeEvaluators = state.evaluators.filter(e => e.active !== false);
@@ -1296,6 +1531,7 @@
       loadData(DEMO_DATA);
       renderMetrics();
       if (state.selectedId) renderDetail(state.selectedId);
+      if (state.activeTab === "resultados") renderResultsPanel();
       if (state.activeTab === "evaluadores") renderEvaluatorsPanel();
     });
     els.searchInput.addEventListener("input", applyFilters);
