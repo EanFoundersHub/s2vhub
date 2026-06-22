@@ -1,37 +1,41 @@
-SCIENCE2VENTURE · SELECTION HUB
-DEMO DE EVALUACIÓN POR COMPONENTES
+SCIENCE2VENTURE — SELECTION HUB (EAN · Impacta)
+================================================
 
-QUÉ INCLUYE
-- 31 iniciativas reales de la versión de trabajo.
-- Dos vistas en el mismo HTML: Coordinación y Evaluador.
-- Registro demo de evaluadores y generación de códigos.
-- Asignación masiva: una, varias o todas las iniciativas para una misma persona.
-- Asignación de uno o varios componentes a una persona.
-- Regla demo: cada componente de una iniciativa queda a cargo de un solo evaluador.
-- Comentario de coordinación por asignación.
-- Evaluación profunda con preguntas, escala 1 a 5 y ponderación automática.
-- Justificación opcional por pregunta, visible únicamente cuando el evaluador decide incluirla.
-- Conclusión visible para la iniciativa y nota confidencial para coordinación, ambas obligatorias al enviar.
-- Ficha de postulación compacta con secciones desplegables para reducir el desplazamiento vertical.
-- Guardar borrador, enviar componente y reabrir desde coordinación.
-- Preparación de correo mediante el cliente de correo del equipo.
-- Tema Light/Dark, partículas y visor integrado de soportes.
+Sitio estático autónomo. No requiere servidor ni build: son archivos
+HTML/CSS/JS planos.
 
-ACCESOS DEMO
-Coordinación
-Correo: coordinacion@universidadean.edu.co
-Código: S2V-COORD
+CÓMO MONTARLO
+-------------
+1. Sube TODA esta carpeta tal cual a tu hosting estático
+   (Netlify, Vercel, GitHub Pages, Cloudflare Pages, S3, IIS, Apache, etc.).
+2. El punto de entrada es  index.html.
+3. Acceso de demo:
+      - Correo: cualquiera (p. ej. evaluador@ean.edu.co)
+      - Código: el definido en config.js (CODIGO_DEMO)
 
-Evaluador con dos componentes
-Correo: ana.martinez@demo.com
-Código: S2V-482731
+Para verlo en local basta con abrir index.html en el navegador, o servir
+la carpeta:  npx serve .   /   python -m http.server
 
-Otros evaluadores
-Carlos Ruiz: carlos.ruiz@demo.com / S2V-615284
-Laura Gómez: laura.gomez@demo.com / S2V-307946
+CONTENIDO
+---------
+index.html               Hub (login + tablero + evaluación)
+hub-demo-data.js         Datos reales de la convocatoria (22 postulaciones)
+hub-analytics.js         Tablero analítico con FILTRADO CRUZADO (cross-filter)
+hub-app-demo.js          Lógica de la app (lista, detalle, evaluación)
+hub-particles.js         Fondo animado
+hub-styles.css           Estilos base
+hub-analytics-styles.css Estilos del tablero analítico
+config.js                Configuración (código de acceso / endpoints)
+assets/                  Logos
 
-IMPORTANTE
-Esta versión todavía utiliza localStorage para simular SharePoint. Los evaluadores, asignaciones y respuestas creadas en el demo quedan guardados solamente en el navegador utilizado. La siguiente fase es reemplazar este almacenamiento por los flujos de Power Automate y las listas de SharePoint.
+FILTRADO CRUZADO
+----------------
+En el tablero, haz clic en cualquier segmento (dona, barra o indicador)
+para fijar esa variable: todo el tablero, las métricas y la lista de
+iniciativas se recalculan sobre ese segmento. Los filtros se apilan;
+usa los chips o "Limpiar todo" para quitarlos.
 
-CARGUE EN GITHUB
-Descomprime el ZIP, entra a Selection-Hub y sube TODO el contenido interno a la raíz del repositorio. index.html debe quedar directamente en la raíz.
+NOTA
+----
+Esta es la versión DEMO con datos embebidos (modo solo lectura). Para
+conectar a la fuente en vivo, ajusta los endpoints en config.js.

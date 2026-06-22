@@ -596,6 +596,7 @@
       <section class="detail-section" style="animation-delay:0.05s">
         <h4>Información general</h4>
         <div class="field-grid">
+          ${field("Fecha de postulación", item.FechaPostulacion ? formatDate(item.FechaPostulacion) : "")}
           ${field("Líder", item.NombreLider)}
           ${field("Correo líder", item.CorreoLider)}
           ${field("Ciudad", item.Ciudad)}

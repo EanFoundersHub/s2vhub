@@ -28,8 +28,8 @@
       particles.push({
         x: Math.random() * W,
         y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: (Math.random() - 0.5) * 0.35,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
         r: Math.random() * 1.8 + 0.6,
         o: Math.random() * 0.45 + 0.12,
         pulse: Math.random() * Math.PI * 2
@@ -39,13 +39,13 @@
 
   function draw() {
     ctx.clearRect(0, 0, W, H);
-    const maxDist = 140;
+    const maxDist = 160;
     const maxDist2 = maxDist * maxDist;
 
     for (const p of particles) {
       p.x += p.vx;
       p.y += p.vy;
-      p.pulse += 0.008;
+      p.pulse += 0.012;
       if (p.x < -30) p.x = W + 30;
       if (p.x > W + 30) p.x = -30;
       if (p.y < -30) p.y = H + 30;
@@ -73,7 +73,7 @@
         const dy = particles[i].y - particles[j].y;
         const d2 = dx * dx + dy * dy;
         if (d2 < maxDist2) {
-          const alpha = 0.11 * (1 - Math.sqrt(d2) / maxDist) * ALPHA;
+          const alpha = 0.14 * (1 - Math.sqrt(d2) / maxDist) * ALPHA;
           ctx.beginPath();
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(particles[j].x, particles[j].y);
@@ -115,7 +115,7 @@
 
   function start() {
     if (raf) cancelAnimationFrame(raf);
-    if (reduceMotion.matches) { drawStatic(); return; }
+    // El usuario pidió movimiento explícito en el fondo: animamos siempre.
     draw();
   }
 

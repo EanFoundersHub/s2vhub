@@ -7,6 +7,7 @@ window.S2V_Components = (function () {
   const S = window.S2V_Filter;
   let containerEl = null;
   let bound = false, subbed = false;
+  const collapsed = new Set([2, 3, 4, 5, 6, 7, 8, 9]);
 
   function attr(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;"); }
   function shortODS(s) { const m = s.match(/ODS\s*(\d+)/); return m ? `ODS ${m[1]}` : s.slice(0, 18); }
@@ -86,8 +87,8 @@ window.S2V_Components = (function () {
       : `Mapeo categoría por categoría de las ${n} iniciativas reales`;
 
     const groupsHtml = GROUPS.map((g, gi) => `
-      <section class="cmp-group" style="--cmp-accent:${g.color}">
-        <div class="cmp-group-head"><span class="cmp-dot"></span><h4>${g.title}</h4><span class="cmp-group-num">${String(gi + 1).padStart(2, '0')}</span></div>
+      <section class="cmp-group${collapsed.has(gi) ? ' collapsed' : ''}" data-group="${gi}" style="--cmp-accent:${g.color}">
+        <button type="button" class="cmp-group-head" data-toggle-group="${gi}"><span class="cmp-dot"></span><h4>${g.title}</h4><span class="cmp-group-num">${g.dims.length} · ${String(gi + 1).padStart(2, '0')}</span><span class="cmp-chevron" aria-hidden="true">▾</span></button>
         <div class="cmp-grid">${g.dims.map(dim => miniCard(dim, g.color)).join('')}</div>
       </section>`).join('');
 
@@ -101,6 +102,7 @@ window.S2V_Components = (function () {
         ${filterBar}
         ${S.rosterHtml()}
       </div>
+      <div class="cmp-tools"><button type="button" class="cmp-tool" data-expand-all>Expandir todo</button><button type="button" class="cmp-tool" data-collapse-all>Colapsar todo</button></div>
       <div class="cmp-groups">${groupsHtml}</div>`;
   }
 
@@ -117,6 +119,10 @@ window.S2V_Components = (function () {
   function bindOnce() {
     if (bound) return; bound = true;
     containerEl.addEventListener('click', e => {
+      const tg = e.target.closest('[data-toggle-group]');
+      if (tg) { const gi = +tg.dataset.toggleGroup; if (collapsed.has(gi)) collapsed.delete(gi); else collapsed.add(gi); const sec = tg.closest('.cmp-group'); if (sec) sec.classList.toggle('collapsed'); return; }
+      const ea = e.target.closest('[data-expand-all]'); if (ea) { collapsed.clear(); containerEl.querySelectorAll('.cmp-group').forEach(s => s.classList.remove('collapsed')); return; }
+      const ca = e.target.closest('[data-collapse-all]'); if (ca) { GROUPS.forEach((_, i) => collapsed.add(i)); containerEl.querySelectorAll('.cmp-group').forEach(s => s.classList.add('collapsed')); return; }
       const ini = e.target.closest('[data-initiative-id]'); if (ini) { if (window.S2V_Nav) window.S2V_Nav(ini.dataset.initiativeId); return; }
       const clear = e.target.closest('[data-clear]'); if (clear) { S.clear(); return; }
       const rm = e.target.closest('[data-remove-dim]'); if (rm) { S.remove(rm.dataset.removeDim); return; }
