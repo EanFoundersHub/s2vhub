@@ -541,6 +541,32 @@
     return `<article class="member-card"><strong>${esc(name)}</strong><p>${esc(parts.join(" · "))}</p>${m.CorreoMiembro ? `<p>${esc(m.CorreoMiembro)}</p>` : ""}</article>`;
   }
 
+  function compactInitiativeSections() {
+    const sections = [...els.detailPanel.querySelectorAll(":scope > .detail-section:not(.eval-section)")];
+    sections.forEach((section, index) => {
+      const heading = section.querySelector(":scope > h4");
+      if (!heading || section.classList.contains("collapsible-detail-section")) return;
+      const title = heading.textContent.trim();
+      const content = document.createElement("div");
+      content.className = "detail-section-content";
+      [...section.childNodes].forEach(node => { if (node !== heading) content.appendChild(node); });
+      heading.remove();
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "detail-section-toggle";
+      button.setAttribute("aria-expanded", index === 0 ? "true" : "false");
+      button.innerHTML = `<span>${esc(title)}</span><small>${index === 0 ? "Ocultar" : "Ver contenido"}</small><i aria-hidden="true">⌄</i>`;
+      section.classList.add("collapsible-detail-section");
+      if (index === 0) section.classList.add("open");
+      section.append(button, content);
+      button.addEventListener("click", () => {
+        const open = section.classList.toggle("open");
+        button.setAttribute("aria-expanded", open ? "true" : "false");
+        button.querySelector("small").textContent = open ? "Ocultar" : "Ver contenido";
+      });
+    });
+  }
+
   /* ── Detail Rendering (enriched) ── */
   function renderDetail(id) {
     const item = state.postulaciones.find(r => initiativeIdOf(r) === id);
@@ -696,6 +722,7 @@
 
       ${renderRoleEvaluation(id)}
     `;
+    compactInitiativeSections();
     attachRoleEvaluationListeners(id);
   }
 
@@ -854,12 +881,12 @@
         </div>
         <div class="criterion-comments-grid">
           <label>
-            <span>Conclusión del componente <b>*</b></span>
-            <textarea rows="4" data-criterion-comment placeholder="Resume fortalezas, brechas y fundamento de tu calificación." ${locked ? "disabled" : ""}>${esc(response.criterionComment || "")}</textarea>
+            <span>Conclusión del componente <b>*</b> <small>(visible para la iniciativa)</small></span>
+            <textarea rows="4" data-criterion-comment placeholder="Escribe la retroalimentación que recibirá el equipo postulante: fortalezas, brechas y recomendaciones." ${locked ? "disabled" : ""}>${esc(response.criterionComment || "")}</textarea>
           </label>
           <label>
-            <span>Nota confidencial para coordinación</span>
-            <textarea rows="4" data-confidential-note placeholder="Esta nota no se comparte con el equipo postulante." ${locked ? "disabled" : ""}>${esc(response.confidentialNote || "")}</textarea>
+            <span>Nota confidencial para coordinación <b>*</b></span>
+            <textarea rows="4" data-confidential-note placeholder="Registra alertas, riesgos o consideraciones que solo debe conocer la coordinación." ${locked ? "disabled" : ""}>${esc(response.confidentialNote || "")}</textarea>
           </label>
         </div>
         <footer class="criterion-eval-actions">
@@ -875,25 +902,32 @@
   function renderRubricQuestion(question, response, index, locked) {
     const selected = Number(response.ratings?.[question.id] || 0);
     const comment = response.comments?.[question.id] || "";
+    const wantsComment = Boolean(comment);
     const questionScore = scoreQuestion(selected, question.weight);
     return `
-      <section class="rubric-question" data-question="${question.id}" data-weight="${question.weight}">
+      <section class="rubric-question compact-question" data-question="${question.id}" data-weight="${question.weight}">
         <div class="rubric-question__heading">
           <span class="question-index">${index + 1}</span>
           <div>
             <h6>${esc(question.label)} <small>${question.weight} pts</small></h6>
             <p>${esc(question.prompt)}</p>
-            <span class="question-help">${esc(question.help)}</span>
+            <details class="question-help-details"><summary>Qué debe revisar el evaluador</summary><p>${esc(question.help)}</p></details>
           </div>
           <strong class="question-score" data-question-score>${questionScore.toFixed(1)} / ${question.weight}</strong>
         </div>
-        <div class="rating-scale" role="radiogroup" aria-label="Calificación de ${attr(question.label)}">
+        <div class="rating-scale compact-rating-scale" role="radiogroup" aria-label="Calificación de ${attr(question.label)}">
           ${[1,2,3,4,5].map(value => `<button type="button" class="rating-option ${selected === value ? "active" : ""}" data-rating="${value}" aria-pressed="${selected === value ? "true" : "false"}" ${locked ? "disabled" : ""}><strong>${value}</strong><span>${["Nulo","Bajo","Medio","Alto","Muy alto"][value-1]}</span></button>`).join("")}
         </div>
-        <label class="question-comment-label">
-          <span>Justificación ${selected === 1 || selected === 5 ? "(obligatoria para extremos)" : ""}</span>
-          <textarea rows="2" data-question-comment placeholder="Explica la evidencia que sustenta tu valoración." ${locked ? "disabled" : ""}>${esc(comment)}</textarea>
+        <label class="optional-justification-toggle">
+          <input type="checkbox" data-toggle-justification ${wantsComment ? "checked" : ""} ${locked ? "disabled" : ""}>
+          <span>Deseo justificar esta respuesta</span>
         </label>
+        <div class="question-comment-wrap ${wantsComment ? "" : "hidden"}">
+          <label class="question-comment-label">
+            <span>Justificación opcional</span>
+            <textarea rows="2" data-question-comment placeholder="Explica la evidencia que sustenta tu valoración." ${locked ? "disabled" : ""}>${esc(comment)}</textarea>
+          </label>
+        </div>
       </section>`;
   }
 
@@ -905,15 +939,16 @@
       const questionId = block.dataset.question;
       const active = block.querySelector(".rating-option.active");
       const rating = active ? Number(active.dataset.rating) : 0;
-      const comment = block.querySelector("[data-question-comment]")?.value.trim() || "";
+      const wantsComment = Boolean(block.querySelector("[data-toggle-justification]")?.checked);
+      const comment = wantsComment ? (block.querySelector("[data-question-comment]")?.value.trim() || "") : "";
       ratings[questionId] = rating;
       comments[questionId] = comment;
       if (strict && !rating) errors.push("Debes calificar todas las preguntas.");
-      if (strict && (rating === 1 || rating === 5) && !comment) errors.push("Justifica las calificaciones 1 y 5.");
     });
     const criterionComment = card.querySelector("[data-criterion-comment]")?.value.trim() || "";
     const confidentialNote = card.querySelector("[data-confidential-note]")?.value.trim() || "";
-    if (strict && !criterionComment) errors.push("Incluye una conclusión general del componente.");
+    if (strict && !criterionComment) errors.push("Incluye la conclusión del componente que será visible para la iniciativa.");
+    if (strict && !confidentialNote) errors.push("Incluye la nota confidencial para coordinación.");
     return { ratings, comments, criterionComment, confidentialNote, errors: [...new Set(errors)], score: scoreCriterion(criterion, ratings) };
   }
 
@@ -935,6 +970,14 @@
           question.querySelector("[data-question-score]").textContent = `${scoreQuestion(Number(btn.dataset.rating), weight).toFixed(1)} / ${weight}`;
           const current = collectCriterionResponse(card, criterion, false);
           card.querySelector("[data-criterion-score]").textContent = current.score.toFixed(1);
+        });
+      });
+      card.querySelectorAll("[data-toggle-justification]").forEach(toggle => {
+        toggle.addEventListener("change", () => {
+          const question = toggle.closest(".rubric-question");
+          const wrap = question?.querySelector(".question-comment-wrap");
+          if (wrap) wrap.classList.toggle("hidden", !toggle.checked);
+          if (toggle.checked) question?.querySelector("[data-question-comment]")?.focus();
         });
       });
     });
@@ -982,7 +1025,10 @@
     let sentComponents = 0;
     state.assignments.forEach(a => a.criteria.forEach(key => { if (criterionStatus(a.evaluatorId, a.initiativeId, key) === "sent") sentComponents += 1; }));
     const evaluatorOptions = activeEvaluators.map(e => `<option value="${e.id}">${esc(e.name)} · ${esc(e.specialty || "Sin especialidad")}</option>`).join("");
-    const initiativeOptions = state.postulaciones.map(i => `<option value="${attr(initiativeIdOf(i))}">${esc(initiativeIdOf(i))} · ${esc(initiativeNameOf(i))}</option>`).join("");
+    const initiativeChecklist = state.postulaciones.map(i => {
+      const id = initiativeIdOf(i);
+      return `<label class="initiative-check-item" data-initiative-search="${attr(`${id} ${initiativeNameOf(i)}`.toLowerCase())}"><input type="checkbox" name="initiativeIds" value="${attr(id)}"><span><strong>${esc(id)}</strong><small>${esc(initiativeNameOf(i))}</small></span></label>`;
+    }).join("");
 
     els.evaluatorsPanel.innerHTML = `
       <section class="management-shell">
@@ -1014,15 +1060,23 @@
           </form>
 
           <form id="assignmentCreateForm" class="management-card assignment-form">
-            <div class="management-card__head"><span>02</span><div><h4>Asignar componentes</h4><p>Selecciona una iniciativa y uno o varios componentes para la misma persona.</p></div></div>
+            <div class="management-card__head"><span>02</span><div><h4>Asignar componentes de forma masiva</h4><p>Selecciona una, varias o todas las iniciativas y asigna los mismos componentes a la persona elegida.</p></div></div>
             <div class="management-form-row">
               <label><span>Evaluador</span><select name="evaluatorId" required><option value="">Seleccionar…</option>${evaluatorOptions}</select></label>
               <label><span>Fecha límite</span><input name="deadline" type="date" value="2026-07-10" required></label>
             </div>
-            <label><span>Iniciativa</span><select name="initiativeId" required><option value="">Seleccionar…</option>${initiativeOptions}</select></label>
+            <fieldset class="initiative-multiselect">
+              <legend>Iniciativas a asignar</legend>
+              <div class="initiative-select-toolbar">
+                <label class="select-all-initiatives"><input type="checkbox" id="selectAllInitiatives"><span>Seleccionar todas las ${state.postulaciones.length} iniciativas</span></label>
+                <strong id="initiativeSelectionCount">0 seleccionadas</strong>
+              </div>
+              <input id="initiativeAssignmentSearch" class="initiative-assignment-search" type="search" placeholder="Buscar por código o nombre…" autocomplete="off">
+              <div class="initiative-checkbox-list">${initiativeChecklist}</div>
+            </fieldset>
             <fieldset class="criteria-checkboxes"><legend>Componentes a asignar</legend>${RUBRIC.map(c => `<label><input type="checkbox" name="criteria" value="${c.key}"><span style="--criterion-color:${c.color}">${esc(c.label)} <small>${c.max} pts</small></span></label>`).join("")}</fieldset>
-            <label><span>Comentario para el evaluador</span><textarea name="comment" rows="3" placeholder="Indicación particular para esta iniciativa."></textarea></label>
-            <button class="primary-btn" type="submit"><span>Guardar asignación</span></button>
+            <label><span>Comentario para el evaluador</span><textarea name="comment" rows="3" placeholder="Esta indicación se aplicará a todas las iniciativas seleccionadas."></textarea></label>
+            <button class="primary-btn" type="submit"><span>Guardar asignaciones</span></button>
           </form>
         </div>
 
@@ -1101,33 +1155,65 @@
       managementMessage(`Evaluador creado. Código: ${evaluator.code}`);
     });
 
-    if (assignmentForm) assignmentForm.addEventListener("submit", e => {
-      e.preventDefault();
-      const fd = new FormData(assignmentForm);
-      const evaluatorId = clean(fd.get("evaluatorId"));
-      const initiativeId = clean(fd.get("initiativeId"));
-      const criteria = fd.getAll("criteria").map(clean).filter(Boolean);
-      if (!evaluatorId || !initiativeId || !criteria.length) { managementMessage("Selecciona evaluador, iniciativa y al menos un componente.", true); return; }
-
-      state.assignments.forEach(a => {
-        if (a.initiativeId === initiativeId && a.evaluatorId !== evaluatorId) a.criteria = a.criteria.filter(key => !criteria.includes(key));
+    if (assignmentForm) {
+      const initiativeChecks = [...assignmentForm.querySelectorAll('input[name="initiativeIds"]')];
+      const selectAll = assignmentForm.querySelector("#selectAllInitiatives");
+      const search = assignmentForm.querySelector("#initiativeAssignmentSearch");
+      const count = assignmentForm.querySelector("#initiativeSelectionCount");
+      const updateSelectionCount = () => {
+        const selected = initiativeChecks.filter(input => input.checked).length;
+        if (count) count.textContent = `${selected} ${selected === 1 ? "seleccionada" : "seleccionadas"}`;
+        if (selectAll) {
+          selectAll.checked = selected === initiativeChecks.length && initiativeChecks.length > 0;
+          selectAll.indeterminate = selected > 0 && selected < initiativeChecks.length;
+        }
+      };
+      initiativeChecks.forEach(input => input.addEventListener("change", updateSelectionCount));
+      if (selectAll) selectAll.addEventListener("change", () => {
+        initiativeChecks.forEach(input => { input.checked = selectAll.checked; });
+        updateSelectionCount();
       });
-      state.assignments = state.assignments.filter(a => a.criteria.length > 0);
-      let assignment = state.assignments.find(a => a.initiativeId === initiativeId && a.evaluatorId === evaluatorId);
-      if (assignment) {
-        assignment.criteria = [...new Set([...assignment.criteria, ...criteria])];
-        assignment.comment = clean(fd.get("comment"));
-        assignment.deadline = clean(fd.get("deadline"));
-        assignment.active = true;
-      } else {
-        assignment = { id: `asig-${Date.now()}`, evaluatorId, initiativeId, criteria, comment: clean(fd.get("comment")), deadline: clean(fd.get("deadline")), active: true };
-        state.assignments.push(assignment);
-      }
-      persistRoleData();
-      renderEvaluatorsPanel();
-      renderInitiativeList();
-      managementMessage("Asignación guardada. La cobertura por componente fue actualizada.");
-    });
+      if (search) search.addEventListener("input", () => {
+        const query = clean(search.value).toLowerCase();
+        assignmentForm.querySelectorAll(".initiative-check-item").forEach(label => {
+          label.hidden = Boolean(query) && !clean(label.dataset.initiativeSearch).includes(query);
+        });
+      });
+      updateSelectionCount();
+
+      assignmentForm.addEventListener("submit", e => {
+        e.preventDefault();
+        const fd = new FormData(assignmentForm);
+        const evaluatorId = clean(fd.get("evaluatorId"));
+        const initiativeIds = fd.getAll("initiativeIds").map(clean).filter(Boolean);
+        const criteria = fd.getAll("criteria").map(clean).filter(Boolean);
+        if (!evaluatorId || !initiativeIds.length || !criteria.length) { managementMessage("Selecciona evaluador, al menos una iniciativa y un componente.", true); return; }
+
+        const comment = clean(fd.get("comment"));
+        const deadline = clean(fd.get("deadline"));
+        const stamp = Date.now();
+        initiativeIds.forEach((initiativeId, index) => {
+          state.assignments.forEach(a => {
+            if (a.initiativeId === initiativeId && a.evaluatorId !== evaluatorId) a.criteria = a.criteria.filter(key => !criteria.includes(key));
+          });
+          state.assignments = state.assignments.filter(a => a.criteria.length > 0);
+          let assignment = state.assignments.find(a => a.initiativeId === initiativeId && a.evaluatorId === evaluatorId);
+          if (assignment) {
+            assignment.criteria = [...new Set([...assignment.criteria, ...criteria])];
+            assignment.comment = comment;
+            assignment.deadline = deadline;
+            assignment.active = true;
+          } else {
+            assignment = { id: `asig-${stamp}-${index}`, evaluatorId, initiativeId, criteria: [...criteria], comment, deadline, active: true };
+            state.assignments.push(assignment);
+          }
+        });
+        persistRoleData();
+        renderEvaluatorsPanel();
+        renderInitiativeList();
+        managementMessage(`${initiativeIds.length} ${initiativeIds.length === 1 ? "iniciativa actualizada" : "iniciativas actualizadas"}. La cobertura por componente fue reasignada.`);
+      });
+    }
 
     els.evaluatorsPanel.onclick = async e => {
       const copyBtn = e.target.closest("[data-copy-invite]");

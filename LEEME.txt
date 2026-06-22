@@ -5,10 +5,14 @@ QUÉ INCLUYE
 - 31 iniciativas reales de la versión de trabajo.
 - Dos vistas en el mismo HTML: Coordinación y Evaluador.
 - Registro demo de evaluadores y generación de códigos.
+- Asignación masiva: una, varias o todas las iniciativas para una misma persona.
 - Asignación de uno o varios componentes a una persona.
 - Regla demo: cada componente de una iniciativa queda a cargo de un solo evaluador.
 - Comentario de coordinación por asignación.
 - Evaluación profunda con preguntas, escala 1 a 5 y ponderación automática.
+- Justificación opcional por pregunta, visible únicamente cuando el evaluador decide incluirla.
+- Conclusión visible para la iniciativa y nota confidencial para coordinación, ambas obligatorias al enviar.
+- Ficha de postulación compacta con secciones desplegables para reducir el desplazamiento vertical.
 - Guardar borrador, enviar componente y reabrir desde coordinación.
 - Preparación de correo mediante el cliente de correo del equipo.
 - Tema Light/Dark, partículas y visor integrado de soportes.
