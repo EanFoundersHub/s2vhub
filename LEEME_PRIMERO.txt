@@ -1,17 +1,10 @@
-S2VHUB V12 · PAQUETE MONOARCHIVO PARA GITHUB PAGES
+S2VHub v13 · INICIO EQUILIBRADO
 
-CAMBIOS:
-- Se eliminaron las referencias de prueba visibles en la interfaz.
-- Las pestañas de la postulación del evaluador muestran el nombre real de cada componente.
-- Se mantienen las funciones, datos, asignaciones, ranking y temas visuales.
-
-CARGA EN GITHUB:
 1. Descomprime este ZIP.
-2. En la raíz del repositorio s2vhub, reemplaza index.html.
+2. Reemplaza en la raíz de GitHub el archivo index.html por el incluido aquí.
 3. Sube también .nojekyll.
-4. Confirma el commit.
-5. Abre https://eanfoundershub.github.io/s2vhub/?v=12 y fuerza actualización con Ctrl + F5.
+4. Confirma el commit y espera el despliegue de GitHub Pages.
+5. Abre: https://eanfoundershub.github.io/s2vhub/?v=13
+6. Fuerza recarga con Ctrl + F5.
 
-ACCESOS:
-Coordinación: coordinacion@universidadean.edu.co / S2V-COORD
-Evaluador: ana.martinez@panel-s2v.co / S2V-482731
+Esta versión conserva las funciones y datos de v12; solo ajusta la proporción visual de la pantalla de acceso.
