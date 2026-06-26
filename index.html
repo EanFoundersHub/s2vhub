@@ -3035,10 +3035,17 @@ body.focus-mode .focus-toggle .lbl-off { display: inline; }
   gap: clamp(12px, 2.2vh, 22px);
   justify-content: center;
 }
-/* En viewports bajos (pantallas anchas y poco altas) alinea arriba y
-   permite scroll en vez de centrar y dejar el botón fuera de la vista. */
-@media (max-height: 700px) {
-  .login-view { justify-content: flex-start; }
+/* En viewports de poca altura (laptops, pantallas anchas y bajas) compacta
+   el login y lo alinea arriba para que el botón "Ingresar" nunca se corte. */
+@media (max-height: 880px) {
+  .login-view { justify-content: flex-start; gap: clamp(10px, 1.6vh, 18px); }
+  .brand-row.compact { min-height: clamp(46px, 6vh, 66px); }
+  .brand-logo { max-height: clamp(44px, 5.6vh, 70px); }
+  .hero-card, .access-card { min-height: auto; }
+  .hero-card { padding: clamp(22px, 3vh, 40px) 40px clamp(20px, 2.6vh, 38px) 76px; }
+  .access-card { padding: clamp(16px, 2.4vh, 26px) 30px; }
+  .access-hint { margin: 10px 0 12px; }
+  .form-stack { gap: 11px; margin-top: 12px; }
 }
 .brand-row.compact {
   min-height: clamp(56px, 8vh, 84px);
@@ -3121,7 +3128,7 @@ body.focus-mode .focus-toggle .lbl-off { display: inline; }
   min-height: 18px;
   margin-top: 10px;
 }
-.login-toggle { top: -4px; }
+.login-toggle { top: 8px; right: 4px; }
 
 @media (max-width: 1180px) and (min-width: 1025px) {
   .login-grid {
