@@ -1384,9 +1384,9 @@ body.viewer-open { overflow: hidden; }
 }
 
 /* ════════════════════════════════════════════════════════════
-   DEMO 2 · Roles, asignación por componentes y rúbrica profunda
+   Roles, asignación por componentes y rúbrica profunda
    ════════════════════════════════════════════════════════════ */
-.demo-access-hint {
+.access-hint {
   display: grid;
   gap: 6px;
   margin: 16px 0 20px;
@@ -1398,8 +1398,8 @@ body.viewer-open { overflow: hidden; }
   font-size: 12px;
   line-height: 1.55;
 }
-.demo-access-hint strong { color: var(--teal-text); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
-.demo-access-hint span { overflow-wrap: anywhere; }
+.access-hint strong { color: var(--teal-text); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+.access-hint span { overflow-wrap: anywhere; }
 .user-chip { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .user-chip small { padding: 4px 8px; border-radius: 999px; background: var(--teal-chip-bg); color: var(--teal-text); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
 .badge.assignment { border-color: rgba(85,201,204,.4); background: rgba(85,201,204,.12); color: var(--teal-text); }
@@ -1509,9 +1509,9 @@ body.viewer-open { overflow: hidden; }
 .management-hero { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(250px,0.78fr); gap:22px; align-items:stretch; padding:24px; border:1px solid var(--border); border-radius:var(--radius-xl); background:var(--surface); box-shadow:var(--shadow-sm); }
 .management-hero h3 { margin:4px 0 8px; color:var(--text-strong); font-size:25px; }
 .management-hero > div > p:last-child { margin:0; max-width:none; color:var(--text-muted); font-size:13px; line-height:1.6; }
-.demo-backend-note { display:flex; flex-direction:column; justify-content:center; gap:5px; padding:16px 18px; border-radius:var(--radius-md); border:1px solid var(--warn-chip-border); background:var(--warn-chip-bg); }
-.demo-backend-note strong { color:var(--warn-chip-text); font-size:11px; text-transform:uppercase; letter-spacing:.1em; }
-.demo-backend-note span { color:var(--text-soft); font-size:10px; line-height:1.5; }
+.backend-note { display:flex; flex-direction:column; justify-content:center; gap:5px; padding:16px 18px; border-radius:var(--radius-md); border:1px solid var(--warn-chip-border); background:var(--warn-chip-bg); }
+.backend-note strong { color:var(--warn-chip-text); font-size:11px; text-transform:uppercase; letter-spacing:.1em; }
+.backend-note span { color:var(--text-soft); font-size:10px; line-height:1.5; }
 .management-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
 .management-metrics article { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:6px; min-height:90px; padding:16px 18px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface); }
 .management-metrics span { color:var(--text-muted); font-size:11px; font-weight:650; letter-spacing:.01em; }
@@ -3071,13 +3071,13 @@ body.focus-mode .focus-toggle .lbl-off { display: inline; }
 
         <!-- Access -->
         <section class="access-card" aria-labelledby="accessTitle">
-          <div class="access-topline">Demo por roles</div>
+          <div class="access-topline">Acceso por roles</div>
           <h2 id="accessTitle">Ingresar al Selection Hub</h2>
           <p class="muted">La misma interfaz reconoce si ingresas como coordinación o como evaluador.</p>
-          <div class="demo-access-hint">
-            <strong>Accesos demo</strong>
+          <div class="access-hint">
+            <strong>Credenciales habilitadas</strong>
             <span>Coordinación: coordinacion@universidadean.edu.co · S2V-COORD</span>
-            <span>Evaluador multidisciplinar: ana.martinez@demo.com · S2V-482731</span>
+            <span>Evaluador multidisciplinar: ana.martinez@panel-s2v.co · S2V-482731</span>
           </div>
 
           <form id="loginForm" class="form-stack">
@@ -3087,7 +3087,7 @@ body.focus-mode .focus-toggle .lbl-off { display: inline; }
             </label>
             <label>
               <span>Código de acceso</span>
-              <input id="codigoAcceso" name="codigoAcceso" type="password" placeholder="S2V-DEMO-2026" required>
+              <input id="codigoAcceso" name="codigoAcceso" type="password" placeholder="Ingresa tu código de acceso" required>
             </label>
 
             <button class="primary-btn" type="submit">
@@ -3131,7 +3131,7 @@ body.focus-mode .focus-toggle .lbl-off { display: inline; }
                 <span id="userEmailLabel">Usuario</span>
               </span>
             </div>
-            <small id="userRoleLabel">Demo</small>
+            <small id="userRoleLabel">Usuario</small>
             <button id="logoutBtn" type="button">Salir</button>
           </div>
         </div>
@@ -3317,14 +3317,14 @@ body.focus-mode .focus-toggle .lbl-off { display: inline; }
 window.S2V_CONFIG = {
   API_CONSULTAR_DATOS_URL: "https://defaultc06fb5591b684b84a14f47d0d837a5.ab.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/d281b9e550b44732a71d7c91976af52a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=7oHuT92qkyPLwQKhfWRVQpaX1RfuCgU6u6mB-vIxuGY",
   API_GUARDAR_EVALUACION_URL: "",
-  CODIGO_DEMO: "S2V-MVP-2026"
+  CODIGO_ACCESO: "S2V-MVP-2026"
 };
 
 </script>
   <script>
-window.S2V_DEMO_DATA = {
+window.S2V_DATA = {
   "ok": true,
-  "mensaje": "Modo DEMO — Datos reales de la convocatoria Science2Venture 2026",
+  "mensaje": "Datos cargados de la convocatoria Science2Venture 2026",
   "postulaciones": [
     {
       "IDIniciativa": "S2V-2026-01",
@@ -8079,7 +8079,7 @@ window.S2V_Filter = (function () {
 
 </script>
   <script>
-/* ── Radiografía (overview) · Science2Venture DEMO ──
+/* ── Radiografía (overview) · Science2Venture ──
    Usa el store compartido S2V_Filter para el filtrado cruzado y muestra
    conteo + porcentaje en cada categoría. */
 window.S2V_Analytics = (function () {
@@ -8283,7 +8283,7 @@ window.S2V_Analytics = (function () {
 
 </script>
   <script>
-/* ── Mapa por componentes · Science2Venture DEMO ──
+/* ── Mapa por componentes · Science2Venture ──
    Vista analítica detallada: despliega prácticamente todos los campos del
    formulario agrupados por bloque temático, cada categoría con conteo y
    porcentaje. Los campos de selección múltiple se cuentan opción por opción.
@@ -8434,12 +8434,12 @@ window.S2V_Components = (function () {
 (() => {
   "use strict";
 
-  const DEMO_DATA = window.S2V_DEMO_DATA;
+  const APP_DATA = window.S2V_DATA;
   const STORAGE_KEYS = {
-    session: "s2v_demo_session_v3",
-    evaluators: "s2v_demo_evaluators_v3",
-    assignments: "s2v_demo_assignments_v3",
-    responses: "s2v_demo_component_responses_v4"
+    session: "s2v_session_v4",
+    evaluators: "s2v_evaluators_v4",
+    assignments: "s2v_assignments_v4",
+    responses: "s2v_component_responses_v5"
   };
 
   const RUBRIC = [
@@ -8502,13 +8502,13 @@ window.S2V_Components = (function () {
     email: "coordinacion@universidadean.edu.co", code: "S2V-COORD"
   };
 
-  const DEMO_EVALUATORS = [
-    { id: "ev-ana", name: "Ana Martínez", email: "ana.martinez@demo.com", code: "S2V-482731", specialty: "Ciencia, innovación y propiedad intelectual", active: true },
-    { id: "ev-carlos", name: "Carlos Ruiz", email: "carlos.ruiz@demo.com", code: "S2V-615284", specialty: "Mercado y transferencia tecnológica", active: true },
-    { id: "ev-laura", name: "Laura Gómez", email: "laura.gomez@demo.com", code: "S2V-307946", specialty: "Equipo, impacto y sostenibilidad", active: true }
+  const INITIAL_EVALUATORS = [
+    { id: "ev-ana", name: "Ana Martínez", email: "ana.martinez@panel-s2v.co", code: "S2V-482731", specialty: "Ciencia, innovación y propiedad intelectual", active: true },
+    { id: "ev-carlos", name: "Carlos Ruiz", email: "carlos.ruiz@panel-s2v.co", code: "S2V-615284", specialty: "Mercado y transferencia tecnológica", active: true },
+    { id: "ev-laura", name: "Laura Gómez", email: "laura.gomez@panel-s2v.co", code: "S2V-307946", specialty: "Equipo, impacto y sostenibilidad", active: true }
   ];
 
-  const DEMO_ASSIGNMENTS = [
+  const INITIAL_ASSIGNMENTS = [
     { id: "asig-001", evaluatorId: "ev-ana", initiativeId: "S2V-2026-01", criteria: ["calidadCientifica", "innovacionPI"], comment: "Revisa especialmente la coherencia entre el TRL declarado, las evidencias y el potencial de protección.", deadline: "2026-07-10", active: true },
     { id: "asig-002", evaluatorId: "ev-carlos", initiativeId: "S2V-2026-01", criteria: ["mercado"], comment: "Valida que la oportunidad comercial sea proporcional al nivel de madurez de la iniciativa.", deadline: "2026-07-10", active: true },
     { id: "asig-003", evaluatorId: "ev-laura", initiativeId: "S2V-2026-01", criteria: ["equipo", "impacto"], comment: "Observa complementariedad del equipo y claridad de los indicadores de impacto.", deadline: "2026-07-10", active: true },
@@ -8519,10 +8519,10 @@ window.S2V_Components = (function () {
 
   const RING_CIRCUMFERENCE = 2 * Math.PI * 52;
 
-  /* Semilla de demostración: cobertura y calificaciones realistas para que el
+  /* Datos iniciales: cobertura y calificaciones de referencia para que el
      consolidado de coordinación (ranking + podio) tenga contenido vivo.
      1-10 completas · 11-14 en curso · 15-18 asignadas · 19-32 sin asignar. */
-  function buildDemoSeed() {
+  function buildInitialSeed() {
     const evMap = [
       { evaluatorId: "ev-ana", criteria: ["calidadCientifica", "innovacionPI"] },
       { evaluatorId: "ev-carlos", criteria: ["mercado"] },
@@ -8531,7 +8531,7 @@ window.S2V_Components = (function () {
     const maxBy = {};
     RUBRIC.forEach(c => { maxBy[c.key] = c.max; });
     const id = n => `S2V-2026-${String(n).padStart(2, "0")}`;
-    const note = "Evaluación de demostración para ilustrar el consolidado.";
+    const note = "Revisa la información de la iniciativa y completa los componentes asignados.";
     const COMPLETE = 10, INPROG = 14, ASSIGNED = 18;
     const assignments = [];
     const responses = {};
@@ -8734,12 +8734,12 @@ window.S2V_Components = (function () {
     localStorage.setItem(key, JSON.stringify(value));
   }
 
-  function ensureDemoStores() {
-    const seed = buildDemoSeed();
-    if (!localStorage.getItem(STORAGE_KEYS.evaluators)) writeStore(STORAGE_KEYS.evaluators, DEMO_EVALUATORS);
+  function ensureInitialStores() {
+    const seed = buildInitialSeed();
+    if (!localStorage.getItem(STORAGE_KEYS.evaluators)) writeStore(STORAGE_KEYS.evaluators, INITIAL_EVALUATORS);
     if (!localStorage.getItem(STORAGE_KEYS.assignments)) writeStore(STORAGE_KEYS.assignments, seed.assignments);
     if (!localStorage.getItem(STORAGE_KEYS.responses)) writeStore(STORAGE_KEYS.responses, seed.responses);
-    state.evaluators = readStore(STORAGE_KEYS.evaluators, DEMO_EVALUATORS);
+    state.evaluators = readStore(STORAGE_KEYS.evaluators, INITIAL_EVALUATORS);
     state.assignments = readStore(STORAGE_KEYS.assignments, seed.assignments);
     state.responses = readStore(STORAGE_KEYS.responses, seed.responses);
   }
@@ -8789,7 +8789,7 @@ window.S2V_Components = (function () {
     catch { return value; }
   }
 
-  /* ── Auth demo por roles ── */
+  /* ── Acceso por roles ── */
   async function login(e) {
     e.preventDefault();
     const correo = clean(els.correoEvaluador.value).toLowerCase();
@@ -8810,7 +8810,7 @@ window.S2V_Components = (function () {
     }
 
     if (!session) {
-      setMessage("Credenciales no válidas. Usa uno de los accesos demo indicados.", "error");
+      setMessage("Credenciales no válidas. Verifica el correo y el código de acceso.", "error");
       btn.disabled = false;
       btn.classList.remove("loading");
       return;
@@ -8819,7 +8819,7 @@ window.S2V_Components = (function () {
     state.session = session;
     state.role = session.role;
     writeStore(STORAGE_KEYS.session, session);
-    loadData(DEMO_DATA);
+    loadData(APP_DATA);
     showDashboard();
     setMessage("", "");
     btn.disabled = false;
@@ -9252,8 +9252,11 @@ window.S2V_Components = (function () {
     tabbar.setAttribute("role", "tablist");
     sections.forEach((section, index) => {
       const isEval = section.classList.contains("eval-section");
-      const heading = section.querySelector(":scope > h4");
-      const label = isEval ? "Evaluación" : shortSectionTab(heading ? heading.textContent.trim() : "Sección");
+      const heading = section.querySelector("h4");
+      const rawLabel = heading ? heading.textContent.trim() : "Información";
+      const label = isEval
+        ? "Evaluación"
+        : (state.role === "evaluador" ? rawLabel : shortSectionTab(rawLabel));
       section.style.animationDelay = "";
       section.classList.add("tab-hidden");
       const btn = document.createElement("button");
@@ -10111,7 +10114,7 @@ window.S2V_Components = (function () {
       <section class="results-shell">
         <header class="results-hero">
           <div><p class="eyebrow">Coordinación · Consolidado</p><h3>Resultados y ranking</h3><p>Consulta el avance de las calificaciones, compara los cinco componentes y ordena las iniciativas de mayor a menor puntaje. Las evaluaciones incompletas aparecen como provisionales.</p></div>
-          <div class="results-method-note"><strong>Regla del demo</strong><span>El total definitivo se muestra cuando los 5 componentes están enviados. El bono de equidad se aplica con base ≤ 800.</span></div>
+          <div class="results-method-note"><strong>Regla de consolidación</strong><span>El total definitivo se muestra cuando los 5 componentes están enviados. El bono de equidad se aplica con base ≤ 800.</span></div>
         </header>
         <div id="resultsKpiMount" class="results-kpi-grid"></div>
         <section class="results-component-summary"><div class="results-section-heading"><div><p class="eyebrow">Promedios</p><h4>Resultado por componente</h4></div></div><div id="resultsComponentMount" class="results-component-grid"></div></section>
@@ -10176,7 +10179,7 @@ window.S2V_Components = (function () {
             <h3>Gestión de evaluadores por componentes</h3>
             <p>Cada componente se asigna a una sola persona por iniciativa. Una persona puede recibir uno o varios componentes.</p>
           </div>
-          <div class="demo-backend-note"><strong>Modo demo</strong><span>Los cambios se guardan en este navegador. La conexión con SharePoint se implementará en el siguiente paso.</span></div>
+          <div class="backend-note"><strong>Almacenamiento local</strong><span>Los cambios se guardan temporalmente en este navegador mientras se completa la conexión con SharePoint.</span></div>
         </header>
 
         <div class="management-metrics">
@@ -10290,7 +10293,7 @@ window.S2V_Components = (function () {
       <article class="evaluator-roster-card ${evaluator.active === false ? "inactive" : ""}">
         <div class="avatar-initials">${esc(evaluator.name.split(/\s+/).slice(0,2).map(x => x[0]).join(""))}</div>
         <div class="evaluator-roster-main"><strong>${esc(evaluator.name)}</strong><span>${esc(evaluator.email)}</span><small>${esc(evaluator.specialty || "Sin especialidad")}</small></div>
-        <div class="credential-box"><span>Código demo</span><code>${esc(evaluator.code)}</code></div>
+        <div class="credential-box"><span>Código de acceso</span><code>${esc(evaluator.code)}</code></div>
         <div class="roster-count"><strong>${assignments.length}</strong><span>iniciativas</span><small>${components} componentes</small></div>
         <div class="roster-actions">
           <button type="button" class="secondary-btn compact-btn" data-copy-invite="${evaluator.id}">Copiar acceso</button>
@@ -10476,14 +10479,14 @@ window.S2V_Components = (function () {
 
   /* ── Init ── */
   function init() {
-    ensureDemoStores();
+    ensureInitialStores();
     const storedSession = readStore(STORAGE_KEYS.session, null);
     if (storedSession?.email) els.correoEvaluador.value = storedSession.email;
     els.loginForm.addEventListener("submit", login);
     els.logoutBtn.addEventListener("click", showLogin);
     els.reloadBtn.addEventListener("click", () => {
-      ensureDemoStores();
-      loadData(DEMO_DATA);
+      ensureInitialStores();
+      loadData(APP_DATA);
       renderMetrics();
       if (state.selectedId) renderDetail(state.selectedId);
       if (state.activeTab === "resultados") renderResultsPanel();
