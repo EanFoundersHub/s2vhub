@@ -1,24 +1,29 @@
+SCIENCE2VENTURE SELECTION HUB · V16
 
-S2VHub v14 - Ajustes de responsividad (rev. 2)
+CAMBIOS PRINCIPALES
+- Se incorporaron cuatro paneles: Panel A, Panel B, Panel C y Panel D.
+- Cada panel permite asignar jurados e iniciativas.
+- Se puede registrar fecha y hora de inicio y cierre.
+- Se puede agregar el enlace de entrevista en Microsoft Teams.
+- Coordinación puede:
+  · Activar evaluaciones inmediatamente.
+  · Usar la apertura automática según el horario.
+  · Cerrar las evaluaciones.
+- Los jurados pueden consultar previamente toda la información y la rúbrica.
+- Los campos de calificación quedan bloqueados fuera de la ventana activa.
+- Cada jurado de un panel evalúa los cinco componentes.
+- El consolidado de coordinación promedia las calificaciones de los jurados.
+- Todas las calificaciones requieren justificación antes del envío.
+- Se incorporó el valor de las ventas mensuales en la información financiera/comercial.
 
-Cambios incluidos:
-- Login: ahora cabe completo en pantallas anchas y bajas (el boton "Ingresar" ya no se corta).
-  Las alturas, fuentes y espacios escalan con la altura de la pantalla; en pantallas de poca
-  altura el contenido se alinea arriba en vez de centrarse (lo que antes dejaba el boton fuera).
-- Boton de tema (Modo claro / Modo oscuro): estaba en top:-4px y se cortaba por arriba.
-  Ahora queda completo dentro de la vista.
-- Vista de evaluador (iniciativas asignadas): se corrigio el choque de las dos barras fijas
-  (cabecera + pestanas) que machacaba el encabezado del detalle.
-- Header del dashboard: en pantallas anchas queda en una sola linea; el titulo "Selection Hub"
-  ya no se parte en dos y el header ocupa menos alto.
-
-IMPORTANTE - como ver los cambios en GitHub Pages:
+CARGA EN GITHUB
 1. Descomprime este ZIP.
-2. Sube index.html y .nojekyll a la raiz del repositorio s2vhub (REEMPLAZA el index.html existente).
-3. Espera 1-2 minutos a que GitHub Pages haga el despliegue.
-4. Abre el sitio con un parametro nuevo para evitar la cache:
-   https://eanfoundershub.github.io/s2vhub/?v=15
-5. Si aun se ve igual, fuerza recarga con Ctrl + F5 (o Ctrl + Shift + R).
+2. Sube index.html y .nojekyll directamente a la raíz del repositorio.
+3. Reemplaza el index.html anterior.
+4. Espera el despliegue de GitHub Pages.
+5. Abre la URL con ?v=16 y actualiza con Ctrl + F5.
 
-Nota: si el sitio sigue mostrando el hero "SCIENCE2VENTURE" ocupando todo el ancho,
-es senal de que todavia esta cargando la version vieja desde cache: repite el paso 4 y 5.
+NOTA
+La apertura horaria de esta versión se calcula con la hora del navegador.
+Cuando se conecte con SharePoint y Power Automate, la validación deberá
+ejecutarse también en el backend para que la restricción sea institucional.
