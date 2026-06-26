@@ -589,6 +589,13 @@ code {
 .brand-block .eyebrow { margin-bottom: 2px; color: var(--text-muted); opacity: 1; }
 .brand-block h2 { margin: 0; font-size: 1.7rem; letter-spacing: -0.04em; font-weight: 800; color: var(--text-strong); }
 .header-actions { display: flex; align-items: center; gap: 12px; }
+/* En pantallas anchas: header en una sola línea, sin que el título se parta. */
+@media (min-width: 1181px) {
+  .dashboard-header { flex-wrap: nowrap; }
+  .brand-block { flex-shrink: 0; }
+  .brand-block h2 { white-space: nowrap; }
+  .header-actions { flex-wrap: nowrap; min-width: 0; }
+}
 .user-chip { display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.88rem; }
 .user-chip button {
   border: 1px solid var(--border);

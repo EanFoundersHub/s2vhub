@@ -9,6 +9,8 @@ Cambios incluidos:
   Ahora queda completo dentro de la vista.
 - Vista de evaluador (iniciativas asignadas): se corrigio el choque de las dos barras fijas
   (cabecera + pestanas) que machacaba el encabezado del detalle.
+- Header del dashboard: en pantallas anchas queda en una sola linea; el titulo "Selection Hub"
+  ya no se parte en dos y el header ocupa menos alto.
 
 IMPORTANTE - como ver los cambios en GitHub Pages:
 1. Descomprime este ZIP.
