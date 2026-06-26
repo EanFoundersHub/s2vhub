@@ -1,336 +1,201 @@
-/* ════════════════════════════════════════════════════════════
-   Science2Venture · Tablero analítico (Radiografía + Mapa)
-   Tematizado: usa las variables de hub-styles.css (Light/Dark).
-   ════════════════════════════════════════════════════════════ */
+/* ── Radiografía (overview) · Science2Venture DEMO ──
+   Usa el store compartido S2V_Filter para el filtrado cruzado y muestra
+   conteo + porcentaje en cada categoría. */
+window.S2V_Analytics = (function () {
+  const S = window.S2V_Filter;
+  let containerEl = null;
+  let bound = false, subbed = false;
 
-/* Tab Navigation */
-.tab-nav {
-  display: flex; gap: 4px; margin-bottom: 24px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 4px;
-  overflow-x: auto;
-  box-shadow: var(--shadow-sm);
-}
-.tab-btn {
-  padding: 10px 22px;
-  border: none; border-radius: 8px;
-  background: transparent;
-  color: var(--text-muted);
-  font-family: inherit; font-size: 0.88rem; font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  white-space: nowrap;
-}
-.tab-btn:hover { color: var(--text); background: var(--tab-hover-bg); }
-.tab-btn.active {
-  background: var(--tab-active-bg);
-  color: var(--tab-active-text);
-}
+  function attr(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;"); }
 
-/* Analytics Section */
-.analytics-panel { margin-bottom: 32px; }
-.ana-section-title { margin-bottom: 22px; }
-.ana-section-title h3 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text-strong); }
-.ana-section-title .muted { margin-top: 4px; }
+  const TEAL = '#55c9cc', GOLD = '#d4a853', CYAN = '#7be1e4', GREEN = '#6bdfb0',
+        PURPLE = '#a78bfa', PINK = '#f472b6', ORANGE = '#fb923c', RED = '#ef6b6b',
+        BLUE = '#60a5fa', LIME = '#84cc16';
+  const PALETTE = [TEAL, GOLD, CYAN, GREEN, PURPLE, PINK, ORANGE, RED, BLUE, LIME,
+    '#c084fc', '#34d399', '#fbbf24', '#f87171', '#38bdf8', '#e879f9', '#a3e635', '#fb7185'];
 
-.ana-kpi-row {
-  display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px;
-}
-.ana-kpi {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 18px 16px 16px;
-  text-align: center;
-  display: flex; flex-direction: column; align-items: center;
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.3s, transform 0.2s, box-shadow 0.2s;
-}
-.ana-kpi:hover { border-color: var(--teal-chip-border); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.ana-kpi strong { display: block; font-size: 2rem; font-weight: 800; color: var(--teal-text); letter-spacing: -0.03em; line-height: 1; }
-.ana-kpi span { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 11px; }
-.kpi-share { display: flex; align-items: center; gap: 7px; width: 100%; max-width: 124px; margin: 11px auto 0; }
-.kpi-bar { flex: 1; height: 5px; border-radius: 99px; background: var(--track); overflow: hidden; }
-.kpi-bar i { display: block; height: 100%; border-radius: 99px; background: var(--teal); transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
-.kpi-share em { font-style: normal; font-size: 0.74rem; font-weight: 700; color: var(--teal-text); min-width: 30px; text-align: right; font-variant-numeric: tabular-nums; }
-.ana-kpi.is-active .kpi-bar i { background: var(--teal-light); }
+  function shortODS(s) { const m = s.match(/ODS\s*(\d+)/); return m ? `ODS ${m[1]}` : s.slice(0, 20); }
+  function shortSector(s) {
+    if (s.length <= 32) return s;
+    const map = { 'Inteligencia artificial': 'IA y computación', 'Tecnologías de la información': 'TIC', 'Economía digital': 'Economía digital', 'Economía verde': 'Economía verde / circular', 'Ciencias de la vida': 'Ciencias de la vida', 'Industria de alimentos': 'Alimentos y bebidas', 'Agroindustria': 'Agroindustria', 'Farmacéutico': 'Farma y biotech' };
+    for (const [k, v] of Object.entries(map)) if (s.includes(k)) return v;
+    return s.slice(0, 30) + '…';
+  }
 
-.ana-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 14px;
-  grid-auto-flow: dense;
-}
-.ana-card {
-  grid-column: span 3;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 20px 22px;
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.3s, transform 0.25s var(--ease-out), box-shadow 0.3s;
-}
-.ana-card:hover { border-color: var(--teal-chip-border); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
-.ana-card h4 {
-  font-size: 0.88rem; font-weight: 700; margin-bottom: 16px;
-  color: var(--text-soft);
-}
-.ana-card-wide { grid-column: span 3; }
+  /* bar chart from a store distribution; base = answered (% of who answered) */
+  function barChart(dist, color, dim) {
+    if (!dist.entries.length) return '<div class="ana-empty">Sin datos</div>';
+    const top = Math.max(...dist.entries.map(e => e[1]));
+    const base = dist.answered || 1;
+    const f = S.filters;
+    const dimActive = dim && f[dim] != null;
+    return dist.entries.map(([label, val]) => {
+      const w = Math.max(2, (val / top) * 100);
+      const p = S.pct(val, base);
+      const disp = S.label(dim, label);
+      const active = dim && f[dim] === label;
+      const cls = ["ana-bar-row", dim ? "clickable" : "", active ? "is-active" : "", (dimActive && !active) ? "is-dim" : ""].filter(Boolean).join(" ");
+      const da = dim ? `data-dim="${dim}" data-value="${attr(label)}"` : "";
+      return `<div class="${cls}" ${da}>
+        <span class="ana-bar-label" title="${attr(label)}">${disp}</span>
+        <div class="ana-bar-track"><div class="ana-bar-fill" style="width:${w}%;background:${color}"></div></div>
+        <span class="ana-bar-val">${val}<span class="pctv">${p}%</span></span>
+      </div>`;
+    }).join('');
+  }
 
-/* Donut */
-.ana-donut-wrap { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-.ana-donut { flex-shrink: 0; }
-.ana-donut-track { stroke: var(--donut-track); }
-.ana-donut-total { fill: var(--donut-total-text); }
-.ana-donut-sub { fill: var(--donut-sub-text); }
-.ana-legend { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 120px; }
-.ana-legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted); }
-.ana-legend-item strong { color: var(--text); margin-left: auto; }
-.ana-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  function donutSVG(segments, size, dim) {
+    size = size || 130;
+    const r = 44, cx = 60, cy = 60, circ = 2 * Math.PI * r;
+    const total = segments.reduce((s, x) => s + x.value, 0) || 1;
+    let offset = 0;
+    const f = S.filters;
+    const paths = segments.map(seg => {
+      const dash = (seg.value / total) * circ, gap = circ - dash;
+      const fval = seg.fval != null ? seg.fval : seg.label;
+      const clickable = dim && !seg.noFilter && seg.value > 0;
+      const active = clickable && f[dim] === fval;
+      const cls = ["ana-arc", clickable ? "clickable" : "", active ? "is-active" : ""].filter(Boolean).join(" ");
+      const da = clickable ? `data-dim="${dim}" data-value="${attr(fval)}"` : "";
+      const op = (dim && f[dim] != null && !active && clickable) ? 0.32 : 0.9;
+      const html = `<circle class="${cls}" ${da} cx="${cx}" cy="${cy}" r="${r}" fill="none" style="stroke:${seg.color}" stroke-width="12" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-offset}" stroke-linecap="round" opacity="${op}"/>`;
+      offset += dash;
+      return html;
+    });
+    return `<svg viewBox="0 0 120 120" width="${size}" height="${size}" class="ana-donut">
+      <circle class="ana-donut-track" cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke-width="12"/>
+      ${paths.join('')}
+      <text class="ana-donut-total" x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="22" font-weight="800">${segments.reduce((s, x) => s + x.value, 0)}</text>
+      <text class="ana-donut-sub" x="${cx}" y="${cy + 14}" text-anchor="middle" font-size="9" font-weight="500">TOTAL</text>
+    </svg>`;
+  }
 
-/* Bars */
-.ana-bars { display: flex; flex-direction: column; gap: 8px; }
-.ana-bar-row { display: grid; grid-template-columns: 150px 1fr 58px; align-items: center; gap: 10px; }
-.ana-bar-label {
-  font-size: 0.76rem; font-weight: 600; color: var(--text-muted);
-  line-height: 1.18;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.ana-bar-track {
-  height: 22px; background: var(--track); border-radius: 6px; overflow: hidden;
-}
-.ana-bar-fill {
-  height: 100%; border-radius: 6px;
-  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.ana-bar-val { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; line-height: 1.05; font-size: 0.82rem; font-weight: 700; color: var(--text); white-space: nowrap; }
-.ana-bar-val .pctv { font-size: 0.66rem; font-weight: 600; color: var(--text-muted); margin-top: 1px; font-variant-numeric: tabular-nums; }
+  function legend(segments, dim) {
+    const total = segments.reduce((s, x) => s + x.value, 0) || 1;
+    const f = S.filters;
+    const dimActive = dim && f[dim] != null;
+    return segments.map(s => {
+      const fval = s.fval != null ? s.fval : s.label;
+      const clickable = dim && !s.noFilter;
+      const active = clickable && f[dim] === fval;
+      const cls = ["ana-legend-item", clickable ? "clickable" : "", active ? "is-active" : "", (clickable && dimActive && !active) ? "is-dim" : ""].filter(Boolean).join(" ");
+      const da = clickable ? `data-dim="${dim}" data-value="${attr(fval)}"` : "";
+      return `<div class="${cls}" ${da}><span class="ana-legend-dot" style="background:${s.color}"></span>${s.label} <strong>${s.value} · ${S.pct(s.value, total)}%</strong></div>`;
+    }).join('');
+  }
 
-.ana-tag {
-  display: inline-block; padding: 4px 10px; margin: 3px 2px;
-  background: var(--teal-chip-bg); border: 1px solid var(--teal-chip-border);
-  border-radius: 100px; font-size: 0.72rem; font-weight: 600; color: var(--teal-chip-text);
-}
-.ana-semilleros-list { margin-top: 10px; }
-.ana-empty { color: var(--text-muted); font-size: 0.85rem; font-style: italic; }
+  function segsFromDist(dist, palette) {
+    return dist.entries.map(([label, val], i) => ({ label, value: val, color: (palette || PALETTE)[i % (palette || PALETTE).length] }));
+  }
 
-/* ── Cross-filter ── */
-.ana-hint {
-  margin-top: 8px; font-size: 0.78rem; color: var(--text-muted);
-  display: flex; align-items: center; gap: 7px;
-}
-.ana-hint::before {
-  content: ""; width: 8px; height: 8px; border-radius: 2px;
-  background: var(--teal); box-shadow: 0 0 0 3px rgba(85,201,204,0.18); flex-shrink: 0;
-}
+  function build() {
+    const allP = S.getData();
+    const n = allP.length;
+    const fAll = S.getFiltered();
+    const nf = fAll.length;
 
-.ana-filterbar {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
-  margin-bottom: 18px; padding: 12px 14px;
-  background: var(--teal-chip-bg);
-  border: 1px solid var(--teal-chip-border);
-  border-radius: var(--radius-md);
-}
-.ana-filterbar .fb-label {
-  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.07em; color: var(--teal-text); margin-right: 2px;
-}
-.ana-chip {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 6px 11px 6px 13px;
-  background: var(--teal-chip-bg);
-  border: 1px solid var(--teal-chip-border);
-  border-radius: 100px;
-  font-family: inherit; font-size: 0.79rem; font-weight: 600; color: var(--teal-text);
-  cursor: pointer; transition: background 0.2s, border-color 0.2s, color 0.2s;
-}
-.ana-chip:hover { background: rgba(239,107,107,0.16); border-color: rgba(239,107,107,0.5); color: var(--danger); }
-.ana-chip .x { font-size: 0.78rem; line-height: 1; opacity: 0.75; }
-.ana-clear-all {
-  margin-left: auto; background: transparent; border: none;
-  color: var(--text-muted); font-family: inherit; font-size: 0.78rem; font-weight: 600;
-  cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
-}
-.ana-clear-all:hover { color: var(--text); }
+    const rutaSegs = segsFromDist(S.distribution('RutaTRL', S.filteredExcept('RutaTRL')), [TEAL, GOLD, GREEN, PURPLE]);
+    const enfSegs  = segsFromDist(S.distribution('Enfoque', S.filteredExcept('Enfoque')));
+    const vincSegs = segsFromDist(S.distribution('Vinculacion', S.filteredExcept('Vinculacion')));
 
-.ana-sticky-context {
-  position: sticky;
-  top: 12px;
-  z-index: 70;
-  margin-bottom: 22px;
-  border-radius: var(--radius-md);
-}
-.ana-sticky-context .ana-filterbar {
-  margin-bottom: 10px;
-  box-shadow: var(--shadow-lg);
-  background: var(--sticky-bg);
-  backdrop-filter: blur(24px) saturate(1.1);
-  -webkit-backdrop-filter: blur(24px) saturate(1.1);
-}
-.ana-sticky-context .ana-roster {
-  margin-bottom: 0;
-  background: var(--sticky-bg);
-  border-color: var(--teal-chip-border);
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(24px) saturate(1.1);
-  -webkit-backdrop-filter: blur(24px) saturate(1.1);
-}
-.ana-sticky-context .ana-roster-list {
-  max-height: 190px;
-}
+    const trlDist = S.distribution('TRLDeclarado', S.filteredExcept('TRLDeclarado'));
+    const crlDist = S.distribution('CRLDeclarado', S.filteredExcept('CRLDeclarado'));
+    const brlDist = S.distribution('BRLDeclarado', S.filteredExcept('BRLDeclarado'));
+    const odsDist = S.distribution('ODS', S.filteredExcept('ODS'));
+    const sectDist = S.distribution('Sectores', S.filteredExcept('Sectores'));
+    const preDist = S.distribution('Pregrado', S.filteredExcept('Pregrado'));
+    const anoDist = (() => { const d = S.distribution('AnoInicio', S.filteredExcept('AnoInicio')); d.entries.sort((a, b) => a[0].localeCompare(b[0])); return d; })();
+    const legalDist = S.distribution('EstadoLegal', S.filteredExcept('EstadoLegal'));
 
-/* Roster de iniciativas filtradas */
-.ana-roster {
-  margin-bottom: 18px; padding: 13px 15px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-}
-.ana-roster-head { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
-.ana-roster-count {
-  font-size: 0.74rem; font-weight: 800; color: var(--teal-text);
-  background: var(--teal-chip-bg); border: 1px solid var(--teal-chip-border);
-  border-radius: 100px; padding: 1px 9px; font-variant-numeric: tabular-nums;
-}
-.ana-roster-hint { margin-left: auto; font-size: 0.72rem; color: var(--text-muted); }
-.ana-roster-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
-  gap: 8px;
-  max-height: 220px; overflow-y: auto; padding-right: 2px;
-}
-.ana-ini-chip {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 100%; padding: 8px 12px; border: none; border-radius: 100px; cursor: pointer;
-  background: var(--teal); color: #06231f;
-  font-family: inherit; font-size: 0.72rem; font-weight: 700; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-  transition: filter 0.16s, transform 0.12s, box-shadow 0.16s;
-}
-.ana-ini-chip:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 14px -6px rgba(85,201,204,0.7); }
-.ana-ini-chip:active { transform: translateY(0); }
+    // semillero / facturación (2-segment donuts)
+    const sSem = S.filteredExcept('Semillero');
+    const semSi = sSem.filter(i => (i.SurgeGrupoSemillero || '').startsWith('Sí')).length;
+    const sFact = S.filteredExcept('HaFacturado');
+    const factSi = sFact.filter(i => i.HaFacturado === 'Sí').length;
 
-/* clickable affordances + active / dimmed states */
-.clickable { cursor: pointer; }
-.ana-bar-row.clickable .ana-bar-track { transition: background 0.2s, box-shadow 0.2s; }
-.ana-bar-row.clickable:hover .ana-bar-track { background: var(--border-hover); }
-.ana-bar-row.is-active .ana-bar-label { color: var(--text-strong); }
-.ana-bar-row.is-active .ana-bar-val { color: var(--teal-text); }
-.ana-bar-row.is-active .ana-bar-track { box-shadow: inset 0 0 0 1.5px var(--teal); }
-.ana-legend-item.clickable { transition: color 0.2s; }
-.ana-legend-item.clickable:hover { color: var(--text-strong); }
-.ana-legend-item.is-active { color: var(--text-strong); font-weight: 700; }
-.ana-legend-item.is-active .ana-legend-dot { box-shadow: 0 0 0 2px var(--border-hover); }
-.ana-arc.clickable { cursor: pointer; transition: opacity 0.2s, stroke-width 0.2s; }
-.ana-arc.clickable:hover { opacity: 1 !important; }
-.is-dim { opacity: 0.4; transition: opacity 0.2s; }
-.ana-kpi.clickable { cursor: pointer; }
-.ana-kpi.clickable:hover { border-color: var(--teal-chip-border); }
-.ana-kpi.is-active { border-color: var(--teal); background: var(--teal-chip-bg); }
-.ana-kpi.is-active strong { color: var(--teal-text); }
+    // KPIs over the full cross-filtered subset
+    const kSem = fAll.filter(i => (i.SurgeGrupoSemillero || '').startsWith('Sí')).length;
+    const kFact = fAll.filter(i => i.HaFacturado === 'Sí').length;
+    const kMuj = fAll.reduce((s, i) => s + (parseInt(i.MujeresEquipo) || 0), 0);
+    const kConM = fAll.filter(i => parseInt(i.MujeresEquipo) > 0).length;
+    const kTRL7 = fAll.filter(i => (i.TRLNumero || 0) >= 7).length;
+    const share = v => { const p = S.pct(v, nf); return `<div class="kpi-share"><span class="kpi-bar"><i style="width:${p}%"></i></span><em>${p}%</em></div>`; };
 
-/* Responsive analytics */
-@media (max-width: 1200px) {
-  .ana-grid { grid-template-columns: repeat(2, 1fr); }
-  .ana-card, .ana-card-wide { grid-column: span 1; }
-  .ana-kpi-row { grid-template-columns: repeat(3, 1fr); }
-}
-@media (max-width: 768px) {
-  .ana-grid { grid-template-columns: 1fr; }
-  .ana-card, .ana-card-wide { grid-column: span 1; }
-  .ana-kpi-row { grid-template-columns: repeat(2, 1fr); }
-  .ana-bar-row { grid-template-columns: 112px 1fr 52px; }
-  .ana-sticky-context { position: static; }
-  .ana-sticky-context .ana-roster-list { max-height: 180px; }
-}
-@media (max-width: 420px) {
-  .ana-kpi-row { grid-template-columns: 1fr 1fr; }
-  .ana-kpi strong { font-size: 1.5rem; }
-  .ana-donut-wrap { flex-direction: column; align-items: center; text-align: center; }
-}
+    const kpiCls = (dim, val) => "ana-kpi clickable" + (S.filters[dim] === val ? " is-active" : "");
 
-/* ── Mapa por componentes ── */
-.cmp-groups { display: flex; flex-direction: column; gap: 16px; }
-.cmp-group { position: relative; }
-.cmp-tools { display: flex; gap: 8px; margin: -6px 0 16px; }
-.cmp-tool {
-  padding: 6px 14px; border-radius: 100px; cursor: pointer;
-  background: var(--chip-bg); border: 1px solid var(--border);
-  color: var(--text-muted); font-family: inherit; font-size: 0.76rem; font-weight: 600;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
-}
-.cmp-tool:hover { background: var(--teal-chip-bg); color: var(--teal-text); border-color: var(--teal-chip-border); }
-.cmp-group-head {
-  display: flex; align-items: center; gap: 10px; width: 100%;
-  margin-bottom: 14px; padding: 4px 4px 12px;
-  border: none; border-bottom: 1px solid var(--border);
-  background: none; cursor: pointer; text-align: left;
-  transition: border-color 0.25s;
-}
-.cmp-group-head:hover { border-color: color-mix(in srgb, var(--cmp-accent, var(--teal)) 45%, var(--border)); }
-.cmp-group-head:hover h4 { color: var(--cmp-accent, var(--teal)); }
-.cmp-group-head h4 { font-size: 1.06rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text-strong); transition: color 0.25s; }
-.cmp-chevron { font-size: 0.85rem; color: var(--text-muted); transition: transform 0.3s var(--ease-out, ease); }
-.cmp-group.collapsed .cmp-chevron { transform: rotate(-90deg); }
-.cmp-group.collapsed .cmp-group-head { margin-bottom: 0; border-bottom-color: transparent; }
-.cmp-group .cmp-grid { animation: cmpGridIn 0.4s ease both; }
-.cmp-group.collapsed .cmp-grid { display: none; }
-@keyframes cmpGridIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-.cmp-dot { width: 11px; height: 11px; border-radius: 3px; background: var(--cmp-accent, var(--teal)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--cmp-accent, var(--teal)) 18%, transparent); flex-shrink: 0; }
-.cmp-group-num { margin-left: auto; font-size: 0.78rem; font-weight: 800; color: var(--text-muted); font-variant-numeric: tabular-nums; letter-spacing: 0.05em; }
+    let filterBar = "";
+    if (S.hasFilters()) {
+      const chips = Object.keys(S.filters).map(dim =>
+        `<button class="ana-chip" data-remove-dim="${dim}" type="button">${(S.DIMS[dim] || {}).label || dim}: ${S.shorten(S.filters[dim], 32)}<span class="x">✕</span></button>`).join('');
+      filterBar = `<div class="ana-filterbar"><span class="fb-label">Filtrando por</span>${chips}<button class="ana-clear-all" data-clear="1" type="button">Limpiar todo</button></div>`;
+    }
+    const subtitle = S.hasFilters()
+      ? `Mostrando <strong>${nf}</strong> de ${n} iniciativas · variable fijada`
+      : `Resumen ejecutivo · ${n} iniciativas reales postuladas`;
 
-.cmp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-.cmp-chart {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 16px 16px 12px;
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-.cmp-chart:hover { border-color: color-mix(in srgb, var(--cmp-accent, var(--teal)) 35%, var(--border)); box-shadow: var(--shadow-md); }
-.cmp-chart-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
-.cmp-chart-head h5 { font-size: 0.82rem; font-weight: 700; color: var(--text-soft); letter-spacing: -0.01em; }
-.cmp-multi {
-  font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--cmp-accent, var(--teal));
-  background: color-mix(in srgb, var(--cmp-accent, var(--teal)) 14%, transparent);
-  border: 1px solid color-mix(in srgb, var(--cmp-accent, var(--teal)) 30%, transparent);
-  padding: 1px 6px; border-radius: 100px; flex-shrink: 0;
-}
-.cmp-base { margin-top: 10px; font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.01em; }
-.cmp-chart .ana-bars { gap: 6px; }
-.cmp-chart .ana-bar-row { grid-template-columns: 130px 1fr 54px; gap: 8px; }
-.cmp-chart .ana-bar-track { height: 18px; }
-.cmp-chart .ana-bar-label { font-size: 0.72rem; }
+    containerEl.innerHTML = `
+      <div class="ana-section-title">
+        <h3>Radiografía de la convocatoria</h3>
+        <p class="muted">${subtitle}</p>
+        <p class="ana-hint">Haz clic en cualquier segmento (dona, barra o indicador) para fijar esa variable y filtrar todo el tablero. Cada categoría muestra conteo y porcentaje.</p>
+      </div>
+      <div class="ana-sticky-context" aria-label="Contexto de filtros e iniciativas seleccionadas">
+        ${filterBar}
+        ${S.rosterHtml()}
+      </div>
+      <div class="ana-kpi-row">
+        <div class="ana-kpi base clickable${S.hasFilters() ? '' : ' is-active'}" data-clear="1"><strong>${nf}</strong><span>Iniciativas</span></div>
+        <div class="${kpiCls('Semillero', 'Sí')}" data-dim="Semillero" data-value="Sí"><strong>${kSem}</strong>${share(kSem)}<span>De semillero</span></div>
+        <div class="${kpiCls('HaFacturado', 'Sí')}" data-dim="HaFacturado" data-value="Sí"><strong>${kFact}</strong>${share(kFact)}<span>Con facturación</span></div>
+        <div class="ana-kpi"><strong>${kMuj}</strong><span>Mujeres en equipos</span></div>
+        <div class="${kpiCls('ConMujeres', 'Sí')}" data-dim="ConMujeres" data-value="Sí"><strong>${kConM}</strong>${share(kConM)}<span>Equipos con mujeres</span></div>
+        <div class="${kpiCls('TRL7plus', 'Sí')}" data-dim="TRL7plus" data-value="Sí"><strong>${kTRL7}</strong>${share(kTRL7)}<span>TRL 7+</span></div>
+      </div>
+      <div class="ana-grid">
+        <div class="ana-card"><h4>Distribución por ruta TRL</h4><div class="ana-donut-wrap">${donutSVG(rutaSegs, 140, 'RutaTRL')}<div class="ana-legend">${legend(rutaSegs, 'RutaTRL')}</div></div></div>
+        <div class="ana-card"><h4>Base de la solución</h4><div class="ana-donut-wrap">${donutSVG(enfSegs, 140, 'Enfoque')}<div class="ana-legend">${legend(enfSegs, 'Enfoque')}</div></div></div>
+        <div class="ana-card"><h4>Vinculación EAN</h4><div class="ana-donut-wrap">${donutSVG(vincSegs, 140, 'Vinculacion')}<div class="ana-legend">${legend(vincSegs, 'Vinculacion')}</div></div></div>
+        <div class="ana-card ana-card-wide"><h4>Nivel de madurez tecnológica (TRL)</h4><div class="ana-bars">${barChart(trlDist, TEAL, 'TRLDeclarado')}</div></div>
+        <div class="ana-card ana-card-wide"><h4>Nivel de madurez comercial (CRL)</h4><div class="ana-bars">${barChart(crlDist, GOLD, 'CRLDeclarado')}</div></div>
+        <div class="ana-card ana-card-wide"><h4>Nivel de madurez de negocio (BRL)</h4><div class="ana-bars">${barChart(brlDist, GREEN, 'BRLDeclarado')}</div></div>
+        <div class="ana-card ana-card-wide"><h4>Objetivos de Desarrollo Sostenible (ODS)</h4><div class="ana-bars">${barChart(odsDist, CYAN, 'ODS')}</div></div>
+        <div class="ana-card ana-card-wide"><h4>Sectores productivos</h4><div class="ana-bars">${barChart(sectDist, PURPLE, 'Sectores')}</div></div>
+        <div class="ana-card"><h4>Programas académicos</h4><div class="ana-bars">${preDist.entries.length ? barChart(preDist, PINK, 'Pregrado') : '<div class="ana-empty">Datos parciales</div>'}</div></div>
+        <div class="ana-card"><h4>Origen: Semillero / Grupo</h4><div class="ana-donut-wrap">${donutSVG([{ label: 'Semillero / Grupo', value: semSi, color: TEAL, fval: 'Sí' }, { label: 'Independiente', value: sSem.length - semSi, color: 'var(--donut-neutral)', fval: 'No' }], 130, 'Semillero')}<div class="ana-legend">${legend([{ label: 'Semillero / Grupo', value: semSi, color: TEAL, fval: 'Sí' }, { label: 'Independiente', value: sSem.length - semSi, color: 'var(--donut-neutral-legend)', fval: 'No' }], 'Semillero')}<div class="ana-semilleros-list">${sSem.filter(i => i.GrupoSemillero).map(i => `<span class="ana-tag">${i.GrupoSemillero}</span>`).join('')}</div></div></div></div>
+        <div class="ana-card"><h4>¿Han generado ingresos?</h4><div class="ana-donut-wrap">${donutSVG([{ label: 'Sí facturan', value: factSi, color: GOLD, fval: 'Sí' }, { label: 'Aún no', value: sFact.length - factSi, color: 'var(--donut-neutral)', fval: 'No' }], 130, 'HaFacturado')}<div class="ana-legend">${legend([{ label: 'Sí facturan', value: factSi, color: GOLD, fval: 'Sí' }, { label: 'Aún no', value: sFact.length - factSi, color: 'var(--donut-neutral-legend)', fval: 'No' }], 'HaFacturado')}</div></div></div>
+        <div class="ana-card"><h4>Año de inicio</h4><div class="ana-bars">${barChart(anoDist, BLUE, 'AnoInicio')}</div></div>
+        <div class="ana-card"><h4>Estado legal</h4><div class="ana-bars">${legalDist.entries.length ? barChart(legalDist, ORANGE, 'EstadoLegal') : '<div class="ana-empty">Datos parciales</div>'}</div></div>
+      </div>`;
+  }
 
-@media (max-width: 1200px) { .cmp-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 720px) {
-  .cmp-grid { grid-template-columns: 1fr; }
-  .cmp-chart .ana-bar-row { grid-template-columns: 120px 1fr 50px; }
-}
+  function animateBars() {
+    requestAnimationFrame(() => {
+      containerEl.querySelectorAll('.ana-bar-fill').forEach((bar, i) => {
+        const w = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => { bar.style.width = w; }, i * 16 + 50);
+      });
+    });
+  }
 
-/* Ajuste sticky: más legible, menos pelea visual con el tablero */
-.ana-sticky-context {
-  top: 16px;
-  z-index: 60;
-  display: grid;
-  gap: 10px;
-}
-.ana-sticky-context .ana-filterbar,
-.ana-sticky-context .ana-roster {
-  margin-bottom: 0;
-  background: var(--panel);
-  border: 1px solid var(--border-hover);
-  box-shadow: 0 18px 42px rgba(0,0,0,0.16);
-}
-[data-theme="dark"] .ana-sticky-context .ana-filterbar,
-[data-theme="dark"] .ana-sticky-context .ana-roster {
-  background: rgba(9, 14, 18, 0.94);
-  backdrop-filter: blur(18px) saturate(1.1);
-  -webkit-backdrop-filter: blur(18px) saturate(1.1);
-}
-.ana-sticky-context .ana-roster-list { max-height: 150px; }
+  function bindOnce() {
+    if (bound) return; bound = true;
+    containerEl.addEventListener('click', e => {
+      const ini = e.target.closest('[data-initiative-id]'); if (ini) { if (window.S2V_Nav) window.S2V_Nav(ini.dataset.initiativeId); return; }
+      const clear = e.target.closest('[data-clear]'); if (clear) { S.clear(); return; }
+      const rm = e.target.closest('[data-remove-dim]'); if (rm) { S.remove(rm.dataset.removeDim); return; }
+      const el = e.target.closest('[data-dim]'); if (!el) return;
+      S.toggle(el.dataset.dim, el.dataset.value);
+    });
+  }
+
+  function render(container, postulaciones) {
+    containerEl = container;
+    if (postulaciones) S.init(postulaciones);
+    bindOnce();
+    if (!subbed) { subbed = true; S.subscribe(() => { if (containerEl) { build(); animateBars(); } }); }
+    build(); animateBars();
+  }
+
+  return { render };
+})();

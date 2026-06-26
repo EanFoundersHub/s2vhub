@@ -1,275 +1,276 @@
-/* ── Science2Venture · Shared cross-filter store ──
-   Fuente única de verdad para el filtrado cruzado. Tanto la Radiografía
-   como el Mapa por componentes leen y escriben el mismo estado, de modo
-   que fijar una variable en cualquier vista recalcula todo el tablero.
+/* ════════════════════════════════════════════════════════════
+   Science2Venture · Selection Hub — Lógica de mejoras UX/UI
+   Módulos independientes: toasts, confeti, modo enfoque,
+   micro-tour y navegación por teclado.
+   ════════════════════════════════════════════════════════════ */
+(() => {
+  "use strict";
 
-   Normaliza los campos de selección múltiple (separados por ";") para
-   contarlos correctamente categoría por categoría. */
-window.S2V_Filter = (function () {
-
-  let allP = [];
-  let filters = {};           // { dim: value }
-  const listeners = [];
-
-  function splitMulti(v) {
-    return String(v == null ? "" : v).split(";").map(s => s.trim()).filter(Boolean);
-  }
-  function trim(v) { return String(v == null ? "" : v).trim(); }
-
-  function trlNum(i) { return parseInt(i.TRLNumero) || parseInt(String(i.TRLDeclarado || "").replace(/\D/g, "")) || 0; }
-  function mujeres(i) { return parseInt(i.MujeresEquipo) || 0; }
-  function yesNo(v) { const t = trim(v); return /^s[íi]/i.test(t) ? "Sí" : (t ? "No" : ""); }
-
-  /* ── Dimension registry ──
-     get → value(s) for a record;  multi → split & count each option.
-     order:'level' sorts by embedded number (TRL/CRL/BRL). */
-  const DIMS = {
-    // Madurez
-    RutaTRL:      { label: "Ruta TRL",                get: i => i.RutaTRL,        order: "level" },
-    TRLDeclarado: { label: "TRL declarado",           get: i => i.TRLDeclarado,   order: "level" },
-    CRLDeclarado: { label: "CRL declarado",           get: i => i.CRLDeclarado,   order: "level" },
-    BRLDeclarado: { label: "BRL declarado",           get: i => i.BRLDeclarado,   order: "level" },
-    // Tecnología
-    Enfoque:        { label: "Enfoque / base",        get: i => i.Enfoque },
-    TipoTecnologia: { label: "Tipo de tecnología",    get: i => i.TipoTecnologia },
-    TecnologiaPropia:{ label: "Tecnología propia",    get: i => i.TecnologiaPropia },
-    Complejidad:    { label: "Complejidad técnica",   get: i => i.Complejidad },
-    EntornoPrueba:  { label: "Entorno de prueba",     get: i => i.EntornoPrueba },
-    Brecha:         { label: "Brecha técnica",        get: i => i.Brecha },
-    // Problema & validación
-    IdentificacionProblema: { label: "Identificación del problema", get: i => i.IdentificacionProblema },
-    ValidacionProblema:     { label: "Validación del problema",     get: i => i.ValidacionProblema, multi: true },
-    PersonasEntrevistadas:  { label: "Personas entrevistadas",      get: i => i.PersonasEntrevistadas },
-    EvidenciasTecnicas:     { label: "Evidencias técnicas",         get: i => i.EvidenciasTecnicas },
-    EvidenciasConcretas:    { label: "Tipo de evidencias",          get: i => i.EvidenciasConcretas, multi: true },
-    PropuestaValorEstructura:{ label: "Propuesta de valor",         get: i => i.PropuestaValorEstructura },
-    // Mercado
-    ClienteTipo:    { label: "Tipo de cliente",       get: i => i.ClienteTipo, multi: true },
-    AlcanceGeografico:{ label: "Alcance geográfico",  get: i => i.AlcanceGeografico },
-    TamanoMercado:  { label: "Tamaño de mercado",     get: i => i.TamanoMercado },
-    Competencia:    { label: "Conocimiento competencia", get: i => i.Competencia },
-    Diferenciacion: { label: "Diferenciación",        get: i => i.Diferenciacion, multi: true },
-    Canales:        { label: "Canales",               get: i => i.Canales, multi: true },
-    EvidenciaInteres:{ label: "Evidencia de interés", get: i => i.EvidenciaInteres, multi: true },
-    AliadosEstrategicos:{ label: "Aliados estratégicos", get: i => i.AliadosEstrategicos },
-    // Negocio & tracción
-    FuenteIngresos: { label: "Fuente de ingresos",    get: i => i.FuenteIngresos },
-    PrecioValidado: { label: "Precio validado",       get: i => i.PrecioValidado },
-    NumerosNegocio: { label: "Números del negocio",   get: i => i.NumerosNegocio },
-    HaFacturado:    { label: "¿Ha facturado?",        get: i => yesNo(i.HaFacturado) },
-    PuntoEquilibrio:{ label: "Punto de equilibrio",   get: i => i.PuntoEquilibrio },
-    RegistrosContables:{ label: "Registros contables",get: i => i.RegistrosContables },
-    // Inversión & finanzas
-    InversionAcumulada:{ label: "Inversión acumulada",get: i => i.InversionAcumulada },
-    FuentesInversion:{ label: "Fuentes de inversión", get: i => i.FuentesInversion, multi: true },
-    Necesidad12m:   { label: "Necesidad 12 meses",    get: i => i.Necesidad12m },
-    Recursos6m:     { label: "Recursos para 6 meses", get: i => i.Recursos6m },
-    BuscaInversion: { label: "Busca inversión",       get: i => i.BuscaInversion },
-    // PI & legal
-    EstadoPI:       { label: "Estado de PI",          get: i => i.EstadoPI },
-    TipoPI:         { label: "Tipo de protección",    get: i => i.TipoPI, multi: true },
-    DuenoPI:        { label: "Titularidad de la PI",  get: i => i.DuenoPI },
-    FreedomToOperate:{ label: "Libertad de operación",get: i => i.FreedomToOperate },
-    EstadoLegal:    { label: "Estado legal",          get: i => i.EstadoLegal },
-    PosturaEquityEan:{ label: "Postura equity EAN",   get: i => i.PosturaEquityEan },
-    Regulatorio:    { label: "Requisitos regulatorios", get: i => i.Regulatorio, multi: true },
-    // Equipo
-    RolesEquipo:    { label: "Roles cubiertos",       get: i => i.RolesEquipo, multi: true },
-    ExperienciaPrevia:{ label: "Experiencia previa",  get: i => i.ExperienciaPrevia },
-    DedicacionEquipo:{ label: "Dedicación",           get: i => i.DedicacionEquipo },
-    DisposicionTC:  { label: "Disposición tiempo completo", get: i => i.DisposicionTC },
-    DisposicionPivotear:{ label: "Disposición a pivotear", get: i => i.DisposicionPivotear },
-    MujeresRango:   { label: "Mujeres en el equipo",  get: i => { const m = mujeres(i); return m === 0 ? "Sin mujeres" : m === 1 ? "1 mujer" : m === 2 ? "2 mujeres" : "3 o más"; } },
-    // Impacto & sostenibilidad
-    ODS:            { label: "ODS",                   get: i => i.ODS, multi: true },
-    Sectores:       { label: "Sectores",              get: i => i.Sectores, multi: true },
-    Sostenibilidad: { label: "Vertical sostenibilidad", get: i => i.Sostenibilidad, multi: true },
-    MideImpacto:    { label: "Medición de impacto",   get: i => i.MideImpacto },
-    // Perfil académico & origen
-    Vinculacion:    { label: "Vinculación EAN",       get: i => trim(i.Vinculacion) },
-    NivelEducativo: { label: "Nivel educativo",       get: i => i.NivelEducativo },
-    Modalidad:      { label: "Modalidad",             get: i => i.Modalidad },
-    AreaConocimiento:{ label: "Área de conocimiento", get: i => i.AreaConocimiento },
-    Pregrado:       { label: "Programa (pregrado)",   get: i => i.Pregrado },
-    AnoInicio:      { label: "Año de inicio",         get: i => i.AnoInicio },
-    Semillero:      { label: "Origen semillero",      get: i => (i.SurgeGrupoSemillero || "").startsWith("Sí") ? "Sí" : "No" },
-    Ciudad:         { label: "Ciudad",                get: i => trim(i.Ciudad) },
-    // KPI / derived (match-only)
-    ConMujeres:     { label: "Equidad",   match: i => mujeres(i) > 0 },
-    TRL7plus:       { label: "Madurez",   match: i => trlNum(i) >= 7 }
+  /* ── Toasts ── */
+  const ICONS = {
+    success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>',
+    error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 16.5v.5"/></svg>'
   };
-
-  function rawVals(dim, item) {
-    const d = DIMS[dim];
-    if (!d || d.match) return [];
-    const g = d.get(item);
-    if (d.multi) return Array.isArray(g) ? g.map(trim).filter(Boolean) : splitMulti(g);
-    const v = trim(g);
-    return v ? [v] : [];
+  let stack = null;
+  function ensureStack() {
+    if (!stack) {
+      stack = document.createElement("div");
+      stack.className = "toast-stack";
+      stack.setAttribute("aria-live", "polite");
+      document.body.appendChild(stack);
+    }
+    return stack;
   }
-
-  function matchItem(item, dim, value) {
-    const d = DIMS[dim];
-    if (!d) return true;
-    if (d.match) return d.match(item, value);
-    return rawVals(dim, item).includes(value);
+  function toast(message, opts = {}) {
+    const type = opts.type || "success";
+    const el = document.createElement("div");
+    el.className = `toast ${type}`;
+    el.innerHTML = `
+      <span class="toast__icon">${ICONS[type] || ICONS.info}</span>
+      <div class="toast__body">${opts.title ? `<strong>${opts.title}</strong>` : ""}<span>${message}</span></div>
+      <button class="toast__close" aria-label="Cerrar">×</button>`;
+    ensureStack().appendChild(el);
+    requestAnimationFrame(() => el.classList.add("show"));
+    const close = () => {
+      el.classList.remove("show");
+      el.classList.add("hide");
+      setTimeout(() => el.remove(), 420);
+    };
+    el.querySelector(".toast__close").addEventListener("click", close);
+    if (opts.duration !== 0) setTimeout(close, opts.duration || 3800);
+    return close;
   }
+  window.S2V_toast = toast;
 
-  function hasFilters() { return Object.keys(filters).length > 0; }
-
-  function getFiltered() {
-    const keys = Object.keys(filters);
-    if (!keys.length) return allP.slice();
-    return allP.filter(it => keys.every(dim => matchItem(it, dim, filters[dim])));
-  }
-  function filteredExcept(dim) {
-    const keys = Object.keys(filters).filter(d => d !== dim);
-    if (!keys.length) return allP.slice();
-    return allP.filter(it => keys.every(d => matchItem(it, d, filters[d])));
-  }
-
-  /* distribution of a dimension over a list → {entries:[[label,count]], answered, total, multi} */
-  function distribution(dim, list) {
-    const d = DIMS[dim] || {};
-    const map = {};
-    let answered = 0;
-    list.forEach(it => {
-      const vs = rawVals(dim, it);
-      if (vs.length) answered++;
-      vs.forEach(v => { map[v] = (map[v] || 0) + 1; });
+  /* ── Confeti ── */
+  function confetti(opts = {}) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let canvas = document.getElementById("confettiCanvas");
+    if (!canvas) {
+      canvas = document.createElement("canvas");
+      canvas.id = "confettiCanvas";
+      document.body.appendChild(canvas);
+    }
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const W = window.innerWidth, H = window.innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+    const colors = ["#55c9cc", "#7be1e4", "#2ea8ab", "#d4a853", "#1f9d6b", "#ffffff"];
+    const count = opts.count || 150;
+    const originX = opts.x != null ? opts.x : W / 2;
+    const originY = opts.y != null ? opts.y : H * 0.32;
+    const parts = Array.from({ length: count }, () => {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 4 + Math.random() * 9;
+      return {
+        x: originX, y: originY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 6,
+        size: 5 + Math.random() * 7,
+        color: colors[(Math.random() * colors.length) | 0],
+        rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
+        life: 0, ttl: 90 + Math.random() * 50
+      };
     });
-    let entries = Object.entries(map);
-    if (d.order === "level") {
-      entries.sort((a, b) => (parseInt(a[0].replace(/\D/g, "")) || 0) - (parseInt(b[0].replace(/\D/g, "")) || 0));
+    let frame = 0;
+    function tick() {
+      ctx.clearRect(0, 0, W, H);
+      let alive = false;
+      for (const p of parts) {
+        if (p.life > p.ttl) continue;
+        alive = true;
+        p.life++;
+        p.vy += 0.28; p.vx *= 0.99;
+        p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        const fade = Math.max(0, 1 - p.life / p.ttl);
+        ctx.save();
+        ctx.globalAlpha = fade;
+        ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+        ctx.restore();
+      }
+      frame++;
+      if (alive && frame < 220) requestAnimationFrame(tick);
+      else ctx.clearRect(0, 0, W, H);
+    }
+    tick();
+  }
+  window.S2V_confetti = confetti;
+
+  /* ── Modo enfoque ── */
+  function initFocusMode() {
+    const host = document.querySelector(".header-actions");
+    if (!host || document.querySelector(".focus-toggle")) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "focus-toggle";
+    btn.setAttribute("aria-pressed", "false");
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M3 12h2M19 12h2M12 3v2M12 19v2"/></svg>
+      <span class="lbl-on">Modo enfoque</span><span class="lbl-off">Enfoque activo</span>`;
+    host.insertBefore(btn, host.firstChild);
+    const apply = (on) => {
+      document.body.classList.toggle("focus-mode", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      try { localStorage.setItem("s2v_focus", on ? "1" : "0"); } catch (e) {}
+    };
+    btn.addEventListener("click", () => apply(!document.body.classList.contains("focus-mode")));
+    try { if (localStorage.getItem("s2v_focus") === "1") apply(true); } catch (e) {}
+  }
+
+  /* ── Navegación por teclado en la lista ── */
+  function initKeyboardNav() {
+    document.addEventListener("keydown", (e) => {
+      const search = document.getElementById("searchInput");
+      const tag = (e.target.tagName || "").toLowerCase();
+      const typing = tag === "input" || tag === "textarea" || tag === "select";
+      const listVisible = !document.getElementById("listSection")?.classList.contains("hidden")
+        && !document.getElementById("dashboardView")?.classList.contains("hidden");
+
+      if (e.key === "/" && !typing && listVisible) {
+        e.preventDefault();
+        search?.focus();
+        search?.select();
+        return;
+      }
+      if (e.key === "Escape" && document.activeElement === search) {
+        search.blur();
+        return;
+      }
+      if (!listVisible) return;
+      if (typing && e.target !== search) return;
+
+      const cards = [...document.querySelectorAll("#initiativeList .initiative-card")];
+      if (!cards.length) return;
+      let idx = cards.findIndex(c => c.classList.contains("kbd-focus"));
+      if (idx < 0) idx = cards.findIndex(c => c.classList.contains("active"));
+
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        idx = e.key === "ArrowDown" ? Math.min(idx + 1, cards.length - 1) : Math.max(idx - 1, 0);
+        if (idx < 0) idx = 0;
+        cards.forEach(c => c.classList.remove("kbd-focus"));
+        cards[idx].classList.add("kbd-focus");
+        cards[idx].scrollIntoView({ block: "nearest" });
+      } else if (e.key === "Enter" && idx >= 0 && !typing) {
+        e.preventDefault();
+        cards[idx].querySelector(".card-button")?.click();
+      } else if (e.key === "Enter" && e.target === search) {
+        const first = cards[0];
+        first?.querySelector(".card-button")?.click();
+        search.blur();
+      }
+    });
+  }
+
+  /* ── Micro-tour ── */
+  const TOUR_KEY = "s2v_tour_done_v1";
+  let tourSteps = [], tourIdx = 0, tourEls = null;
+
+  function buildTourEls() {
+    const backdrop = document.createElement("div");
+    backdrop.className = "tour-backdrop";
+    const spot = document.createElement("div");
+    spot.className = "tour-spot";
+    const pop = document.createElement("div");
+    pop.className = "tour-pop";
+    backdrop.appendChild(spot);
+    document.body.append(backdrop, pop);
+    return { backdrop, spot, pop };
+  }
+
+  function positionTour() {
+    const step = tourSteps[tourIdx];
+    const target = step.selector ? document.querySelector(step.selector) : null;
+    const { spot, pop } = tourEls;
+    if (target) {
+      const r = target.getBoundingClientRect();
+      const pad = 8;
+      spot.style.opacity = "1";
+      spot.style.left = `${r.left - pad}px`;
+      spot.style.top = `${r.top - pad}px`;
+      spot.style.width = `${r.width + pad * 2}px`;
+      spot.style.height = `${r.height + pad * 2}px`;
     } else {
-      entries.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+      spot.style.opacity = "0";
     }
-    return { entries, answered, total: list.length, multi: !!d.multi };
+    pop.innerHTML = `
+      <p class="eyebrow">Paso ${tourIdx + 1} de ${tourSteps.length}</p>
+      <h4>${step.title}</h4>
+      <p>${step.body}</p>
+      <div class="tour-pop__foot">
+        <div class="tour-dots">${tourSteps.map((_, i) => `<i class="${i === tourIdx ? "active" : ""}"></i>`).join("")}</div>
+        <div class="tour-actions">
+          <button class="tour-skip" type="button">${tourIdx === tourSteps.length - 1 ? "Cerrar" : "Saltar"}</button>
+          <button class="tour-next" type="button">${tourIdx === tourSteps.length - 1 ? "Listo" : "Siguiente"}</button>
+        </div>
+      </div>`;
+    // place popover near target
+    requestAnimationFrame(() => {
+      pop.classList.add("show");
+      const pr = pop.getBoundingClientRect();
+      const vw = window.innerWidth, vh = window.innerHeight;
+      let top, left;
+      if (target) {
+        const r = target.getBoundingClientRect();
+        top = r.bottom + 14;
+        if (top + pr.height > vh - 12) top = Math.max(12, r.top - pr.height - 14);
+        left = Math.min(Math.max(12, r.left), vw - pr.width - 12);
+      } else {
+        top = vh / 2 - pr.height / 2;
+        left = vw / 2 - pr.width / 2;
+      }
+      pop.style.top = `${top}px`;
+      pop.style.left = `${left}px`;
+    });
+    pop.querySelector(".tour-next").onclick = () => {
+      if (tourIdx < tourSteps.length - 1) { tourIdx++; positionTour(); } else endTour();
+    };
+    pop.querySelector(".tour-skip").onclick = endTour;
   }
 
-  function pct(n, base) { return base ? Math.round((n / base) * 100) : 0; }
-
-  function escHtml(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-  function escAttr(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/"/g, "&quot;"); }
-
-  /* Roster of the currently filtered initiatives — clickable chips that
-     open each initiative's profile (handled by window.S2V_Nav). */
-  function rosterHtml() {
-    const list = getFiltered();
-    if (!list.length) return "";
-    const chips = list.map(i => {
-      const id = String(i.IDIniciativa || "").trim();
-      const name = String(i.NombreIniciativa || "Iniciativa").trim();
-      const short = name.length > 15 ? name.slice(0, 15).trim() + "…" : name;
-      return `<button class="ana-ini-chip" data-initiative-id="${escAttr(id)}" type="button" title="${escAttr(id + " · " + name)}">${escHtml(short)}</button>`;
-    }).join("");
-    return `<div class="ana-roster">
-      <div class="ana-roster-head"><span class="fb-label">Iniciativas en la selección</span><span class="ana-roster-count">${list.length}</span><span class="ana-roster-hint">clic para abrir su perfil →</span></div>
-      <div class="ana-roster-list">${chips}</div>
-    </div>`;
+  function endTour() {
+    if (!tourEls) return;
+    tourEls.pop.classList.remove("show");
+    tourEls.backdrop.classList.remove("show");
+    setTimeout(() => {
+      tourEls.backdrop.remove();
+      tourEls.pop.remove();
+      tourEls = null;
+    }, 320);
+    try { localStorage.setItem(TOUR_KEY, "1"); } catch (e) {}
   }
 
-  /* shorten long enumerated answers for display (full text kept as tooltip) */
-  function shorten(s, n) {
-    n = n || 46;
-    let t = String(s == null ? "" : s).replace(/\s+/g, " ").trim().replace(/[.;,\s]+$/, "");
-    const cut = t.search(/[(:]/);
-    if (cut > 10) t = t.slice(0, cut).trim().replace(/[.;,\s]+$/, "");
-    if (t.length > n) t = t.slice(0, n).trim() + "…";
-    return t;
+  function startTour(steps, force) {
+    try { if (!force && localStorage.getItem(TOUR_KEY) === "1") return; } catch (e) {}
+    tourSteps = steps.filter(s => !s.selector || document.querySelector(s.selector));
+    if (!tourSteps.length) return;
+    tourIdx = 0;
+    tourEls = buildTourEls();
+    requestAnimationFrame(() => { tourEls.backdrop.classList.add("show"); positionTour(); });
+    window.addEventListener("resize", positionTour);
   }
-
-  function shortSector(s) {
-    if (s.length <= 30) return s;
-    const map = { "Inteligencia artificial": "IA y computación", "Tecnologías de la información": "TIC", "Economía digital": "Economía digital", "Economía verde": "Economía verde / circular", "Ciencias de la vida": "Ciencias de la vida", "Industrias creativas": "Industrias creativas", "Industria de alimentos": "Alimentos y bebidas", "Agroindustria": "Agroindustria", "Farmacéutico": "Farma y biotech", "Instrumentos de precisión": "Instrumentos médicos", "Aeroespacial": "Aeroespacial / defensa", "Electrónica": "Electrónica", "Construcción": "Construcción", "Petroquímica": "Petroquímica" };
-    for (const [k, v] of Object.entries(map)) if (s.includes(k)) return v;
-    return s.slice(0, 28) + "…";
-  }
-
-  /* Curated short labels per dimension. Each entry: [needle (lowercase), short].
-     The first needle found inside the answer text wins (scoped by dimension). */
-  const SHORT = {
-    TipoTecnologia: [["plataforma digital propia", "Plataforma digital propia"], ["producto principal", "Tecnología propia (producto)"], ["deep tech", "Deep Tech"], ["tecnologías avanzadas existentes", "Tecnologías avanzadas"], ["procesos tradicionales", "Procesos tradicionales"]],
-    TecnologiaPropia: [["antes no existía", "Combina tecnologías existentes"], ["una parte la desarrollamos", "Mixta (propia + existente)"], ["adaptamos o personalizamos", "Adapta tecnologías existentes"], ["desde cero", "Propia desde cero"], ["sin modificarlas", "Solo herramientas existentes"]],
-    Complejidad: [["muy alto", "Muy alto (Deep Tech)"], ["muy bajo", "Muy bajo"], ["medio", "Medio"], ["alto", "Alto"], ["bajo", "Bajo"]],
-    EntornoPrueba: [["solo en papel", "Papel / simulación"], ["operación real continuada", "Operación real continuada"], ["entorno simulado", "Entorno simulado realista"], ["laboratorio controlado", "Laboratorio controlado"], ["modo piloto", "Piloto con cliente"]],
-    Brecha: [["primer prototipo integrado", "Primer prototipo integrado"], ["infraestructura que ya tiene", "Integración con cliente"], ["escalar el prototipo", "Escalar a condiciones reales"], ["confiable, reproducible", "Confiabilidad / durabilidad"], ["no tengo claro", "Sin claridad de brechas"], ["lista para escalar", "Lista para escalar"]],
-    IdentificacionProblema: [["experiencia directa", "Experiencia directa"], ["nos trajo el problema", "Lo trajo un cliente"], ["literatura académica", "Literatura / reportes"], ["hallazgo científico", "Desde la tecnología"]],
-    PersonasEntrevistadas: [["1 y 5", "1–5 personas"], ["más de 30", "30+ personas"], ["6 y 15", "6–15 personas"], ["16 y 30", "16–30 personas"], ["ninguna", "Ninguna aún"]],
-    EvidenciasTecnicas: [["pueden ser revisadas", "Sí, documentadas"], ["preparando la documentación", "En preparación"], ["no cuento todavía", "Sin evidencias aún"]],
-    PropuestaValorEstructura: [["validado con al menos 5", "Validada con 5+ clientes"], ["ajustada varias veces", "Validada y ajustada"], ["cliente, problema, beneficio", "Estructurada"], ["frase general", "Frase general"]],
-    AlcanceGeografico: [["internacional", "Internacional"], ["territorio nacional", "Nacional"], ["principales ciudades", "Principales ciudades"], ["municipio", "Local"]],
-    TamanoMercado: [["tam, sam y som", "TAM/SAM/SOM documentado"], ["tam y sam", "TAM y SAM"], ["el tam", "Solo TAM"], ["idea general", "Idea general (sin fuentes)"], ["no lo he estimado", "Sin estimar"]],
-    Competencia: [["benchmark", "Benchmark formal"], ["alternativas o sustitutas", "Alternativas identificadas"], ["competidores directos", "Competidores mapeados"], ["no existe competencia", "Sin competencia directa"], ["no he investigado", "Sin investigar"]],
-    AliadosEstrategicos: [["conversaciones informales", "Conversaciones informales"], ["no tengo aliados", "Sin aliados formales"], ["no vinculantes", "MoU / cartas"], ["red activa", "Red activa (3+)"]],
-    FuenteIngresos: [["combinación", "Combinación"], ["venta única", "Venta única"], ["servicios asociados", "Servicios asociados"], ["no he pensado", "Sin definir"], ["suscripción", "Suscripción"]],
-    PrecioValidado: [["mirando a la competencia", "Estimado por comparables"], ["efectivamente lo pagó", "Validado con ventas"], ["rango aceptable", "Conversado con clientes"], ["no he pensado", "Sin definir"], ["costos + margen", "Costos + margen"]],
-    NumerosNegocio: [["estimado en papel", "Estimados en papel"], ["mejorar los márgenes", "Medidos + plan márgenes"], ["modelado con supuestos", "Modelados"], ["no los he calculado", "Sin calcular"], ["datos reales", "Medidos (datos reales)"]],
-    PuntoEquilibrio: [["alcanzamos el punto", "Alcanzado"], ["menos del 70", "<70% costos"], ["70% y el 100", "70–100% costos"]],
-    RegistrosContables: [["formales, pero", "Formales (propios)"], ["básicos informales", "Básicos / informales"], ["ningún registro", "Sin registros"]],
-    InversionAcumulada: [["menos de 10", "< $10M COP"], ["10 y 50", "$10–50M"], ["50 y 200", "$50–200M"]],
-    Necesidad12m: [["20 y 70", "$20–70M"], ["70 y 300", "$70–300M"], ["menos de 20", "< $20M"], ["no lo he estimado", "Sin estimar"]],
-    Recursos6m: [["menos del 50", "Parcial (<50%)"], ["50% y 80", "Ajustado (50–80%)"], ["más del 80", "Con holgura (>80%)"], ["no", "No"]],
-    BuscaInversion: [["etapa de preparación", "Sí, preparando"], ["no es una prioridad", "No es prioridad"]],
-    EstadoPI: [["no he pensado", "Sin pensar"], ["análisis preliminar", "Análisis preliminar"], ["radicamos una solicitud", "Solicitud radicada"], ["preparando la solicitud", "Preparando solicitud"], ["secreto industrial", "Secreto industrial"]],
-    DuenoPI: [["no está definida", "Sin definir"], ["co-titularidad de los investigadores", "Ean + investigadores"], ["tercero externo", "Tercero externo"], ["empresa privada", "Co-titularidad empresa"]],
-    FreedomToOperate: [["revisión informal", "Revisión informal"], ["bases de patentes", "Análisis preliminar"], ["no he considerado", "No considerado"]],
-    EstadoLegal: [["no he pensado", "Sin constituir"], ["figura jurídica", "Evaluando figura jurídica"], ["operaciones regulares", "Constituida y operando"], ["con rut", "Constituida con RUT"]],
-    PosturaEquityEan: [["si estoy de acuerdo", "A favor de equity EAN"], ["no estoy de acuerdo", "En contra"]],
-    Regulatorio: [["no requiere", "No requiere"], ["otro regulador", "Otro regulador"], ["invima", "INVIMA"], ["ica", "ICA"]],
-    ExperienciaPrevia: [["empresa exitosa", "Empresa exitosa previa"], ["bootcamps", "Formación emprendimiento"], ["ninguno tiene", "Sin experiencia"], ["no haya prosperado", "Empresa previa (falló)"], ["transferencia tecnológica", "Transferencia tecnológica"]],
-    DedicacionEquipo: [["más de 20", "20+ h/sem"], ["tiempo completo", "Tiempo completo"], ["9 y 12", "9–12 h/sem"], ["menos de 5", "<5 h/sem"], ["13 y 20", "13–20 h/sem"], ["5 y 8", "5–8 h/sem"]],
-    DisposicionTC: [["al menos una persona", "1 persona comprometida"], ["dedicado tiempo completo", "Ya hay dedicación TC"], ["dedicación parcial", "Solo parcial"]],
-    DisposicionPivotear: [["5 —", "5 · Totalmente"], ["4 —", "4 · De acuerdo"], ["3 —", "3 · Neutral"], ["2 —", "2 · En desacuerdo"]],
-    MideImpacto: [["cualitativas generales", "Cualitativas generales"], ["no hemos definido", "Sin definir"], ["aún no las medimos", "Cuantificables (sin medir)"], ["pilotos o escenarios", "Medido en pilotos"]],
-    AreaConocimiento: [["interdisciplinar", "Interdisciplinar"], ["médicas y de la salud", "Ciencias médicas y salud"], ["agrícolas", "Ciencias agrícolas"], ["ingeniería", "Ingeniería y tecnología"]],
-    ValidacionProblema: [["literatura académica", "Literatura académica"], ["entrevistas informales", "Entrevistas informales"], ["pruebas piloto", "Pruebas piloto"], ["estudios previos", "Estudios previos"], ["pagando o pilotando", "Cliente pagando/pilotando"], ["entrevistas estructuradas", "Entrevistas estructuradas"], ["encuestas cuantitativas", "Encuestas cuantitativas"], ["es mi hipótesis", "Sin validar (hipótesis)"]],
-    EvidenciasConcretas: [["no tenemos evidencias", "Sin evidencias"], ["ponencia", "Ponencia / evento"], ["prototipo físico", "Prototipo (fotos/video)"], ["repositorio público", "Repositorio público"], ["tesis", "Tesis vinculada"], ["reporte técnico", "Reporte técnico interno"], ["dataset", "Dataset propio"], ["ensayos certificados", "Ensayos certificados"], ["publicación científica", "Publicación indexada"]],
-    Diferenciacion: [["comunidad o red", "Comunidad / red"], ["marca o posicionamiento", "Marca temprana"], ["know-how", "Know-how difícil de replicar"], ["costos más eficientes", "Costos más eficientes"], ["datos propios", "Datos propios"], ["infraestructura, laboratorios", "Infraestructura / alianzas"], ["regulaciones, permisos", "Permisos / certificaciones"], ["no hemos identificado", "Sin diferenciador claro"], ["tecnología protegida", "Tecnología protegida"]],
-    Canales: [["e-commerce propio", "Plataforma / e-commerce"], ["equipo fundador", "Venta directa (fundadores)"], ["equipo comercial propio", "Equipo comercial propio"], ["integran nuestra solución", "Alianzas integradoras"], ["no he pensado", "Sin definir"], ["distribuidores", "Distribuidores"], ["marketplaces de terceros", "Marketplaces de terceros"]],
-    EvidenciaInteres: [["buena idea", "Interés verbal"], ["pilotos no pagados", "Pilotos no pagados"], ["pilotos pagados", "Pilotos pagados"], ["ninguna evidencia", "Sin evidencia"], ["cartas de intención", "Cartas de intención (LOI)"], ["confidencialidad", "NDA firmados"], ["contratos de venta", "Contratos firmados"], ["otro", "Otro"]],
-    FuentesInversion: [["fff", "Propios / FFF"], ["empresas aliadas", "Empresas aliadas"], ["ángeles", "Ángeles / VC"]],
-    TipoPI: [["registro de software", "Registro de software"], ["diseño industrial", "Diseño industrial"], ["no aplicamos", "Ninguno"], ["patente", "Patente"], ["registro de marca", "Marca"], ["secreto industrial", "Secreto industrial"], ["modelo de utilidad", "Modelo de utilidad"]],
-    RolesEquipo: [["investigador principal", "Investigador principal"], ["desarrollo comercial", "Negocio / comercial"], ["co-investigador", "Co-investigador técnico"], ["producto, ux", "Producto / UX"], ["financiero u operaciones", "Financiero / operaciones"], ["comunicación y relación", "Comunicación / ecosistema"], ["propiedad intelectual", "PI / legal"]]
+  window.S2V_startTour = (role, force) => {
+    const common = [
+      { selector: ".summary-grid", title: "Tu resumen en un vistazo", body: "Las tarjetas superiores muestran las cifras clave de la convocatoria y se actualizan según los filtros activos." },
+      { selector: "#tabNav", title: "Cambia de vista", body: role === "coordinacion" ? "Alterna entre la radiografía analítica, el mapa por componentes, las iniciativas, el ranking y la gestión de evaluadores." : "Aquí encuentras las iniciativas que te fueron asignadas para evaluar por componentes." }
+    ];
+    const extra = role === "evaluador"
+      ? [{ selector: ".evaluator-progress", title: "Tu progreso", body: "Sigue cuántos componentes has enviado. Las iniciativas marcan su estado: sin evaluar, en progreso o evaluada." },
+         { selector: ".toolbar", title: "Busca y filtra", body: "Pulsa “/” para buscar al instante y usa las flechas ↑ ↓ y Enter para abrir una ficha sin el ratón." }]
+      : [{ selector: ".toolbar", title: "Busca y filtra", body: "Pulsa “/” para buscar al instante; los filtros activos aparecen como chips removibles y puedes ordenar la lista." }];
+    startTour([...common, ...extra], force);
   };
 
-  function label(dim, value) {
-    const raw = String(value == null ? "" : value);
-    if (dim === "ODS") { const m = raw.match(/ODS\s*(\d+)/); return m ? "ODS " + m[1] : raw; }
-    if (dim === "Sectores") return shortSector(raw.trim());
-    if (dim === "ClienteTipo") {
-      if (/-B2B/i.test(raw)) return "B2B (empresas)";
-      if (/-C2C/i.test(raw)) return "C2C (marketplace)";
-      if (/-B2G/i.test(raw)) return "B2G (gobierno)";
-      if (/-B2C/i.test(raw)) return "B2C (consumidor)";
-      return "Sin definir";
-    }
-    if (dim === "Pregrado") return shorten(raw.replace("Carrera de ", "").replace(/\s*\+.*$/, ""), 26);
-    const rules = SHORT[dim];
-    if (rules) {
-      const low = raw.toLowerCase();
-      for (const [needle, short] of rules) if (low.includes(needle)) return short;
-    }
-    return shorten(raw, 40);
-  }
-
-  function emit() {
-    const f = getFiltered();
-    const snap = Object.assign({}, filters);
-    listeners.forEach(l => { try { l(f, snap); } catch (e) { console.error(e); } });
-  }
-
-  return {
-    DIMS,
-    setData(p) { allP = p || []; },
-    init(p) { allP = p || []; filters = {}; },
-    getData() { return allP; },
-    get filters() { return filters; },
-    hasFilters, getFiltered, filteredExcept, matchItem, distribution, rawVals,
-    pct, shorten, shortSector, label, rosterHtml,
-    toggle(dim, value) { if (filters[dim] === value) delete filters[dim]; else filters[dim] = value; emit(); },
-    remove(dim) { delete filters[dim]; emit(); },
-    clear() { if (hasFilters()) { filters = {}; emit(); } },
-    subscribe(fn) { if (typeof fn === "function") listeners.push(fn); }
-  };
+  /* ── Init ── */
+  document.addEventListener("DOMContentLoaded", () => {
+    initKeyboardNav();
+  });
+  // Focus toggle is mounted when dashboard is ready (app dispatches event)
+  window.addEventListener("s2v:dashboardready", () => {
+    initFocusMode();
+  });
 })();
