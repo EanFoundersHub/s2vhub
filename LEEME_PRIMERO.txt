@@ -1,0 +1,23 @@
+PAQUETE MONOARCHIVO PARA GITHUB PAGES
+
+Este paquete evita confusiones entre index.html y hub-styles.css.
+
+PASOS:
+1. En el repositorio s2vhub, elimina el index.html que está actualmente en la raíz.
+2. Descomprime este ZIP en tu computador.
+3. Sube directamente a la raíz estos archivos:
+   - index.html
+   - .nojekyll
+   - LEEME_PRIMERO.txt
+4. No subas el ZIP sin descomprimir.
+5. No crees una carpeta adicional.
+6. Espera a que termine el despliegue de GitHub Pages.
+7. Abre:
+   https://eanfoundershub.github.io/s2vhub/?v=11
+
+VERIFICACIÓN:
+El index.html correcto debe comenzar con:
+<!doctype html>
+<html lang="es"
+
+Si al abrir index.html en GitHub comienza con /*, todavía está cargado el CSS equivocado.
