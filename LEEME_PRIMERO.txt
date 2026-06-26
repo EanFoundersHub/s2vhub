@@ -1,10 +1,14 @@
-S2VHub v13 · INICIO EQUILIBRADO
 
+S2VHub v14 - Ajustes de responsividad
+
+Cambios incluidos en esta versión:
+- Login: ahora cabe completo en pantallas anchas y bajas (el botón "Ingresar" ya no se corta). Tamaños y espacios escalan con la altura de la pantalla y con el zoom del navegador.
+- Vista de evaluador (iniciativas asignadas): se corrigió el choque de las dos barras fijas (cabecera + pestañas) que machacaba el encabezado del detalle.
+
+Carga en GitHub:
 1. Descomprime este ZIP.
-2. Reemplaza en la raíz de GitHub el archivo index.html por el incluido aquí.
-3. Sube también .nojekyll.
-4. Confirma el commit y espera el despliegue de GitHub Pages.
-5. Abre: https://eanfoundershub.github.io/s2vhub/?v=13
-6. Fuerza recarga con Ctrl + F5.
-
-Esta versión conserva las funciones y datos de v12; solo ajusta la proporción visual de la pantalla de acceso.
+2. Sube index.html y .nojekyll directamente a la raíz del repositorio s2vhub.
+3. Reemplaza el index.html existente.
+4. Espera el despliegue de GitHub Pages.
+5. Abre https://eanfoundershub.github.io/s2vhub/?v=14
+6. Actualiza con Ctrl + F5.

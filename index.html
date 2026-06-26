@@ -1127,8 +1127,7 @@ code {
 }
 
 .detail-header {
-  position: sticky;
-  top: 16px;
+  position: static;
   z-index: 20;
   padding: 18px;
   margin: -22px -22px 18px;
@@ -2542,7 +2541,7 @@ body.focus-mode .focus-toggle .lbl-off { display: inline; }
 
 /* ── 11. Tabs internas del detalle ── */
 .detail-section-tabs {
-  position: sticky; top: 92px; z-index: 18;
+  position: sticky; top: 12px; z-index: 18;
   display: flex; gap: 6px; flex-wrap: wrap;
   margin: 14px 0 4px;
   padding: 6px;
@@ -3032,16 +3031,21 @@ body.focus-mode .focus-toggle .lbl-off { display: inline; }
    ========================================================= */
 .login-view {
   min-height: 100svh;
-  padding: 20px 0 28px;
-  gap: 22px;
+  padding: clamp(14px, 2.5vh, 24px) 0;
+  gap: clamp(12px, 2.2vh, 22px);
   justify-content: center;
 }
+/* En viewports bajos (pantallas anchas y poco altas) alinea arriba y
+   permite scroll en vez de centrar y dejar el botón fuera de la vista. */
+@media (max-height: 700px) {
+  .login-view { justify-content: flex-start; }
+}
 .brand-row.compact {
-  min-height: 84px;
+  min-height: clamp(56px, 8vh, 84px);
 }
 .brand-logo {
   width: min(390px, 72vw);
-  max-height: 94px;
+  max-height: clamp(54px, 7.5vh, 94px);
   object-fit: contain;
 }
 .login-grid {
@@ -3052,12 +3056,12 @@ body.focus-mode .focus-toggle .lbl-off { display: inline; }
   align-items: stretch;
 }
 .hero-card {
-  min-height: 460px;
-  padding: 44px 44px 42px 84px;
+  min-height: clamp(340px, 52vh, 460px);
+  padding: clamp(28px, 4vh, 44px) 44px clamp(26px, 3.6vh, 42px) 84px;
 }
 .hero-card h1 {
   max-width: 570px;
-  font-size: clamp(3.35rem, 5.45vw, 5.4rem);
+  font-size: min(clamp(3.35rem, 5.45vw, 5.4rem), 13vh);
   line-height: 0.89;
 }
 .hero-copy {
@@ -3085,8 +3089,8 @@ body.focus-mode .focus-toggle .lbl-off { display: inline; }
   transform-origin: bottom right;
 }
 .access-card {
-  min-height: 460px;
-  padding: 30px 32px;
+  min-height: clamp(340px, 52vh, 460px);
+  padding: clamp(20px, 3vh, 30px) 32px;
   justify-content: center;
 }
 .access-card h2 {
@@ -9611,7 +9615,7 @@ window.S2V_Components = (function () {
             <p class="eyebrow">Transferencia</p>
             <h4>Mercado y modelo de negocio</h4>
           </div>
-          <span class="curated-data-chip is-market">Sin sesgo financiero</span>
+          
         </div>
         <p class="section-guidance">La vista prioriza señales de mercado y tracción. Se omiten montos de inversión y disponibilidad financiera para no condicionar la valoración.</p>
         <div class="field-grid">
