@@ -2807,7 +2807,7 @@ body.focus-mode .focus-toggle .lbl-off { display: inline; }
 
 
 /* ═══════════════════════════════════════════════════════════════
-   V10 · Vista del evaluador depurada según lineamientos de Erika
+   V10 · Vista del evaluador depurada según lineamientos institucionales
    ═══════════════════════════════════════════════════════════════ */
 .evaluator-curated-section {
   position: relative;
@@ -3515,6 +3515,268 @@ body.role-evaluator .section-sequence-controls { display: flex; }
 }
 </style>
 
+
+<style id="v19-tour-guidance">
+.evaluator-tour-launch {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: fit-content;
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid var(--teal-chip-border);
+  border-radius: 999px;
+  background: var(--teal-chip-bg);
+  color: var(--teal-text);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+}
+.evaluator-tour-launch:hover {
+  transform: translateY(-1px);
+  border-color: var(--teal);
+  background: color-mix(in srgb, var(--teal-chip-bg) 82%, var(--surface-strong));
+}
+.evaluator-tour-launch:focus-visible {
+  outline: 3px solid var(--teal-chip-border);
+  outline-offset: 3px;
+}
+.evaluator-tour-launch svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.tour-pop {
+  width: min(360px, calc(100vw - 28px));
+}
+.tour-pop__foot {
+  align-items: flex-end;
+}
+.tour-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.tour-skip {
+  border: 1px solid var(--border-hover) !important;
+  background: var(--surface-hover) !important;
+  color: var(--text-strong) !important;
+  font-weight: 800 !important;
+  padding: 9px 13px !important;
+}
+.tour-skip:hover {
+  border-color: var(--teal) !important;
+  background: var(--teal-chip-bg) !important;
+  color: var(--teal-text) !important;
+}
+.tour-next {
+  padding: 9px 17px;
+}
+.evaluator-review-overview__head .eyebrow {
+  color: var(--teal-text);
+  opacity: 1;
+}
+.evaluator-observation-card {
+  position: relative;
+}
+.evaluator-observation-card::after {
+  content: "Criterio";
+  position: absolute;
+  top: 14px;
+  right: 13px;
+  color: var(--text-muted);
+  font-size: .58rem;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+@media (max-width: 620px) {
+  .evaluator-tour-launch {
+    width: 100%;
+  }
+  .tour-pop__foot {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .tour-actions {
+    width: 100%;
+  }
+  .tour-actions button {
+    flex: 1 1 auto;
+  }
+}
+</style>
+
+
+<style id="v20-final-rubric">
+.rubric-scale-legend {
+  max-width: 610px;
+  gap: 7px;
+}
+.rubric-scale-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 9px;
+}
+.rubric-scale-legend b {
+  color: var(--text-strong);
+  font-size: 10px;
+}
+.single-parameter-question {
+  padding-top: 24px;
+}
+.single-parameter-question .rubric-question__heading {
+  grid-template-columns: 34px minmax(0, 1fr) minmax(115px, auto);
+}
+.rubric-orienting-question {
+  max-width: 900px;
+  color: var(--text-strong) !important;
+  font-size: 14px !important;
+  font-weight: 650;
+  line-height: 1.6 !important;
+}
+.rubric-score-options {
+  grid-template-columns: repeat(5, minmax(112px, 1fr));
+  gap: 9px;
+  margin-top: 16px;
+}
+.rubric-score-options .rating-option {
+  min-height: 70px;
+  padding: 10px 8px;
+}
+.rubric-score-options .rating-option strong {
+  font-size: 18px;
+}
+.rubric-score-options .rating-option span {
+  font-size: 9px;
+  line-height: 1.2;
+}
+.selected-rubric-level {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px dashed var(--border-hover);
+  border-radius: var(--radius-md);
+  background: var(--detail-section-bg);
+}
+.selected-rubric-level.is-visible {
+  border-style: solid;
+  border-color: var(--teal-chip-border);
+  background: var(--teal-chip-bg);
+}
+.selected-rubric-level > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+.selected-rubric-level strong {
+  color: var(--text-strong);
+  font-size: 12px;
+}
+.selected-rubric-level span {
+  color: var(--teal-text);
+  font-size: 10px;
+  font-weight: 800;
+}
+.selected-rubric-level p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.rubric-level-reference {
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-hover);
+  overflow: hidden;
+}
+.rubric-level-reference summary {
+  padding: 12px 14px;
+  color: var(--teal-text);
+  font-size: 10px;
+  font-weight: 850;
+  cursor: pointer;
+  list-style-position: inside;
+}
+.rubric-level-reference__grid {
+  display: grid;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+.rubric-level-reference__grid article {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.rubric-level-reference__grid article.selected {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px var(--teal-chip-bg);
+}
+.rubric-level-reference__grid article > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.rubric-level-reference__grid b {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--chip-bg);
+  color: var(--text-strong);
+}
+.rubric-level-reference__grid strong {
+  color: var(--text-strong);
+  font-size: 10px;
+}
+.rubric-level-reference__grid p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+@media (max-width: 920px) {
+  .rubric-score-options {
+    grid-template-columns: repeat(5, minmax(90px, 1fr));
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+}
+@media (max-width: 680px) {
+  .single-parameter-question .rubric-question__heading {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+  .single-parameter-question .question-score {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .rubric-score-options {
+    grid-template-columns: repeat(5, 104px);
+  }
+  .selected-rubric-level > div {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .rubric-level-reference__grid article {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
 </head>
 <body>
 
@@ -3680,6 +3942,14 @@ body.role-evaluator .section-sequence-controls { display: flex; }
               <span id="evaluatorWelcomeCount">0 iniciativas</span>
               <span>Lectura previa habilitada</span>
             </div>
+            <button id="startEvaluatorTour" class="evaluator-tour-launch" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M9.7 9a2.5 2.5 0 1 1 3.9 2.1c-.9.6-1.6 1.1-1.6 2.4"></path>
+                <path d="M12 17h.01"></path>
+              </svg>
+              Ver recorrido guiado
+            </button>
           </div>
           <div class="evaluator-welcome__steps" aria-label="Instrucciones de revisión">
             <h3>Ruta sugerida de revisión</h3>
@@ -8998,67 +9268,235 @@ window.S2V_Components = (function () {
 
   const APP_DATA = window.S2V_DATA;
   const STORAGE_KEYS = {
-    session: "s2v_session_v17",
-    evaluators: "s2v_evaluators_v17",
-    assignments: "s2v_assignments_v17",
-    responses: "s2v_component_responses_v17",
-    panels: "s2v_evaluation_panels_v17"
+    session: "s2v_session_v20",
+    evaluators: "s2v_evaluators_v20",
+    assignments: "s2v_assignments_v20",
+    responses: "s2v_component_responses_v20",
+    panels: "s2v_evaluation_panels_v20"
   };
 
   const RUBRIC = [
-    {
-      key: "calidadCientifica", short: "Ciencia", label: "Calidad y solidez científica", max: 300, color: "#55c9cc",
-      description: "Examina la fundamentación, el rigor, las evidencias y la coherencia entre el TRL declarado y el avance demostrado.",
-      questions: [
-        { id: "sci_fundamentacion", label: "Fundamentación científica y pertinencia", prompt: "¿El proyecto parte de un problema, hipótesis o necesidad claramente definida y respaldada por conocimiento científico, técnico o evidencia verificable?", help: "Revisa antecedentes, relevancia del problema y relación entre conocimiento y solución.", weight: 60 },
-        { id: "sci_metodologia", label: "Rigor metodológico", prompt: "¿El proceso de investigación o desarrollo presenta una metodología coherente, documentada y adecuada para obtener los resultados reportados?", help: "Considera diseño metodológico, procedimientos, fuentes, controles y consistencia.", weight: 70 },
-        { id: "sci_resultados", label: "Robustez de los resultados", prompt: "¿Los resultados son suficientemente sólidos, verificables y consistentes para sustentar el desarrollo de la solución?", help: "Valora resultados medibles, repetibilidad, ensayos, prototipos, datos o publicaciones.", weight: 70 },
-        { id: "sci_trl", label: "Coherencia del TRL", prompt: "¿El nivel TRL declarado corresponde al estado de desarrollo demostrado mediante las evidencias presentadas?", help: "Diferencia entre lo ya realizado y lo que el equipo proyecta hacer.", weight: 70 },
-        { id: "sci_trazabilidad", label: "Credibilidad y trazabilidad", prompt: "¿Es posible identificar el origen del conocimiento, los responsables y la trazabilidad del proceso investigativo?", help: "Revisa grupo o semillero, autores, documentación e integridad de la información.", weight: 30 }
-      ]
-    },
-    {
-      key: "mercado", short: "Mercado", label: "Potencial comercial y de mercado", max: 300, color: "#7be1e4",
-      description: "Valora la necesidad de mercado, las validaciones, la propuesta de valor y una ruta de transferencia proporcional al TRL.",
-      questions: [
-        { id: "mkt_problema", label: "Relevancia del problema", prompt: "¿El equipo demuestra que existe un problema, necesidad u oportunidad relevante para usuarios, clientes, empresas o instituciones?", help: "Revisa claridad, frecuencia, intensidad y consecuencias del problema.", weight: 70 },
-        { id: "mkt_validacion", label: "Validación del problema y cliente", prompt: "¿El nivel de validación presentado es coherente con el TRL y confirma que el problema es real y significativo?", help: "Considera entrevistas, encuestas, estudios, pilotos, aliados o clientes.", weight: 70 },
-        { id: "mkt_valor", label: "Propuesta de valor y diferenciación", prompt: "¿La propuesta explica con claridad por qué la solución genera un beneficio superior o diferente frente a las alternativas?", help: "Valora beneficio, cliente objetivo, diferenciación y claridad de comunicación.", weight: 60 },
-        { id: "mkt_acceso", label: "Mercado y posibilidad de acceso", prompt: "¿Existe un mercado identificable y una ruta razonable para acceder a primeros usuarios, clientes o aliados?", help: "Revisa segmento, barreras, canales, decisores y restricciones.", weight: 50 },
-        { id: "mkt_transferencia", label: "Ruta de transferencia", prompt: "¿El equipo presenta una ruta coherente para transferir el conocimiento o la tecnología al mercado?", help: "Puede incluir spin-off, licenciamiento, venta, alianzas o prestación de servicios.", weight: 50 }
-      ]
-    },
-    {
-      key: "innovacionPI", short: "Innovación / PI", label: "Innovación y protección de PI", max: 200, color: "#2ea8ab",
-      description: "Examina la novedad, la ventaja difícil de replicar y la estrategia de protección y titularidad.",
-      questions: [
-        { id: "pi_novedad", label: "Nivel de novedad", prompt: "¿La solución presenta novedad científica, tecnológica, metodológica o de aplicación frente a alternativas existentes?", help: "Valora originalidad, combinación diferenciada y estado del arte.", weight: 60 },
-        { id: "pi_ventaja", label: "Ventaja competitiva", prompt: "¿La innovación puede convertirse en una ventaja difícil de replicar o sustituir?", help: "Considera barreras técnicas, datos, know-how, algoritmos, procesos o infraestructura.", weight: 50 },
-        { id: "pi_proteccion", label: "Potencial de protección", prompt: "¿Los resultados presentan potencial razonable de protección mediante propiedad intelectual o mecanismos de apropiación?", help: "Patente, software, diseño, secreto, marca, derecho de autor o know-how.", weight: 50 },
-        { id: "pi_titularidad", label: "Titularidad y riesgos", prompt: "¿La información permite identificar la titularidad y la ausencia de conflictos evidentes con terceros?", help: "Revisa contratos, licencias, autores, cesiones y libertad de operación.", weight: 40 }
-      ]
-    },
-    {
-      key: "equipo", short: "Equipo", label: "Equipo y capacidad de ejecución", max: 150, color: "#d4a853",
-      description: "Valora capacidades técnicas y de negocio, complementariedad, compromiso y apertura al acompañamiento.",
-      questions: [
-        { id: "eq_capacidad", label: "Capacidad científica y técnica", prompt: "¿El equipo cuenta con conocimiento, experiencia y capacidades suficientes para continuar desarrollando la solución?", help: "Formación, experiencia, publicaciones, proyectos y dominio sectorial.", weight: 45 },
-        { id: "eq_roles", label: "Complementariedad de roles", prompt: "¿Los integrantes cubren las capacidades necesarias para avanzar desde la investigación hacia el mercado?", help: "Liderazgo científico, tecnología, negocio, PI, operación y relacionamiento.", weight: 35 },
-        { id: "eq_ejecucion", label: "Capacidad de ejecución", prompt: "¿El equipo demuestra disponibilidad, organización y capacidad real para cumplir los hitos del proceso?", help: "Roles, responsables, recursos, tiempo e historial de ejecución.", weight: 30 },
-        { id: "eq_apertura", label: "Apertura al acompañamiento", prompt: "¿El equipo demuestra disposición para recibir retroalimentación y ajustar la iniciativa?", help: "Observa escucha, reconocimiento de brechas y capacidad de aplicar aprendizajes.", weight: 20 },
-        { id: "eq_vision", label: "Visión de transferencia", prompt: "¿El equipo comparte una visión clara sobre el futuro de la tecnología y su transferencia?", help: "Hitos, ambición realista, escalabilidad y posible conformación de spin-off.", weight: 20 }
-      ]
-    },
-    {
-      key: "impacto", short: "Impacto", label: "Impacto y sostenibilidad", max: 50, color: "#6bdfb0",
-      description: "Valora la claridad del cambio positivo, su medición y la posibilidad de sostenerlo en el tiempo.",
-      questions: [
-        { id: "imp_claridad", label: "Claridad del impacto", prompt: "¿La iniciativa identifica el cambio positivo que busca generar y los beneficiarios?", help: "Considera impacto económico, social o ambiental y población beneficiada.", weight: 20 },
-        { id: "imp_medicion", label: "Medición del impacto", prompt: "¿El equipo propone indicadores o mecanismos razonables para medir resultados?", help: "Revisa métricas, línea base, frecuencia y posibilidad de verificación.", weight: 15 },
-        { id: "imp_sostenibilidad", label: "Sostenibilidad de largo plazo", prompt: "¿La iniciativa presenta condiciones para sostener su operación e impacto más allá del acompañamiento?", help: "Viabilidad económica, recursos, riesgos y posibilidad de escala.", weight: 15 }
-      ]
-    }
-  ];
+  {
+    "key": "calidadCientifica",
+    "short": "Ciencia",
+    "label": "Calidad y solidez científica",
+    "max": 300,
+    "color": "#55c9cc",
+    "description": "Rigurosidad del proceso investigativo, robustez de los resultados, credibilidad científica y coherencia del TRL frente a los soportes.",
+    "questions": [
+      {
+        "id": "rubrica_calidad",
+        "label": "Pregunta orientadora única",
+        "prompt": "¿Qué tan riguroso es el proceso investigativo, qué tan robustos son los resultados obtenidos y qué tan avanzado y coherente es el nivel de madurez tecnológica (TRL) alcanzado frente a los soportes presentados?",
+        "help": "Revisa el proceso investigativo, la verificabilidad de los resultados y la coherencia entre el TRL validado y las evidencias aportadas.",
+        "weight": 300,
+        "levels": [
+          {
+            "value": 10,
+            "label": "Insuficiente",
+            "description": "La problemática no está claramente definida o es confusa. No se presentan datos, referencias o evidencias que justifiquen su importancia. La propuesta no demuestra por qué el problema merece ser abordado. La tecnología es una adaptación mínima de herramientas existentes, sin desarrollo propio ni rigor metodológico evidente."
+          },
+          {
+            "value": 20,
+            "label": "Básico",
+            "description": "El problema está identificado de manera general, pero la justificación se basa principalmente en percepciones, supuestos o experiencias personales. Presenta pocas evidencias documentales y no demuestra claramente la magnitud o relevancia del problema. La complejidad técnica es baja y no hay componentes originales desarrollados."
+          },
+          {
+            "value": 40,
+            "label": "En desarrollo",
+            "description": "El problema está bien descrito y respaldado por algunas fuentes de información, como estadísticas, literatura, estudios o diagnósticos. Existe una caracterización inicial de los usuarios o beneficiarios, aunque todavía no hay validación directa con los actores involucrados. La tecnología combina desarrollos propios parciales con herramientas existentes."
+          },
+          {
+            "value": 80,
+            "label": "Avanzado",
+            "description": "La problemática está claramente caracterizada mediante información cuantitativa y cualitativa. Se presenta evidencia obtenida con usuarios, empresas, comunidades o entidades interesadas. Se demuestra que existe una necesidad real y prioritaria. La tecnología incluye desarrollos propios significativos y diferenciales documentados."
+          },
+          {
+            "value": 100,
+            "label": "Sobresaliente",
+            "description": "La propuesta demuestra, mediante evidencia sólida y verificable, que el problema representa una oportunidad relevante para el mercado, el sector productivo o la sociedad. Incluye validación con múltiples actores, análisis comparativo del estado actual, priorización de la necesidad y evidencia del interés de potenciales usuarios, aliados o clientes. La tecnología es mayoritariamente original, con protección de propiedad intelectual vigente o en trámite."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "mercado",
+    "short": "Mercado",
+    "label": "Potencial comercial y de mercado",
+    "max": 300,
+    "color": "#7be1e4",
+    "description": "Viabilidad de transferencia al sector productivo, necesidad de mercado, propuesta de valor, adopción y ruta de comercialización.",
+    "questions": [
+      {
+        "id": "rubrica_mercado",
+        "label": "Pregunta orientadora única",
+        "prompt": "¿Qué evidencia existe de que la tecnología responde a una necesidad real del mercado o del sector productivo y tiene potencial para ser transferida, adoptada o comercializada?",
+        "help": "Considera problema validado, necesidad del mercado, propuesta de valor, adopción potencial, tamaño de mercado y estrategia de transferencia.",
+        "weight": 300,
+        "levels": [
+          {
+            "value": 10,
+            "label": "Insuficiente",
+            "description": "No existe evidencia de una necesidad de mercado ni de interés por parte de usuarios potenciales."
+          },
+          {
+            "value": 20,
+            "label": "Básico",
+            "description": "La oportunidad de mercado se plantea únicamente con supuestos del equipo, sin interacción con actores externos."
+          },
+          {
+            "value": 40,
+            "label": "En desarrollo",
+            "description": "Existe una caracterización inicial del mercado y conversaciones exploratorias con potenciales usuarios o aliados, pero la propuesta de valor aún no ha sido validada."
+          },
+          {
+            "value": 80,
+            "label": "Avanzado",
+            "description": "Se presentan evidencias de validación con usuarios, empresas o entidades interesadas, como entrevistas, cartas de intención o talleres de cocreación, además de una estimación fundamentada del mercado y una estrategia preliminar de transferencia o comercialización."
+          },
+          {
+            "value": 100,
+            "label": "Sobresaliente",
+            "description": "La tecnología demuestra una demanda verificable mediante pilotos, acuerdos de colaboración, cartas de intención, clientes tempranos o procesos formales de transferencia. Existe una estrategia clara para llevar la tecnología al mercado, respaldada por aliados estratégicos y una estimación robusta del mercado objetivo."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "innovacionPI",
+    "short": "Innovación / PI",
+    "label": "Innovación y protección de PI",
+    "max": 200,
+    "color": "#2ea8ab",
+    "description": "Novedad y diferenciación tecnológica, escalabilidad, transferencia y estrategia de protección y gestión de la propiedad intelectual.",
+    "questions": [
+      {
+        "id": "rubrica_innovacion",
+        "label": "Pregunta orientadora única",
+        "prompt": "¿Qué tan innovadora y diferenciada es la tecnología frente a las soluciones existentes, y qué tan sólida es su estrategia para proteger, gestionar y transferir la propiedad intelectual, favoreciendo su escalabilidad y generación de nuevas oportunidades de innovación?",
+        "help": "Considera novedad frente al estado del arte, diferenciación, ventaja competitiva, vigilancia tecnológica, nuevas aplicaciones, adaptación, escalabilidad, replicabilidad y estrategia de propiedad intelectual.",
+        "weight": 200,
+        "levels": [
+          {
+            "value": 10,
+            "label": "Insuficiente",
+            "description": "La tecnología presenta escasa diferenciación frente a las soluciones existentes y al estado del arte. No se identifican elementos claros de innovación, potencial de escalabilidad o una estrategia de protección de la propiedad intelectual."
+          },
+          {
+            "value": 20,
+            "label": "Básico",
+            "description": "La tecnología incorpora algunos elementos novedosos o mejoras incrementales, pero la diferenciación frente a las soluciones actuales es limitada. El potencial de escalabilidad o transferencia es incipiente y la estrategia de propiedad intelectual es inexistente o poco definida."
+          },
+          {
+            "value": 40,
+            "label": "En desarrollo",
+            "description": "La tecnología presenta una propuesta de valor diferenciada y evidencia elementos de innovación que representan mejoras relevantes frente a las alternativas existentes. Se identifica potencial para su adaptación o transferencia a otros contextos y se han considerado mecanismos iniciales para la protección o gestión de la propiedad intelectual."
+          },
+          {
+            "value": 80,
+            "label": "Avanzado",
+            "description": "La tecnología demuestra una innovación claramente diferenciada, respaldada por análisis del estado del arte o vigilancia tecnológica. Responde a necesidades o tendencias relevantes, presenta potencial para escalar, adaptarse a diferentes sectores o territorios y habilitar nuevas aplicaciones. Cuenta con una estrategia definida para la protección y gestión de la propiedad intelectual."
+          },
+          {
+            "value": 100,
+            "label": "Sobresaliente",
+            "description": "La tecnología representa una innovación disruptiva o altamente diferenciada, difícilmente replicable y con ventajas competitivas sostenibles. Su potencial de escalabilidad, adaptación y transferencia ha sido claramente demostrado o sustentado, permitiendo nuevos productos, servicios o aplicaciones. Además, dispone de una estrategia robusta de protección y gestión de la propiedad intelectual, alineada con una ruta clara de transferencia tecnológica y generación de valor."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "equipo",
+    "short": "Equipo",
+    "label": "Equipo investigador y capacidad de ejecución",
+    "max": 150,
+    "color": "#d4a853",
+    "description": "Capacidades, complementariedad, compromiso, dedicación, liderazgo, aprendizaje y disposición para ejecutar y transferir la tecnología.",
+    "questions": [
+      {
+        "id": "rubrica_equipo",
+        "label": "Pregunta orientadora única",
+        "prompt": "¿El equipo demuestra las capacidades, el compromiso, la dedicación y la disposición para aprender y ejecutar las acciones necesarias para convertir la tecnología en un emprendimiento o una tecnología transferible?",
+        "help": "Considera perfiles y roles, experiencia, visión, liderazgo, responsabilidades, dedicación, comunicación, compromiso, apertura a la retroalimentación, adaptabilidad, aprendizaje y red de aliados.",
+        "weight": 150,
+        "levels": [
+          {
+            "value": 10,
+            "label": "Insuficiente",
+            "description": "El equipo presenta capacidades limitadas para desarrollar y transferir la tecnología. Existen vacíos importantes en competencias, la dedicación de tiempo es insuficiente y no evidencia una visión compartida ni apertura para incorporar recomendaciones o mejorar durante el proceso."
+          },
+          {
+            "value": 20,
+            "label": "Básico",
+            "description": "El equipo cuenta con algunas capacidades relevantes, principalmente técnicas, pero presenta limitaciones para ejecutar el proyecto. La visión de la iniciativa aún no es clara, la disponibilidad de tiempo es parcial y existe poca evidencia de disposición para recibir y aplicar retroalimentación."
+          },
+          {
+            "value": 40,
+            "label": "En desarrollo",
+            "description": "El equipo reúne competencias técnicas y científicas suficientes para continuar el desarrollo de la tecnología e identifica las capacidades que necesita fortalecer. Comunica de manera aceptable su visión, demuestra compromiso con el proyecto y evidencia disposición para aprender y aprovechar las mentorías y asesorías del programa."
+          },
+          {
+            "value": 80,
+            "label": "Avanzado",
+            "description": "El equipo es multidisciplinario y combina capacidades científicas, tecnológicas y empresariales. Transmite con claridad una visión ambiciosa y realista, evidencia una dedicación suficiente, compromiso con la ejecución y una actitud proactiva para incorporar recomendaciones y fortalecer la iniciativa."
+          },
+          {
+            "value": 100,
+            "label": "Sobresaliente",
+            "description": "El equipo demuestra una alta capacidad de ejecución, liderazgo y complementariedad. Comunica de forma convincente su visión, ambición y creatividad para transformar la tecnología en una solución de alto impacto. Evidencia un compromiso sobresaliente, una dedicación adecuada de los integrantes clave y una alta capacidad para convertir la mentoría, las asesorías y la retroalimentación en mejoras concretas."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "impacto",
+    "short": "Impacto",
+    "label": "Impacto y sostenibilidad",
+    "max": 50,
+    "color": "#6bdfb0",
+    "description": "Potencial de impacto económico, social y ambiental, junto con la sostenibilidad, adopción y escalabilidad en el tiempo.",
+    "questions": [
+      {
+        "id": "rubrica_impacto",
+        "label": "Pregunta orientadora única",
+        "prompt": "¿Qué potencial tiene la tecnología para generar impactos económicos, sociales y ambientales significativos, y qué tan sólida es la estrategia para garantizar su sostenibilidad, adopción y escalabilidad en el tiempo?",
+        "help": "Considera impacto económico, social y ambiental; retos sectoriales o territoriales; beneficiarios; adopción; escalabilidad; sostenibilidad técnica, financiera y operativa; indicadores; ODS y prioridades nacionales de CTI.",
+        "weight": 50,
+        "levels": [
+          {
+            "value": 10,
+            "label": "Insuficiente",
+            "description": "El proyecto no evidencia de manera clara el impacto que espera generar ni presenta una estrategia para garantizar la sostenibilidad de la solución. No se identifican contribuciones relevantes en las dimensiones económica, social o ambiental."
+          },
+          {
+            "value": 20,
+            "label": "Básico",
+            "description": "El proyecto describe impactos potenciales, pero estos son generales y carecen de evidencia o indicadores que los sustenten. La estrategia de sostenibilidad, adopción o escalabilidad es incipiente y el aporte a desafíos sociales o ambientales es limitado o poco claro."
+          },
+          {
+            "value": 40,
+            "label": "En desarrollo",
+            "description": "El proyecto presenta un potencial de impacto identificado en una o más dimensiones y plantea mecanismos iniciales para su sostenibilidad y crecimiento. Se reconoce su contribución a una problemática relevante, aunque requiere fortalecer la evidencia y la estrategia para ampliar su alcance."
+          },
+          {
+            "value": 80,
+            "label": "Avanzado",
+            "description": "Demuestra un alto potencial para generar impactos económicos, sociales y ambientales medibles y sostenibles. Presenta una estrategia coherente para su sostenibilidad técnica, financiera y operativa, así como una ruta clara para su adopción y escalabilidad en diferentes contextos."
+          },
+          {
+            "value": 100,
+            "label": "Sobresaliente",
+            "description": "Evidencia un potencial transformador con impactos económicos, sociales y ambientales significativos, medibles y sostenibles. La solución contribuye de manera clara a resolver desafíos estratégicos del territorio, la industria o la sociedad. Cuenta con una estrategia robusta de sostenibilidad técnica, financiera y operativa, respaldada por alianzas, mecanismos de implementación y una ruta de escalabilidad."
+          }
+        ]
+      }
+    ]
+  }
+];
 
   const COORDINATOR = {
     id: "coord-01", role: "coordinacion", name: "Coordinación Science2Venture",
@@ -9067,11 +9505,11 @@ window.S2V_Components = (function () {
 
   const INITIAL_EVALUATORS = [
     {
-        "id": "ev-erika",
-        "name": "Erika Milena Bejarano",
-        "username": "erika.bejarano",
-        "email": "",
-        "code": "S2V-A-731842",
+        "id": "ev-sara",
+        "name": "Sara Helena Pulido",
+        "username": "shpulido",
+        "email": "shpulido@universidadean.edu.co",
+        "code": "S2V-A-684219",
         "specialty": "Impacta · Panel A",
         "active": true
     },
@@ -9184,7 +9622,7 @@ window.S2V_Components = (function () {
         "name": "Panel A",
         "focus": "Soluciones de ingeniería aplicada",
         "memberIds": [
-            "ev-erika",
+            "ev-sara",
             "ev-mauricio",
             "ev-espejo"
         ],
@@ -9618,10 +10056,15 @@ window.S2V_Components = (function () {
     writeStore(STORAGE_KEYS.responses, state.responses);
   }
 
+  function rubricLevel(question, rating) {
+    const value = Number(rating) || 0;
+    return (question?.levels || []).find(level => Number(level.value) === value) || null;
+  }
+
   function scoreQuestion(rating, weight) {
-    const r = Number(rating) || 0;
+    const r = Math.max(0, Math.min(100, Number(rating) || 0));
     if (!r) return 0;
-    return ((r - 1) / 4) * weight;
+    return (r / 100) * weight;
   }
 
   function scoreCriterion(criterion, ratings) {
@@ -9750,8 +10193,10 @@ window.S2V_Components = (function () {
       setTimeout(() => { applyFilters(); }, 520);
       window.dispatchEvent(new CustomEvent("s2v:dashboardready", { detail: { role: state.role } }));
       const firstName = (state.session?.name || "").split(/\s+/)[0] || "";
-      toastSafe(state.role === "coordinacion" ? "Coordinación Science2Venture" : "Tienes componentes asignados para evaluar.", { type: "info", title: `${greetingByHour()}${firstName ? ", " + firstName : ""}` });
-      setTimeout(() => { if (state.role === "coordinacion" && window.S2V_startTour) window.S2V_startTour(state.role); }, 900);
+      toastSafe(state.role === "coordinacion" ? "Coordinación Science2Venture" : "Tienes criterios asignados para evaluar.", { type: "info", title: `${greetingByHour()}${firstName ? ", " + firstName : ""}` });
+      setTimeout(() => {
+        if (window.S2V_startTour) window.S2V_startTour(state.role);
+      }, state.role === "evaluador" ? 1500 : 900);
     }, 320);
   }
 
@@ -10080,7 +10525,7 @@ window.S2V_Components = (function () {
         }
       } else {
         const assigned = new Set(assignmentsForInitiative(id).flatMap(a => a.criteria));
-        badges.push(badge(`${assigned.size}/5 componentes`, assigned.size === 5 ? "done" : "progress"));
+        badges.push(badge(`${assigned.size}/5 criterios`, assigned.size === 5 ? "done" : "progress"));
         const { sent, total } = evaluationProgressOf(id);
         if (sent === total && total) badges.push(badge("✓ Completa", "done"));
         else if (sent > 0) badges.push(badge(`Evaluación ${sent}/${total}`, "progress"));
@@ -10522,12 +10967,12 @@ window.S2V_Components = (function () {
     const route = clean(item.RutaValidada || item.RutaSugerida || routeOf(item) || "Ruta pendiente");
     const criteria = (assignment?.criteria || RUBRIC.map(c => c.key)).map(key => rubricByKey(key)).filter(Boolean);
     return `
-      <section class="evaluator-review-overview" aria-label="Guía de observación de la iniciativa">
+      <section class="evaluator-review-overview" aria-label="Criterios de evaluación y guía de observación">
         <div class="evaluator-review-overview__head">
           <div>
-            <p class="eyebrow">Ventana de observación</p>
-            <h4>Qué encontrarás y qué debes revisar</h4>
-            <p>La ficha reúne las respuestas entregadas por la iniciativa. Recorre las secciones de izquierda a derecha, contrasta los soportes y prepara tus observaciones antes de la entrevista.</p>
+            <p class="eyebrow">Criterios de evaluación</p>
+            <h4>Estos son los cinco criterios que debes calificar</h4>
+            <p>La evaluación se compone de cinco criterios principales. Cada criterio contiene una única pregunta orientadora, se califica en la escala 10, 20, 40, 80 o 100 y exige una justificación. El bono de equidad e inclusión se verifica por coordinación según los Términos de Referencia.</p>
           </div>
           <div class="evaluator-review-trl">
             <span>TRL validado por Investigación y Transferencia</span>
@@ -10536,13 +10981,13 @@ window.S2V_Components = (function () {
           </div>
         </div>
         <div class="evaluator-observation-grid">
-          ${criteria.map((criterion, index) => `<article class="evaluator-observation-card" style="--criterion-color:${criterion.color}"><b>${index + 1}</b><strong>${esc(criterion.label)}</strong><small>${criterion.max} puntos · valoración obligatoriamente justificada</small></article>`).join("")}
+          ${criteria.map((criterion, index) => `<article class="evaluator-observation-card" style="--criterion-color:${criterion.color}"><b>${index + 1}</b><strong>${esc(criterion.label)}</strong><small>${criterion.max} puntos · una pregunta única y justificada</small></article>`).join("")}
         </div>
         <div class="evaluator-resource-reminder">
           <span><b>Respuestas de la iniciativa</b>Disponibles en las secciones de caracterización, producto, mercado, equipo e impacto.</span>
           <span><b>Video pitch</b>Se abre desde el botón superior y puede consultarse antes de la entrevista.</span>
           <span><b>Evidencias y anexos</b>Disponibles desde los botones de soporte o la sección Recursos y evidencias.</span>
-          <span><b>Evaluación</b>Se habilita en la ventana del panel. Cada calificación y comentario debe estar sustentado.</span>
+          <span><b>Evaluación</b>Se habilita en la ventana del panel. Cada criterio se califica con la escala de la rúbrica y debe justificarse.</span>
         </div>
       </section>`;
   }
@@ -10596,7 +11041,7 @@ window.S2V_Components = (function () {
         <section class="assignment-banner evaluator-banner panel-assignment-banner">
           <div>
             <p class="eyebrow">${panel ? `${esc(panel.name)} · ${esc(panel.focus || "")}` : "Tu asignación"}</p>
-            <h4>${panel ? "Revisión previa de los cinco componentes" : (assignment.criteria.length > 1 ? "Tienes varios componentes asignados" : "Componente asignado")}</h4>
+            <h4>${panel ? "Revisión previa de los cinco criterios" : (assignment.criteria.length > 1 ? "Tienes los cinco criterios asignados" : "Criterio asignado")}</h4>
             ${panel ? `<div class="initiative-slot-highlight"><strong>${esc(scheduleLabel(panel, id))}</strong><span>Horario de entrevista</span></div>` : ""}
             <div class="assignment-chip-row">${chips}</div>
           </div>
@@ -10617,7 +11062,7 @@ window.S2V_Components = (function () {
       <section class="assignment-banner coordinator-banner">
         <div>
           <p class="eyebrow">${panel ? `${esc(panel.name)} · ${esc(panel.focus || "")}` : "Cobertura del panel"}</p>
-          <h4>${panel ? `${(panel.memberIds || []).length} jurados · ${esc(scheduleLabel(panel, id))} · ${access.label}` : `${covered.size}/5 componentes asignados`}</h4>
+          <h4>${panel ? `${(panel.memberIds || []).length} jurados · ${esc(scheduleLabel(panel, id))} · ${access.label}` : `${covered.size}/5 criterios asignados`}</h4>
           <div class="assignment-chip-row">
             ${RUBRIC.map(c => `<span class="assignment-chip ${covered.has(c.key) ? "assigned" : "unassigned"}">${esc(c.short)}</span>`).join("")}
           </div>
@@ -10677,8 +11122,8 @@ window.S2V_Components = (function () {
         <div class="eval-header">
           <div>
             <p class="eyebrow">Seguimiento de evaluación</p>
-            <h4>Promedio por componentes y jurados</h4>
-            <p class="muted">Cada integrante del panel evalúa los cinco componentes. El consolidado muestra el promedio de las calificaciones enviadas.</p>
+            <h4>Promedio por criterios y jurados</h4>
+            <p class="muted">Cada uno de los tres jurados evalúa los cinco criterios completos. El consolidado muestra el promedio de las calificaciones enviadas por el panel.</p>
           </div>
           <div class="score-summary-box">
             <strong>${totalScore.toFixed(1)}</strong>
@@ -10709,11 +11154,15 @@ window.S2V_Components = (function () {
         <div class="eval-header component-eval-intro">
           <div>
             <p class="eyebrow">Evaluación durante entrevista</p>
-            <h4>Los cinco componentes de la iniciativa</h4>
-            <p class="muted">Puedes revisar previamente toda la información y la rúbrica. Los campos de calificación se habilitan únicamente cuando coordinación abre el panel.</p>
+            <h4>Los cinco criterios de evaluación</h4>
+            <p class="muted">Cada jurado evalúa los cinco criterios completos. La rúbrica usa una pregunta orientadora única por criterio y la escala 10, 20, 40, 80 o 100. Los campos se habilitan cuando coordinación abre el panel.</p>
           </div>
-          <div class="scale-legend">
-            <span>1 Nulo</span><span>2 Bajo</span><span>3 Medio</span><span>4 Alto</span><span>5 Muy alto</span>
+          <div class="scale-legend rubric-scale-legend" aria-label="Escala de calificación de la rúbrica">
+            <span><b>10</b> Insuficiente</span>
+            <span><b>20</b> Básico</span>
+            <span><b>40</b> En desarrollo</span>
+            <span><b>80</b> Avanzado</span>
+            <span><b>100</b> Sobresaliente</span>
           </div>
         </div>
         <div class="evaluation-access-banner ${access.phase}">
@@ -10773,7 +11222,7 @@ window.S2V_Components = (function () {
             <div class="submitted-lock"><strong>Evaluación enviada</strong><span>Solo coordinación puede reabrir este componente.</span></div>` : panelLocked ? `
             <div class="submitted-lock panel-window-lock"><strong>Evaluación aún no habilitada</strong><span>Puedes revisar la rúbrica. Los campos se activarán durante la entrevista cuando coordinación abra el panel.</span></div>` : `
             <button class="secondary-btn" type="button" data-save-draft="${criterion.key}">Guardar borrador</button>
-            <button class="primary-btn" type="button" data-submit-criterion="${criterion.key}"><span>Enviar componente</span></button>`}
+            <button class="primary-btn" type="button" data-submit-criterion="${criterion.key}"><span>Enviar criterio</span></button>`}
         </footer>
       </article>`;
   }
@@ -10782,24 +11231,37 @@ window.S2V_Components = (function () {
     const selected = Number(response.ratings?.[question.id] || 0);
     const comment = response.comments?.[question.id] || "";
     const questionScore = scoreQuestion(selected, question.weight);
+    const selectedLevel = rubricLevel(question, selected);
+    const levels = question.levels || [];
     return `
-      <section class="rubric-question compact-question" data-question="${question.id}" data-weight="${question.weight}">
+      <section class="rubric-question compact-question single-parameter-question" data-question="${question.id}" data-weight="${question.weight}">
         <div class="rubric-question__heading">
           <span class="question-index">${index + 1}</span>
           <div>
-            <h6>${esc(question.label)} <small>${question.weight} pts</small></h6>
-            <p>${esc(question.prompt)}</p>
-            <details class="question-help-details"><summary>Qué debe revisar el evaluador</summary><p>${esc(question.help)}</p></details>
+            <h6>${esc(question.label)} <small>Puntaje máximo: ${question.weight}</small></h6>
+            <p class="rubric-orienting-question">${esc(question.prompt)}</p>
+            <details class="question-help-details"><summary>Aspectos que orientan la revisión</summary><p>${esc(question.help)}</p></details>
           </div>
           <strong class="question-score" data-question-score>${questionScore.toFixed(1)} / ${question.weight}</strong>
         </div>
-        <div class="rating-scale compact-rating-scale" role="radiogroup" aria-label="Calificación de ${attr(question.label)}">
-          ${[1,2,3,4,5].map(value => `<button type="button" class="rating-option ${selected === value ? "active" : ""}" data-rating="${value}" aria-pressed="${selected === value ? "true" : "false"}" ${locked ? "disabled" : ""}><strong>${value}</strong><span>${["Nulo","Bajo","Medio","Alto","Muy alto"][value-1]}</span></button>`).join("")}
+        <div class="rating-scale compact-rating-scale rubric-score-options" role="radiogroup" aria-label="Calificación de ${attr(question.label)}">
+          ${levels.map(level => `<button type="button" class="rating-option ${selected === Number(level.value) ? "active" : ""}" data-rating="${level.value}" aria-pressed="${selected === Number(level.value) ? "true" : "false"}" title="${attr(level.description)}" ${locked ? "disabled" : ""}><strong>${level.value}</strong><span>${esc(level.label)}</span></button>`).join("")}
         </div>
+        <div class="selected-rubric-level ${selectedLevel ? "is-visible" : ""}" data-selected-level>
+          ${selectedLevel
+            ? `<div><strong>${selectedLevel.value} — ${esc(selectedLevel.label)}</strong><span>${questionScore.toFixed(1)} de ${question.weight} puntos</span></div><p>${esc(selectedLevel.description)}</p>`
+            : `<div><strong>Selecciona una calificación</strong><span>Escala 10 / 20 / 40 / 80 / 100</span></div><p>Al seleccionar un nivel verás aquí el descriptor correspondiente de la rúbrica.</p>`}
+        </div>
+        <details class="rubric-level-reference">
+          <summary>Consultar los cinco descriptores completos de la rúbrica</summary>
+          <div class="rubric-level-reference__grid">
+            ${levels.map(level => `<article class="${selected === Number(level.value) ? "selected" : ""}" data-reference-level="${level.value}"><div><b>${level.value}</b><strong>${esc(level.label)}</strong></div><p>${esc(level.description)}</p></article>`).join("")}
+          </div>
+        </details>
         <div class="question-comment-wrap mandatory-comment">
           <label class="question-comment-label">
             <span>Justificación de la calificación <b>*</b></span>
-            <textarea rows="3" data-question-comment placeholder="Explica la evidencia, información o razonamiento que sustenta esta valoración." ${locked ? "disabled" : ""}>${esc(comment)}</textarea>
+            <textarea rows="4" data-question-comment placeholder="Explica qué evidencias, respuestas o soportes sustentan la calificación seleccionada." ${locked ? "disabled" : ""}>${esc(comment)}</textarea>
           </label>
         </div>
       </section>`;
@@ -10816,8 +11278,8 @@ window.S2V_Components = (function () {
       const comment = block.querySelector("[data-question-comment]")?.value.trim() || "";
       ratings[questionId] = rating;
       comments[questionId] = comment;
-      if (strict && !rating) errors.push("Debes calificar todas las preguntas.");
-      if (strict && !comment) errors.push("Debes justificar todas las calificaciones.");
+      if (strict && !rating) errors.push("Debes seleccionar una calificación para el criterio.");
+      if (strict && !comment) errors.push("Debes justificar la calificación del criterio.");
     });
     const criterionComment = card.querySelector("[data-criterion-comment]")?.value.trim() || "";
     const confidentialNote = card.querySelector("[data-confidential-note]")?.value.trim() || "";
@@ -10843,7 +11305,17 @@ window.S2V_Components = (function () {
           });
           const question = btn.closest(".rubric-question");
           const weight = Number(question.dataset.weight);
-          question.querySelector("[data-question-score]").textContent = `${scoreQuestion(Number(btn.dataset.rating), weight).toFixed(1)} / ${weight}`;
+          const rating = Number(btn.dataset.rating);
+          const questionConfig = criterion.questions.find(item => item.id === question.dataset.question);
+          const level = rubricLevel(questionConfig, rating);
+          const weightedScore = scoreQuestion(rating, weight);
+          question.querySelector("[data-question-score]").textContent = `${weightedScore.toFixed(1)} / ${weight}`;
+          const selectedLevelBox = question.querySelector("[data-selected-level]");
+          if (selectedLevelBox && level) {
+            selectedLevelBox.classList.add("is-visible");
+            selectedLevelBox.innerHTML = `<div><strong>${level.value} — ${esc(level.label)}</strong><span>${weightedScore.toFixed(1)} de ${weight} puntos</span></div><p>${esc(level.description)}</p>`;
+          }
+          question.querySelectorAll("[data-reference-level]").forEach(item => item.classList.toggle("selected", Number(item.dataset.referenceLevel) === rating));
           const current = collectCriterionResponse(card, criterion, false);
           card.querySelector("[data-criterion-score]").textContent = current.score.toFixed(1);
         });
@@ -10889,12 +11361,12 @@ window.S2V_Components = (function () {
       panelId: assignment?.panelId || null
     };
     setCriterionResponse(state.session.userId, initiativeId, criterionKey, value);
-    feedback.innerHTML = `<div class="eval-saved-msg">✓ ${submit ? "Componente enviado" : "Borrador guardado"}</div>`;
+    feedback.innerHTML = `<div class="eval-saved-msg">✓ ${submit ? "Criterio enviado" : "Borrador guardado"}</div>`;
     renderMetrics();
     if (submit) {
       const prog = evaluatorProgress();
       const justFinished = prog.total > 0 && prog.sent === prog.total;
-      toastSafe(`${criterion.label} · ${value.score.toFixed(1)}/${criterion.max} puntos`, { type: "success", title: "Componente enviado" });
+      toastSafe(`${criterion.label} · ${value.score.toFixed(1)}/${criterion.max} puntos`, { type: "success", title: "Criterio enviado" });
       if (justFinished) {
         toastSafe("Completaste todas tus evaluaciones asignadas. ¡Gracias!", { type: "success", title: "¡Evaluación completa! 🎉", duration: 6000 });
         if (window.S2V_confetti) window.S2V_confetti();
@@ -11105,7 +11577,7 @@ window.S2V_Components = (function () {
     const countMount = els.resultsPanel.querySelector("#resultsVisibleCount");
     if (kpiMount) kpiMount.innerHTML = `
       <article class="results-kpi-card"><span>Iniciativas</span><strong>${rows.length}</strong><small>en el proceso</small></article>
-      <article class="results-kpi-card success"><span>Evaluación completa</span><strong>${complete.length}</strong><small>5 de 5 componentes</small></article>
+      <article class="results-kpi-card success"><span>Evaluación completa</span><strong>${complete.length}</strong><small>5 de 5 criterios</small></article>
       <article class="results-kpi-card warning"><span>En curso</span><strong>${inProgress.length}</strong><small>con borrador o envío parcial</small></article>
       <article class="results-kpi-card"><span>Sin iniciar</span><strong>${notStarted.length}</strong><small>asignadas o sin cobertura</small></article>
       <article class="results-kpi-card accent"><span>Promedio final</span><strong>${complete.length ? average.toFixed(1) : "—"}</strong><small>${complete.length ? "sobre 1050" : "sin evaluaciones completas"}</small></article>`;
@@ -11141,7 +11613,7 @@ window.S2V_Components = (function () {
       <section class="results-shell">
         <header class="results-hero">
           <div><p class="eyebrow">Coordinación · Consolidado</p><h3>Resultados y ranking</h3><p>Consulta el avance de las calificaciones, compara los cinco componentes y ordena las iniciativas de mayor a menor puntaje. Las evaluaciones incompletas aparecen como provisionales.</p></div>
-          <div class="results-method-note"><strong>Regla de consolidación</strong><span>El total definitivo se muestra cuando los 5 componentes están enviados. El bono de equidad se aplica con base ≤ 800.</span></div>
+          <div class="results-method-note"><strong>Regla de consolidación</strong><span>El total definitivo se muestra cuando los 5 criterios están enviados. El bono de equidad se aplica con base ≤ 800.</span></div>
         </header>
         <div id="resultsKpiMount" class="results-kpi-grid"></div>
         <section class="results-component-summary"><div class="results-section-heading"><div><p class="eyebrow">Promedios</p><h4>Resultado por componente</h4></div></div><div id="resultsComponentMount" class="results-component-grid"></div></section>
@@ -11634,6 +12106,9 @@ Equipo Science2Venture`;
     if (els.sortFilter) els.sortFilter.addEventListener("change", applyFilters);
     els.evaluatorPrevInitiative?.addEventListener("click", () => navigateEvaluatorInitiative(-1));
     els.evaluatorNextInitiative?.addEventListener("click", () => navigateEvaluatorInitiative(1));
+    document.getElementById("startEvaluatorTour")?.addEventListener("click", () => {
+      if (window.S2V_startTour) window.S2V_startTour("evaluador", true);
+    });
 
     $$(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => switchTab(btn.dataset.tab));
@@ -11842,7 +12317,8 @@ Equipo Science2Venture`;
   }
 
   /* ── Micro-tour ── */
-  const TOUR_KEY = "s2v_tour_done_v1";
+  const TOUR_KEY_BASE = "s2v_tour_done_v20";
+  let activeTourKey = `${TOUR_KEY_BASE}_general`;
   let tourSteps = [], tourIdx = 0, tourEls = null;
 
   function buildTourEls() {
@@ -11862,13 +12338,18 @@ Equipo Science2Venture`;
     const target = step.selector ? document.querySelector(step.selector) : null;
     const { spot, pop } = tourEls;
     if (target) {
-      const r = target.getBoundingClientRect();
+      let r = target.getBoundingClientRect();
+      const outsideViewport = r.top < 12 || r.bottom > window.innerHeight - 12 || r.left < 0 || r.right > window.innerWidth;
+      if (outsideViewport) {
+        target.scrollIntoView({ block: "center", inline: "nearest" });
+        r = target.getBoundingClientRect();
+      }
       const pad = 8;
       spot.style.opacity = "1";
-      spot.style.left = `${r.left - pad}px`;
-      spot.style.top = `${r.top - pad}px`;
-      spot.style.width = `${r.width + pad * 2}px`;
-      spot.style.height = `${r.height + pad * 2}px`;
+      spot.style.left = `${Math.max(4, r.left - pad)}px`;
+      spot.style.top = `${Math.max(4, r.top - pad)}px`;
+      spot.style.width = `${Math.min(window.innerWidth - 8, r.width + pad * 2)}px`;
+      spot.style.height = `${Math.min(window.innerHeight - 8, r.height + pad * 2)}px`;
     } else {
       spot.style.opacity = "0";
     }
@@ -11879,8 +12360,8 @@ Equipo Science2Venture`;
       <div class="tour-pop__foot">
         <div class="tour-dots">${tourSteps.map((_, i) => `<i class="${i === tourIdx ? "active" : ""}"></i>`).join("")}</div>
         <div class="tour-actions">
-          <button class="tour-skip" type="button">${tourIdx === tourSteps.length - 1 ? "Cerrar" : "Saltar"}</button>
-          <button class="tour-next" type="button">${tourIdx === tourSteps.length - 1 ? "Listo" : "Siguiente"}</button>
+          <button class="tour-skip" type="button" aria-label="Saltar el recorrido guiado">${tourIdx === tourSteps.length - 1 ? "Cerrar recorrido" : "Saltar recorrido"}</button>
+          <button class="tour-next" type="button">${tourIdx === tourSteps.length - 1 ? "Finalizar" : "Siguiente"}</button>
         </div>
       </div>`;
     // place popover near target
@@ -11916,11 +12397,13 @@ Equipo Science2Venture`;
       tourEls.pop.remove();
       tourEls = null;
     }, 320);
-    try { localStorage.setItem(TOUR_KEY, "1"); } catch (e) {}
+    window.removeEventListener("resize", positionTour);
+    try { localStorage.setItem(activeTourKey, "1"); } catch (e) {}
   }
 
-  function startTour(steps, force) {
-    try { if (!force && localStorage.getItem(TOUR_KEY) === "1") return; } catch (e) {}
+  function startTour(steps, force, role = "general") {
+    activeTourKey = `${TOUR_KEY_BASE}_${role}`;
+    try { if (!force && localStorage.getItem(activeTourKey) === "1") return; } catch (e) {}
     tourSteps = steps.filter(s => !s.selector || document.querySelector(s.selector));
     if (!tourSteps.length) return;
     tourIdx = 0;
@@ -11929,20 +12412,57 @@ Equipo Science2Venture`;
     window.addEventListener("resize", positionTour);
   }
   window.S2V_startTour = (role, force) => {
-    const common = [
-      { selector: ".summary-grid", title: "Tu resumen en un vistazo", body: "Las tarjetas superiores muestran las cifras clave de la convocatoria y se actualizan según los filtros activos." },
-      { selector: "#tabNav", title: "Cambia de vista", body: role === "coordinacion" ? "Alterna entre la radiografía analítica, el mapa por componentes, las iniciativas, el ranking y la gestión de evaluadores." : "Aquí encuentras las iniciativas que te fueron asignadas para evaluar por componentes." }
+    if (role === "evaluador") {
+      const evaluatorSteps = [
+        {
+          selector: "#evaluatorWelcome",
+          title: "Comienza por estas instrucciones",
+          body: "Aquí encuentras la ruta recomendada para revisar las iniciativas antes de la entrevista. Puedes volver a abrir este recorrido desde el botón “Ver recorrido guiado”."
+        },
+        {
+          selector: ".initiative-list-panel",
+          title: "Recorre tus iniciativas en orden",
+          body: "Las iniciativas aparecen horizontalmente según el horario de tu panel. Usa las flechas, desplázate de izquierda a derecha o selecciona una tarjeta para abrirla."
+        },
+        {
+          selector: ".evaluator-review-overview",
+          title: "Estos son los cinco criterios de evaluación",
+          body: "Cada tarjeta corresponde a un criterio de la rúbrica. Los tres jurados evalúan los cinco criterios, cada uno con una pregunta única, escala 10/20/40/80/100 y justificación obligatoria."
+        },
+        {
+          selector: ".evaluator-review-trl",
+          title: "Consulta el TRL institucional",
+          body: "Este bloque presenta el TRL y la ruta validados por Investigación y Transferencia. Úsalo como referencia técnica para tu valoración."
+        },
+        {
+          selector: ".detail-actions",
+          title: "Revisa video, evidencias y anexos",
+          body: "Los botones superiores abren el video pitch, la carpeta de evidencias y el anexo entregado por la iniciativa."
+        },
+        {
+          selector: ".detail-section-tabs",
+          title: "Avanza de forma secuencial",
+          body: "Recorre caracterización, producto, mercado, equipo, impacto, recursos y evaluación. Los controles inferiores te permiten ir a la sección anterior o siguiente."
+        }
+      ];
+      startTour(evaluatorSteps, force, role);
+      return;
+    }
+
+    const coordinatorSteps = [
+      { selector: ".summary-grid", title: "Resumen de la convocatoria", body: "Las tarjetas superiores muestran las cifras clave y se actualizan según los filtros activos." },
+      { selector: "#tabNav", title: "Cambia de vista", body: "Alterna entre la radiografía analítica, el mapa por componentes, las iniciativas, el ranking y la gestión de evaluadores." },
+      { selector: ".toolbar", title: "Busca y filtra", body: "Pulsa “/” para buscar al instante; los filtros activos aparecen como chips removibles y puedes ordenar la lista." }
     ];
-    const extra = role === "evaluador"
-      ? [{ selector: ".evaluator-progress", title: "Tu progreso", body: "Sigue cuántos componentes has enviado. Las iniciativas marcan su estado: sin evaluar, en progreso o evaluada." },
-         { selector: ".toolbar", title: "Busca y filtra", body: "Pulsa “/” para buscar al instante y usa las flechas ↑ ↓ y Enter para abrir una ficha sin el ratón." }]
-      : [{ selector: ".toolbar", title: "Busca y filtra", body: "Pulsa “/” para buscar al instante; los filtros activos aparecen como chips removibles y puedes ordenar la lista." }];
-    startTour([...common, ...extra], force);
+    startTour(coordinatorSteps, force, role);
   };
 
   /* ── Init ── */
   document.addEventListener("DOMContentLoaded", () => {
     initKeyboardNav();
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && tourEls) endTour();
+    });
   });
   // Focus toggle is mounted when dashboard is ready (app dispatches event)
   window.addEventListener("s2v:dashboardready", () => {
