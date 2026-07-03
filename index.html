@@ -3777,6 +3777,125 @@ body.role-evaluator .section-sequence-controls { display: flex; }
 }
 </style>
 
+
+<style id="v21-panel-directory">
+.evaluator-panel-directory {
+  margin: 18px 0 20px;
+  padding: clamp(18px, 2.4vw, 26px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.evaluator-panel-directory__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+.evaluator-panel-directory__head h3 {
+  margin: 3px 0 6px;
+  font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+}
+.evaluator-panel-directory__head p:last-child {
+  max-width: 850px;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.evaluator-panel-directory__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.evaluator-panel-theme {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--detail-section-bg);
+  transition: transform .2s var(--ease), border-color .2s var(--ease), box-shadow .2s var(--ease);
+}
+.evaluator-panel-theme__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.evaluator-panel-theme__letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  color: var(--chip-text);
+  font-size: .9rem;
+  font-weight: 900;
+}
+.evaluator-panel-theme__current {
+  display: none;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--teal-chip-bg);
+  border: 1px solid var(--teal-chip-border);
+  color: var(--teal-text);
+  font-size: .65rem;
+  font-weight: 900;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+.evaluator-panel-theme h4 {
+  margin: 13px 0 5px;
+  font-size: 1rem;
+}
+.evaluator-panel-theme p {
+  min-height: 46px;
+  margin: 0 0 9px;
+  color: var(--text-strong);
+  font-size: .82rem;
+  font-weight: 760;
+  line-height: 1.4;
+}
+.evaluator-panel-theme small {
+  color: var(--text-muted);
+  font-size: .7rem;
+}
+.evaluator-panel-theme.is-current {
+  border-color: var(--teal);
+  background: var(--teal-chip-bg);
+  box-shadow: 0 0 0 3px var(--teal-chip-border);
+  transform: translateY(-2px);
+}
+.evaluator-panel-theme.is-current .evaluator-panel-theme__current {
+  display: inline-flex;
+}
+.evaluator-panel-theme.is-current .evaluator-panel-theme__letter {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #071a1d;
+}
+@media (max-width: 1050px) {
+  .evaluator-panel-directory__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 620px) {
+  .evaluator-panel-directory {
+    padding: 16px;
+  }
+  .evaluator-panel-directory__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .evaluator-panel-theme p {
+    min-height: 0;
+  }
+}
+</style>
+
 </head>
 <body>
 
@@ -3959,6 +4078,55 @@ body.role-evaluator .section-sequence-controls { display: flex; }
             <div class="evaluator-welcome__step"><b>4</b><span>Durante la entrevista, califica los cinco componentes y justifica cada respuesta.</span></div>
           </div>
         </section>
+
+        <section id="evaluatorPanelDirectory" class="evaluator-panel-directory" aria-labelledby="evaluatorPanelDirectoryTitle">
+          <div class="evaluator-panel-directory__head">
+            <div>
+              <p class="eyebrow">Distribución temática</p>
+              <h3 id="evaluatorPanelDirectoryTitle">Paneles de evaluación Science2Venture</h3>
+              <p>Las iniciativas se organizaron en cuatro paneles temáticos. Tu panel aparece resaltado y determina las iniciativas que puedes consultar y evaluar.</p>
+            </div>
+          </div>
+          <div class="evaluator-panel-directory__grid" aria-label="Temáticas de los cuatro paneles">
+            <article class="evaluator-panel-theme" data-panel-theme-id="panel-a">
+              <div class="evaluator-panel-theme__top">
+                <span class="evaluator-panel-theme__letter">A</span>
+                <span class="evaluator-panel-theme__current" aria-hidden="true">Tu panel</span>
+              </div>
+              <h4>Panel A</h4>
+              <p>Soluciones de ingeniería aplicada</p>
+              <small>9 iniciativas asignadas</small>
+            </article>
+            <article class="evaluator-panel-theme" data-panel-theme-id="panel-b">
+              <div class="evaluator-panel-theme__top">
+                <span class="evaluator-panel-theme__letter">B</span>
+                <span class="evaluator-panel-theme__current" aria-hidden="true">Tu panel</span>
+              </div>
+              <h4>Panel B</h4>
+              <p>Soluciones de datos asistidas por IA</p>
+              <small>8 iniciativas asignadas</small>
+            </article>
+            <article class="evaluator-panel-theme" data-panel-theme-id="panel-c">
+              <div class="evaluator-panel-theme__top">
+                <span class="evaluator-panel-theme__letter">C</span>
+                <span class="evaluator-panel-theme__current" aria-hidden="true">Tu panel</span>
+              </div>
+              <h4>Panel C</h4>
+              <p>Ciencia aplicada</p>
+              <small>8 iniciativas asignadas</small>
+            </article>
+            <article class="evaluator-panel-theme" data-panel-theme-id="panel-d">
+              <div class="evaluator-panel-theme__top">
+                <span class="evaluator-panel-theme__letter">D</span>
+                <span class="evaluator-panel-theme__current" aria-hidden="true">Tu panel</span>
+              </div>
+              <h4>Panel D</h4>
+              <p>Soluciones tecnológicas con énfasis digital</p>
+              <small>8 iniciativas asignadas</small>
+            </article>
+          </div>
+        </section>
+
         <div class="content-grid">
           <section class="initiative-list-panel">
             <div class="panel-heading compact-heading">
@@ -10152,6 +10320,16 @@ window.S2V_Components = (function () {
     if (els.evaluatorWelcome) els.evaluatorWelcome.setAttribute("aria-hidden", coordinator ? "true" : "false");
   }
 
+
+  function highlightEvaluatorPanel(activePanelId) {
+    document.querySelectorAll("[data-panel-theme-id]").forEach(card => {
+      const isCurrent = Boolean(activePanelId) && card.getAttribute("data-panel-theme-id") === activePanelId;
+      card.classList.toggle("is-current", isCurrent);
+      const currentLabel = card.querySelector(".evaluator-panel-theme__current");
+      if (currentLabel) currentLabel.setAttribute("aria-hidden", isCurrent ? "false" : "true");
+    });
+  }
+
   function updateEvaluatorWelcome() {
     if (state.role !== "evaluador") return;
     const evaluator = currentEvaluator();
@@ -10161,6 +10339,7 @@ window.S2V_Components = (function () {
     if (els.evaluatorWelcomeTitle) els.evaluatorWelcomeTitle.textContent = `Bienvenido/a, ${firstName}`;
     if (els.evaluatorWelcomePanel) els.evaluatorWelcomePanel.textContent = panel ? `${panel.name} · ${panel.focus || "Panel de evaluación"}` : "Panel asignado";
     if (els.evaluatorWelcomeCount) els.evaluatorWelcomeCount.textContent = `${new Set(assignments.map(a => a.initiativeId)).size} iniciativas asignadas`;
+    highlightEvaluatorPanel(panel?.id || "");
   }
 
   function showDashboard() {
@@ -10168,7 +10347,7 @@ window.S2V_Components = (function () {
     els.userEmailLabel.textContent = displayName;
     if (els.userAvatar) els.userAvatar.textContent = initialsOf(state.session?.name || state.session?.email);
     if (els.userGreeting) els.userGreeting.textContent = greetingByHour() + ",";
-    if (els.userRoleLabel) els.userRoleLabel.textContent = state.role === "coordinacion" ? "Coordinación" : "Evaluador por componentes";
+    if (els.userRoleLabel) els.userRoleLabel.textContent = state.role === "coordinacion" ? "Coordinación" : "Evaluador integral";
     configureRoleView();
     updateEvaluatorWelcome();
     els.loginView.classList.add("leaving");
@@ -10193,7 +10372,7 @@ window.S2V_Components = (function () {
       setTimeout(() => { applyFilters(); }, 520);
       window.dispatchEvent(new CustomEvent("s2v:dashboardready", { detail: { role: state.role } }));
       const firstName = (state.session?.name || "").split(/\s+/)[0] || "";
-      toastSafe(state.role === "coordinacion" ? "Coordinación Science2Venture" : "Tienes criterios asignados para evaluar.", { type: "info", title: `${greetingByHour()}${firstName ? ", " + firstName : ""}` });
+      toastSafe(state.role === "coordinacion" ? "Coordinación Science2Venture" : "Tienes iniciativas asignadas para evaluación integral.", { type: "info", title: `${greetingByHour()}${firstName ? ", " + firstName : ""}` });
       setTimeout(() => {
         if (window.S2V_startTour) window.S2V_startTour(state.role);
       }, state.role === "evaluador" ? 1500 : 900);
