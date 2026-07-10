@@ -1510,6 +1510,238 @@ body.viewer-open { overflow: hidden; }
 .eval-error-msg { background:rgba(239,107,107,.12); border:1px solid rgba(239,107,107,.28); color:var(--danger); }
 .eval-saved-msg { background:var(--succ-chip-bg); border:1px solid var(--succ-chip-border); color:var(--succ-chip-text); }
 
+
+
+/* ── S2V v34.3 · navegación compacta de secciones y evaluación ── */
+body.role-evaluator .detail-section-tabs,
+body.role-evaluator .s2v-mobile-section-picker { display:none !important; }
+
+body.role-evaluator .section-sequence-controls.compact-section-nav {
+  display:grid !important;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  margin:14px 0 18px;
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  background:var(--surface);
+  box-shadow:var(--shadow-sm);
+}
+body.role-evaluator .section-sequence-controls.compact-section-nav .section-nav-label {
+  grid-column:1 / -1;
+  color:var(--text-muted);
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+body.role-evaluator .section-sequence-controls.compact-section-nav [data-section-progress] {
+  display:grid;
+  gap:3px;
+  text-align:center;
+}
+body.role-evaluator .section-sequence-controls.compact-section-nav [data-section-progress] small {
+  color:var(--text-muted);
+  font-size:10px;
+  font-weight:700;
+}
+body.role-evaluator .section-sequence-controls.compact-section-nav [data-section-progress] strong {
+  color:var(--text-strong);
+  font-size:16px;
+  line-height:1.2;
+}
+body.role-evaluator .section-sequence-controls.compact-section-nav button,
+.criterion-step-button,
+.criteria-overview-arrow {
+  width:42px;
+  min-width:42px;
+  height:42px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--field-bg);
+  color:var(--text-strong);
+  font-size:18px;
+  font-weight:900;
+  cursor:pointer;
+}
+body.role-evaluator .section-sequence-controls.compact-section-nav button:disabled,
+.criterion-step-button:disabled,
+.criteria-overview-arrow:disabled { opacity:.38; cursor:not-allowed; }
+body.role-evaluator .section-sequence-controls.compact-section-nav button:hover:not(:disabled),
+.criterion-step-button:hover:not(:disabled),
+.criteria-overview-arrow:hover:not(:disabled) {
+  border-color:var(--teal);
+  background:var(--teal-chip-bg);
+}
+
+.criteria-overview-carousel {
+  display:grid;
+  gap:12px;
+  margin-top:18px;
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  background:var(--surface);
+  box-shadow:var(--shadow-sm);
+}
+.criteria-overview-header,
+.criteria-overview-footer {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.criteria-overview-header span {
+  color:var(--text-muted);
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+.criteria-overview-header small,
+.criteria-overview-footer span {
+  color:var(--text-muted);
+  font-size:11px;
+  font-weight:700;
+}
+.criteria-overview-body {
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:10px;
+  align-items:stretch;
+}
+.criteria-overview-card {
+  display:grid;
+  gap:8px;
+  min-height:132px;
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  background:var(--field-bg);
+}
+.criteria-overview-kicker {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.criteria-overview-step {
+  color:var(--teal-text);
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.criteria-overview-card strong {
+  color:var(--text-strong);
+  font-size:22px;
+  line-height:1.15;
+}
+.criteria-overview-card p {
+  margin:0;
+  color:var(--text-soft);
+  font-size:13px;
+  line-height:1.55;
+}
+.criteria-overview-open {
+  border:1px solid var(--teal-chip-border);
+  background:var(--teal-chip-bg);
+  color:var(--teal-text);
+  border-radius:999px;
+  padding:9px 14px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+.criteria-overview-open:hover { filter:brightness(.98); }
+.inline-status {
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  padding:5px 8px;
+  border-radius:999px;
+  border:1px solid var(--chip-border);
+  background:var(--chip-bg);
+  color:var(--text-muted);
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.inline-status.sent { background:var(--succ-chip-bg); border-color:var(--succ-chip-border); color:var(--succ-chip-text); }
+.inline-status.draft { background:var(--warn-chip-bg); border-color:var(--warn-chip-border); color:var(--warn-chip-text); }
+.inline-status.pending { background:var(--chip-bg); border-color:var(--chip-border); color:var(--text-muted); }
+
+.criterion-jump-nav.compact-nav {
+  position:sticky;
+  top:0;
+  z-index:8;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  margin:12px 0 18px;
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  background:var(--sticky-bg);
+  backdrop-filter:blur(18px);
+  box-shadow:var(--shadow-sm);
+}
+.criterion-jump-nav.compact-nav .criterion-nav-label {
+  grid-column:1 / -1;
+  color:var(--text-muted);
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+.criterion-step-summary {
+  display:grid;
+  gap:4px;
+  min-width:0;
+}
+.criterion-step-summary small {
+  color:var(--text-muted);
+  font-size:10px;
+  font-weight:700;
+}
+.criterion-step-summary strong {
+  color:var(--text-strong);
+  font-size:16px;
+  line-height:1.2;
+}
+.criterion-step-summary .inline-status { justify-self:start; }
+
+@media (max-width: 760px) {
+  .criteria-overview-body { grid-template-columns:36px minmax(0,1fr) 36px; }
+  .criteria-overview-card { min-height:120px; padding:14px; }
+  .criteria-overview-card strong { font-size:19px; }
+  .criterion-jump-nav.compact-nav,
+  body.role-evaluator .section-sequence-controls.compact-section-nav {
+    padding:12px;
+    gap:8px;
+  }
+  .criterion-step-button,
+  .criteria-overview-arrow,
+  body.role-evaluator .section-sequence-controls.compact-section-nav button {
+    width:36px;
+    min-width:36px;
+    height:36px;
+    font-size:16px;
+  }
+  .criterion-step-summary strong,
+  body.role-evaluator .section-sequence-controls.compact-section-nav [data-section-progress] strong {
+    font-size:14px;
+  }
+}
+
 /* Coordinator management */
 .management-shell { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; }
 .management-hero { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(250px,0.78fr); gap:22px; align-items:stretch; padding:24px; border:1px solid var(--border); border-radius:var(--radius-xl); background:var(--surface); box-shadow:var(--shadow-sm); }
@@ -13065,25 +13297,24 @@ window.S2V_Components = (function () {
     return t;
   }
 
+
   function compactInitiativeSections() {
     const panel = els.detailPanel;
     const sections = [...panel.querySelectorAll(":scope > .detail-section")];
     if (sections.length < 2) return;
 
-    const tabbar = document.createElement("div");
-    tabbar.className = "detail-section-tabs";
-    tabbar.setAttribute("role", "tablist");
-
-    const mobilePicker = document.createElement("label");
-    mobilePicker.className = "s2v-mobile-section-picker";
-    mobilePicker.innerHTML = `<span>Sección de la ficha</span><select aria-label="Seleccionar sección de la ficha"></select>`;
-    const mobileSelect = mobilePicker.querySelector("select");
-
     const controls = document.createElement("div");
-    controls.className = "section-sequence-controls";
-    controls.innerHTML = `<button type="button" data-section-prev>← Anterior</button><span data-section-progress>Sección 1 de ${sections.length}</span><button type="button" data-section-next>Siguiente →</button>`;
+    controls.className = "section-sequence-controls compact-section-nav";
+    controls.setAttribute("role", "navigation");
+    controls.setAttribute("aria-label", "Secciones de la ficha");
+    controls.innerHTML = `
+      <span class="section-nav-label">Secciones de la ficha</span>
+      <button type="button" data-section-prev aria-label="Sección anterior">←</button>
+      <span data-section-progress></span>
+      <button type="button" data-section-next aria-label="Sección siguiente">→</button>`;
+
     let activeIndex = 0;
-    const buttons = [];
+    const labels = [];
 
     function activate(index, options = {}) {
       activeIndex = Math.max(0, Math.min(sections.length - 1, index));
@@ -13092,21 +13323,15 @@ window.S2V_Components = (function () {
         section.classList.toggle("tab-hidden", !active);
         section.classList.toggle("tab-shown", active);
       });
-      buttons.forEach((button, buttonIndex) => {
-        const active = buttonIndex === activeIndex;
-        button.classList.toggle("active", active);
-        button.setAttribute("aria-selected", active ? "true" : "false");
-      });
-      if (mobileSelect) mobileSelect.value = String(activeIndex);
+      const currentLabel = labels[activeIndex] || `Sección ${activeIndex + 1}`;
       const progress = controls.querySelector("[data-section-progress]");
-      if (progress) progress.textContent = `Sección ${activeIndex + 1} de ${sections.length} · ${buttons[activeIndex]?.textContent || ""}`;
+      if (progress) {
+        progress.innerHTML = `<small>Sección ${activeIndex + 1} de ${sections.length}</small><strong>${esc(currentLabel)}</strong>`;
+      }
       const prev = controls.querySelector("[data-section-prev]");
       const next = controls.querySelector("[data-section-next]");
       if (prev) prev.disabled = activeIndex === 0;
       if (next) next.disabled = activeIndex === sections.length - 1;
-      if (window.matchMedia('(min-width: 761px)').matches) {
-        buttons[activeIndex]?.scrollIntoView({ behavior: options.smooth ? "smooth" : "auto", block: "nearest", inline: "center" });
-      }
       if (options.focus) sections[activeIndex]?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
@@ -13115,35 +13340,18 @@ window.S2V_Components = (function () {
       const heading = section.querySelector("h4");
       const rawLabel = heading ? heading.textContent.trim() : "Información";
       const label = isEval ? "Evaluación" : shortSectionTab(rawLabel);
+      labels.push(label);
+      section.dataset.compactSectionLabel = label;
       section.style.animationDelay = "";
       section.classList.add("tab-hidden");
-
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "detail-section-tab";
-      if (isEval) {
-        btn.classList.add("eval-highlight");
-        btn.title = "Ingresar a la evaluación";
-      }
-      btn.setAttribute("role", "tab");
-      btn.textContent = label;
-      btn.addEventListener("click", () => activate(index, { smooth: true, focus: false }));
-      buttons.push(btn);
-      tabbar.appendChild(btn);
-
-      const option = document.createElement("option");
-      option.value = String(index);
-      option.textContent = `${index + 1}. ${label}`;
-      mobileSelect?.appendChild(option);
     });
 
-    mobileSelect?.addEventListener("change", () => activate(Number(mobileSelect.value), { smooth: true, focus: true }));
-    controls.querySelector("[data-section-prev]")?.addEventListener("click", () => activate(activeIndex - 1, { smooth: true, focus: true }));
-    controls.querySelector("[data-section-next]")?.addEventListener("click", () => activate(activeIndex + 1, { smooth: true, focus: true }));
+    controls.querySelector("[data-section-prev]")?.addEventListener("click", () => activate(activeIndex - 1, { focus: true }));
+    controls.querySelector("[data-section-next]")?.addEventListener("click", () => activate(activeIndex + 1, { focus: true }));
 
-    sections[0].parentNode.insertBefore(mobilePicker, sections[0]);
-    sections[0].parentNode.insertBefore(tabbar, sections[0]);
-    tabbar.parentNode.insertBefore(controls, sections[0]);
+    sections[0].parentNode.insertBefore(controls, sections[0]);
+    panel._activateCompactSection = activate;
+    panel._compactSectionLabels = labels;
     activate(0);
   }
 
@@ -13526,12 +13734,39 @@ window.S2V_Components = (function () {
     };
   }
 
+
   function renderEvaluatorReviewOverview(item, id) {
     const assignment = assignmentForCurrentEvaluator(id);
     const criteria = (assignment?.criteria || RUBRIC.map(c => c.key)).map(key => rubricByKey(key)).filter(Boolean);
     const baseCriteria = criteria.filter(criterion => !criterion.isBonus);
     const bonusCriterion = criteria.find(criterion => criterion.isBonus);
     const routeContext = routeEvaluationContext(item);
+    const overviewItems = [
+      ...baseCriteria.map((criterion, index) => {
+        const response = getCriterionResponse(state.session.userId, id, criterion.key);
+        return {
+          target: `criterion-${criterion.key}`,
+          label: criterion.label,
+          short: criterion.short,
+          caption: `Criterio ${index + 1} de ${baseCriteria.length + (bonusCriterion ? 1 : 0)}`,
+          points: `${criterion.max} puntos · escala 10 / 20 / 40 / 80 / 100`,
+          status: response.status || "pending",
+          statusLabel: statusLabel(response.status)
+        };
+      }),
+      ...(bonusCriterion ? (() => {
+        const response = getCriterionResponse(state.session.userId, id, bonusCriterion.key);
+        return [{
+          target: `criterion-${bonusCriterion.key}`,
+          label: bonusCriterion.label,
+          short: bonusCriterion.short,
+          caption: `Bono verificable`,
+          points: `Hasta ${bonusCriterion.max} puntos · verificación Sí / No`,
+          status: response.status || "pending",
+          statusLabel: statusLabel(response.status)
+        }];
+      })() : [])
+    ];
 
     return `
       <section class="evaluator-review-overview" aria-label="Ruta y criterios de evaluación">
@@ -13560,11 +13795,11 @@ window.S2V_Components = (function () {
           </div>
         </div>
 
-        <div class="rubric-overview-heading">
+        <div class="rubric-overview-heading rubric-overview-heading--compact">
           <div>
             <p class="eyebrow">Criterios de evaluación</p>
-            <h4>Cinco criterios base y un bono verificable</h4>
-            <p>Valora la iniciativa de acuerdo con el TRL validado y con las condiciones de la ruta de acompañamiento indicada arriba. Los cinco criterios base suman 1.000 puntos; el bono de Equidad e Inclusión puede sumar 50 puntos adicionales.</p>
+            <h4>Secciones de evaluación</h4>
+            <p>Revisa una sección a la vez. Aquí ves el orden de lectura y el estado de cada criterio antes de pasar a la rúbrica definitiva.</p>
           </div>
           <div class="rubric-total-summary">
             <strong>1.000</strong>
@@ -13573,24 +13808,21 @@ window.S2V_Components = (function () {
           </div>
         </div>
 
-        <div class="evaluator-observation-grid base-criteria-grid">
-          ${baseCriteria.map((criterion, index) => `
-            <article class="evaluator-observation-card" style="--criterion-color:${criterion.color}">
-              <b>${index + 1}</b>
-              <strong>${esc(criterion.label)}</strong>
-              <small>${criterion.max} puntos · escala 10 / 20 / 40 / 80 / 100</small>
-            </article>`).join("")}
+        <div class="criteria-overview-carousel" data-overview-carousel data-overview-items="${attr(encodeURIComponent(JSON.stringify(overviewItems)))}">
+          <div class="criteria-overview-header">
+            <span>Secciones de evaluación</span>
+            <small>${overviewItems.length} apartados</small>
+          </div>
+          <div class="criteria-overview-body">
+            <button type="button" class="criteria-overview-arrow" data-overview-prev aria-label="Sección anterior">←</button>
+            <article class="criteria-overview-card" data-overview-current></article>
+            <button type="button" class="criteria-overview-arrow" data-overview-next aria-label="Sección siguiente">→</button>
+          </div>
+          <div class="criteria-overview-footer">
+            <span data-overview-progress></span>
+            <button type="button" class="criteria-overview-open" data-overview-open>Ir a esta sección</button>
+          </div>
         </div>
-
-        ${bonusCriterion ? `
-          <article class="bonus-overview-strip" style="--criterion-color:${bonusCriterion.color}">
-            <b>+</b>
-            <div>
-              <strong>${esc(bonusCriterion.label)}</strong>
-              <span>Verificación Sí / No · no requiere justificación</span>
-            </div>
-            <em>Hasta ${bonusCriterion.max} puntos</em>
-          </article>` : ""}
 
         <button type="button" class="evaluation-entry-cta" data-open-evaluation>
           <span>
@@ -13608,6 +13840,7 @@ window.S2V_Components = (function () {
         </div>
       </section>`;
   }
+
 
   function renderDetail(id) {
     const item = state.postulaciones.find(r => initiativeIdOf(r) === id);
@@ -13640,11 +13873,15 @@ window.S2V_Components = (function () {
     `;
     compactInitiativeSections();
     els.detailPanel.querySelector("[data-open-evaluation]")?.addEventListener("click", () => {
-      const evaluationTab = els.detailPanel.querySelector(".detail-section-tab.eval-highlight");
-      if (evaluationTab) {
-        evaluationTab.click();
-        evaluationTab.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+      const sections = [...els.detailPanel.querySelectorAll(":scope > .detail-section")];
+      const evaluationIndex = sections.findIndex(section => section.classList.contains("eval-section"));
+      if (evaluationIndex >= 0 && typeof els.detailPanel._activateCompactSection === "function") {
+        els.detailPanel._activateCompactSection(evaluationIndex, { focus: true });
       }
+      setTimeout(() => {
+        const criterionNav = els.detailPanel.querySelector("[data-criterion-nav]");
+        criterionNav?._goToIndex?.(0, { scroll: true });
+      }, 120);
     });
     attachRoleEvaluationListeners(id);
   }
@@ -13761,6 +13998,7 @@ window.S2V_Components = (function () {
       </section>`;
   }
 
+
   function renderEvaluatorEvaluation(id) {
     const assignment = assignmentForCurrentEvaluator(id);
     if (!assignment) {
@@ -13769,11 +14007,26 @@ window.S2V_Components = (function () {
     const panel = assignment.panelId ? panelById(assignment.panelId) : null;
     const access = evaluationAccessForAssignment(assignment);
     const orderedCriteria = RUBRIC.filter(c => assignment.criteria.includes(c.key));
-    const nav = orderedCriteria.map(c => {
-      const response = getCriterionResponse(state.session.userId, id, c.key);
-      return `<a href="#criterion-${c.key}" class="criterion-nav-chip ${response.status || "pending"}">${esc(c.short)} · ${statusLabel(response.status)}</a>`;
-    }).join("");
     const finalRec = getFinalRecommendation(state.session.userId, id);
+    const navItems = [
+      ...orderedCriteria.map((criterion, index) => {
+        const response = getCriterionResponse(state.session.userId, id, criterion.key);
+        return {
+          target: `criterion-${criterion.key}`,
+          label: criterion.label,
+          caption: `Sección ${index + 1} de ${orderedCriteria.length + 1}`,
+          status: response.status || "pending",
+          statusLabel: statusLabel(response.status)
+        };
+      }),
+      {
+        target: "final-recommendation",
+        label: "Cierre y recomendación final",
+        caption: `Sección ${orderedCriteria.length + 1} de ${orderedCriteria.length + 1}`,
+        status: finalRec.status || "pending",
+        statusLabel: statusLabel(finalRec.status)
+      }
+    ];
     return `
       <section class="detail-section eval-section component-evaluation ${access.open ? "evaluation-window-open" : "evaluation-window-locked"}" style="animation-delay:0.3s">
         <div class="eval-header component-eval-intro">
@@ -13782,7 +14035,7 @@ window.S2V_Components = (function () {
             <h4>Rúbrica definitiva de evaluación</h4>
             <p class="muted">Evalúa los cinco criterios base con la escala y los puntajes definidos en la rúbrica. Cada valoración debe incluir una justificación. Para el bono de Equidad e Inclusión solo indica si el equipo cuenta con al menos una mujer; esta respuesta no requiere justificación. Al final registra tu recomendación general.</p>
           </div>
-          <div class="scale-legend rubric-scale-legend" aria-label="Escala de calificación de la rúbrica">
+          <div class="scale-legend rubric-scale-legend compact-scale-legend" aria-label="Escala de calificación de la rúbrica">
             <span><b>10</b> Insuficiente</span>
             <span><b>20</b> Básico</span>
             <span><b>40</b> En desarrollo</span>
@@ -13794,9 +14047,11 @@ window.S2V_Components = (function () {
           <div><strong>${esc(access.label)}</strong><span>${esc(access.detail)}</span>${panel ? `<small>${esc(panel.name)} · ${esc(formatDateTime(panel.startAt))} a ${esc(formatDateTime(panel.endAt))}</small>` : ""}</div>
           ${panel?.teamsUrl ? `<a href="${attr(panel.teamsUrl)}" target="_blank" rel="noopener noreferrer">Entrar a Teams</a>` : ""}
         </div>
-        <nav class="criterion-jump-nav">
-          ${nav}
-          <a href="#final-recommendation" class="criterion-nav-chip ${finalRec.status || "pending"}">Recomendación · ${statusLabel(finalRec.status)}</a>
+        <nav class="criterion-jump-nav compact-nav" data-criterion-nav data-nav-items="${attr(encodeURIComponent(JSON.stringify(navItems)))}">
+          <span class="criterion-nav-label">Secciones de evaluación</span>
+          <button type="button" class="criterion-step-button" data-criterion-prev aria-label="Sección anterior">←</button>
+          <div class="criterion-step-summary" data-criterion-summary></div>
+          <button type="button" class="criterion-step-button" data-criterion-next aria-label="Sección siguiente">→</button>
         </nav>
         <div class="criterion-evaluation-stack">
           ${orderedCriteria.map(c => renderRubricCriterion(id, c, access)).join("")}
@@ -13804,6 +14059,7 @@ window.S2V_Components = (function () {
         </div>
       </section>`;
   }
+
 
   function renderRubricCriterion(initiativeId, criterion, access = { open: true }) {
     const response = getCriterionResponse(state.session.userId, initiativeId, criterion.key);
@@ -14952,6 +15208,98 @@ window.S2V_Components = (function () {
     };
   }
 
+
+
+  function setupCompactCriterionNavigation(scope = document) {
+    const nav = scope.querySelector("[data-criterion-nav]");
+    if (!nav) return;
+    let items = [];
+    try { items = JSON.parse(decodeURIComponent(nav.dataset.navItems || "[]")); } catch (error) { items = []; }
+    if (!items.length) return;
+
+    const prev = nav.querySelector("[data-criterion-prev]");
+    const next = nav.querySelector("[data-criterion-next]");
+    const summary = nav.querySelector("[data-criterion-summary]");
+    let index = 0;
+
+    function updateSummary(item, currentIndex) {
+      if (!summary || !item) return;
+      summary.innerHTML = `
+        <small>${esc(item.caption || `Sección ${currentIndex + 1} de ${items.length}`)}</small>
+        <strong>${esc(item.label || "Sección")}</strong>
+        <span class="inline-status ${attr(item.status || "pending")}">${esc(item.statusLabel || statusLabel(item.status))}</span>`;
+    }
+
+    function goTo(nextIndex, options = {}) {
+      index = Math.max(0, Math.min(items.length - 1, nextIndex));
+      const item = items[index];
+      updateSummary(item, index);
+      if (prev) prev.disabled = index === 0;
+      if (next) next.disabled = index === items.length - 1;
+      if (options.scroll && item?.target) {
+        const target = document.getElementById(item.target);
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    prev?.addEventListener("click", () => goTo(index - 1, { scroll: true }));
+    next?.addEventListener("click", () => goTo(index + 1, { scroll: true }));
+    nav._goToIndex = goTo;
+    nav._goToTarget = (targetId, options = {}) => {
+      const targetIndex = items.findIndex(item => item.target === targetId);
+      if (targetIndex >= 0) goTo(targetIndex, options);
+    };
+    goTo(0);
+  }
+
+  function setupCriteriaOverviewCarousel(scope = document) {
+    const shell = scope.querySelector("[data-overview-carousel]");
+    if (!shell) return;
+    let items = [];
+    try { items = JSON.parse(decodeURIComponent(shell.dataset.overviewItems || "[]")); } catch (error) { items = []; }
+    if (!items.length) return;
+
+    const card = shell.querySelector("[data-overview-current]");
+    const progress = shell.querySelector("[data-overview-progress]");
+    const prev = shell.querySelector("[data-overview-prev]");
+    const next = shell.querySelector("[data-overview-next]");
+    const open = shell.querySelector("[data-overview-open]");
+    let index = 0;
+
+    function renderItem(item, currentIndex) {
+      if (card) {
+        card.innerHTML = `
+          <div class="criteria-overview-kicker">
+            <span class="criteria-overview-step">${esc(item.caption || `Sección ${currentIndex + 1}`)}</span>
+            <span class="inline-status ${attr(item.status || "pending")}">${esc(item.statusLabel || statusLabel(item.status))}</span>
+          </div>
+          <strong>${esc(item.label || "Sección")}</strong>
+          <p>${esc(item.points || "")}</p>`;
+      }
+      if (progress) progress.textContent = `${currentIndex + 1} de ${items.length}`;
+      if (prev) prev.disabled = currentIndex === 0;
+      if (next) next.disabled = currentIndex === items.length - 1;
+    }
+
+    function goTo(nextIndex) {
+      index = Math.max(0, Math.min(items.length - 1, nextIndex));
+      renderItem(items[index], index);
+    }
+
+    prev?.addEventListener("click", () => goTo(index - 1));
+    next?.addEventListener("click", () => goTo(index + 1));
+    open?.addEventListener("click", () => {
+      scope.querySelector("[data-open-evaluation]")?.click();
+      setTimeout(() => {
+        const nav = scope.querySelector("[data-criterion-nav]");
+        nav?._goToTarget?.(items[index]?.target, { scroll: true });
+      }, 180);
+    });
+
+    shell._goToIndex = goTo;
+    goTo(0);
+  }
+
   function attachRoleEvaluationListeners(initiativeId) {
     document.querySelectorAll("[data-open-management]").forEach(btn => btn.addEventListener("click", () => switchTab("evaluadores")));
     if (state.role !== "evaluador") return;
@@ -15008,6 +15356,8 @@ window.S2V_Components = (function () {
 
     document.querySelector("[data-save-full-evaluation]")?.addEventListener("click", () => saveCompleteEvaluation(initiativeId, false));
     document.querySelector("[data-submit-full-evaluation]")?.addEventListener("click", () => saveCompleteEvaluation(initiativeId, true));
+    setupCompactCriterionNavigation(document);
+    setupCriteriaOverviewCarousel(document);
   }
 
   function cancelAllEvaluationAutosaves(initiativeId, criterionKeys = []) {
