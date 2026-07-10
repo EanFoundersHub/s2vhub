@@ -5027,7 +5027,7 @@ body.role-evaluator .evaluator-review-overview {
 
 
 <style id="s2v-v34-responsive-panel-unico">
-/* V34 · responsive de verdad, no una maqueta de escritorio encogida a la fuerza */
+/* V34.1 · responsive y navegación intuitiva, no una maqueta de escritorio encogida a la fuerza */
 html, body { width: 100%; max-width: 100%; }
 body { overflow-x: clip; }
 .app-shell, .dashboard-view, #listSection, #listSection .content-grid,
@@ -5249,6 +5249,80 @@ body.role-evaluator .evaluator-panel-directory.has-single-panel .evaluator-panel
   .rating-option span, .rubric-score-options .rating-option span { display: none; }
   .rating-option, .rubric-score-options .rating-option { min-height: 48px; }
   .s2v-mobile-eval-cta:not([hidden]) { left: 8px; right: 8px; }
+}
+
+
+/* V34.1 · navegación móvil clara */
+.s2v-mobile-section-picker,
+.s2v-initiative-choice-note { display: none; }
+
+@media (max-width: 760px) {
+  /* En móvil, un selector sustituye la fila de pestañas. Una interfaz, no una estampida tipográfica. */
+  body.role-evaluator .detail-section-tabs { display: none !important; }
+  body.role-evaluator .s2v-mobile-section-picker {
+    display: grid;
+    gap: 6px;
+    margin: 10px 0 8px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    background: var(--surface-strong);
+  }
+  body.role-evaluator .s2v-mobile-section-picker > span {
+    color: var(--text-muted);
+    font-size: .64rem;
+    font-weight: 850;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  body.role-evaluator .s2v-mobile-section-picker select {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 40px 10px 12px;
+    border-radius: 12px;
+    font-size: .88rem;
+    font-weight: 800;
+  }
+  body.role-evaluator .section-sequence-controls {
+    margin-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+  body.role-evaluator .section-sequence-controls span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* El botón fijo abre el selector de iniciativas, no salta por encima de la decisión principal. */
+  body.role-evaluator .s2v-initiative-choice-note {
+    display: none;
+    margin: 0 12px 10px;
+    padding: 12px 14px;
+    border: 1px solid rgba(32,169,174,.42);
+    border-radius: 14px;
+    background: rgba(224,248,248,.9);
+    color: #174f54;
+    font-size: .78rem;
+    line-height: 1.45;
+  }
+  body.role-evaluator .initiative-list-panel.s2v-pick-mode .s2v-initiative-choice-note {
+    display: block;
+    animation: s2vPickPulse .5s ease both;
+  }
+  body.role-evaluator .initiative-list-panel.s2v-pick-mode {
+    outline: 3px solid rgba(85,201,204,.34);
+    outline-offset: 3px;
+  }
+  body.role-evaluator .initiative-list-panel.s2v-pick-mode .card-button {
+    box-shadow: 0 0 0 1px rgba(85,201,204,.24);
+  }
+  @keyframes s2vPickPulse {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .s2v-mobile-eval-cta:not([hidden]) strong { font-size: .88rem; }
 }
 </style>
 
@@ -12649,12 +12723,19 @@ window.S2V_Components = (function () {
     const panel = els.detailPanel;
     const sections = [...panel.querySelectorAll(":scope > .detail-section")];
     if (sections.length < 2) return;
+
     const tabbar = document.createElement("div");
     tabbar.className = "detail-section-tabs";
     tabbar.setAttribute("role", "tablist");
+
+    const mobilePicker = document.createElement("label");
+    mobilePicker.className = "s2v-mobile-section-picker";
+    mobilePicker.innerHTML = `<span>Sección de la ficha</span><select aria-label="Seleccionar sección de la ficha"></select>`;
+    const mobileSelect = mobilePicker.querySelector("select");
+
     const controls = document.createElement("div");
     controls.className = "section-sequence-controls";
-    controls.innerHTML = `<button type="button" data-section-prev>← Sección anterior</button><span data-section-progress>Sección 1 de ${sections.length}</span><button type="button" data-section-next>Siguiente sección →</button>`;
+    controls.innerHTML = `<button type="button" data-section-prev>← Anterior</button><span data-section-progress>Sección 1 de ${sections.length}</span><button type="button" data-section-next>Siguiente →</button>`;
     let activeIndex = 0;
     const buttons = [];
 
@@ -12670,13 +12751,16 @@ window.S2V_Components = (function () {
         button.classList.toggle("active", active);
         button.setAttribute("aria-selected", active ? "true" : "false");
       });
+      if (mobileSelect) mobileSelect.value = String(activeIndex);
       const progress = controls.querySelector("[data-section-progress]");
       if (progress) progress.textContent = `Sección ${activeIndex + 1} de ${sections.length} · ${buttons[activeIndex]?.textContent || ""}`;
       const prev = controls.querySelector("[data-section-prev]");
       const next = controls.querySelector("[data-section-next]");
       if (prev) prev.disabled = activeIndex === 0;
       if (next) next.disabled = activeIndex === sections.length - 1;
-      buttons[activeIndex]?.scrollIntoView({ behavior: options.smooth ? "smooth" : "auto", block: "nearest", inline: "center" });
+      if (window.matchMedia('(min-width: 761px)').matches) {
+        buttons[activeIndex]?.scrollIntoView({ behavior: options.smooth ? "smooth" : "auto", block: "nearest", inline: "center" });
+      }
       if (options.focus) sections[activeIndex]?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
@@ -12684,25 +12768,34 @@ window.S2V_Components = (function () {
       const isEval = section.classList.contains("eval-section");
       const heading = section.querySelector("h4");
       const rawLabel = heading ? heading.textContent.trim() : "Información";
-      const label = isEval ? "Evaluación" : (state.role === "evaluador" ? rawLabel : shortSectionTab(rawLabel));
+      const label = isEval ? "Evaluación" : shortSectionTab(rawLabel);
       section.style.animationDelay = "";
       section.classList.add("tab-hidden");
+
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "detail-section-tab";
       if (isEval) {
         btn.classList.add("eval-highlight");
-        btn.title = "Haz clic aquí para ingresar a la evaluación";
+        btn.title = "Ingresar a la evaluación";
       }
       btn.setAttribute("role", "tab");
       btn.textContent = label;
       btn.addEventListener("click", () => activate(index, { smooth: true, focus: false }));
       buttons.push(btn);
       tabbar.appendChild(btn);
+
+      const option = document.createElement("option");
+      option.value = String(index);
+      option.textContent = `${index + 1}. ${label}`;
+      mobileSelect?.appendChild(option);
     });
 
+    mobileSelect?.addEventListener("change", () => activate(Number(mobileSelect.value), { smooth: true, focus: true }));
     controls.querySelector("[data-section-prev]")?.addEventListener("click", () => activate(activeIndex - 1, { smooth: true, focus: true }));
     controls.querySelector("[data-section-next]")?.addEventListener("click", () => activate(activeIndex + 1, { smooth: true, focus: true }));
+
+    sections[0].parentNode.insertBefore(mobilePicker, sections[0]);
     sections[0].parentNode.insertBefore(tabbar, sections[0]);
     tabbar.parentNode.insertBefore(controls, sections[0]);
     activate(0);
@@ -15925,22 +16018,43 @@ Equipo Science2Venture`;
 
 <script id="s2v-v34-mobile-evaluation-access">
 (() => {
-  const getDetail = () => document.getElementById('detailPanel');
   let button;
 
-  function evaluationTab() {
-    return getDetail()?.querySelector('.detail-section-tab.eval-highlight');
+  function getListPanel() {
+    return document.querySelector('#listSection .initiative-list-panel');
+  }
+
+  function ensureChoiceNote() {
+    const panel = getListPanel();
+    if (!panel) return null;
+    let note = panel.querySelector('.s2v-initiative-choice-note');
+    if (!note) {
+      note = document.createElement('div');
+      note.className = 's2v-initiative-choice-note';
+      note.setAttribute('role', 'status');
+      note.innerHTML = '<strong>Selecciona una iniciativa</strong><br>Al tocar una tarjeta abrirás su ficha. Allí podrás revisar la información y entrar a la evaluación.';
+      const list = panel.querySelector('.initiative-list');
+      panel.insertBefore(note, list || null);
+    }
+    return note;
   }
 
   function updateMobileEvaluationAccess() {
     if (!button) return;
     const evaluator = document.body.classList.contains('role-evaluator');
     const dashboard = document.getElementById('dashboardView');
-    const detail = getDetail();
-    const evalSection = detail?.querySelector('.eval-section');
-    const evalTab = evaluationTab();
-    const active = Boolean(evalTab?.classList.contains('active'));
-    button.hidden = !(evaluator && dashboard && !dashboard.classList.contains('hidden') && evalSection && evalTab && !active);
+    const list = document.getElementById('initiativeList');
+    const hasInitiatives = Boolean(list?.querySelector('.initiative-card'));
+    button.hidden = !(evaluator && dashboard && !dashboard.classList.contains('hidden') && hasInitiatives);
+  }
+
+  function openInitiativeChooser() {
+    const panel = getListPanel();
+    if (!panel) return;
+    ensureChoiceNote();
+    panel.classList.add('s2v-pick-mode');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => panel.querySelector('.card-button')?.focus({ preventScroll: true }), 550);
   }
 
   function install() {
@@ -15950,24 +16064,31 @@ Equipo Science2Venture`;
     button.type = 'button';
     button.className = 's2v-mobile-eval-cta';
     button.hidden = true;
-    button.setAttribute('aria-label', 'Ir a la evaluación de la iniciativa seleccionada');
-    button.innerHTML = '<span><small>Acceso rápido</small><strong>Evaluar esta iniciativa</strong></span><b aria-hidden="true">→</b>';
-    button.addEventListener('click', () => {
-      const tab = evaluationTab();
-      if (!tab) return;
-      tab.click();
-      requestAnimationFrame(() => {
-        getDetail()?.querySelector('.eval-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        updateMobileEvaluationAccess();
-      });
-    });
+    button.setAttribute('aria-label', 'Elegir la iniciativa que vas a evaluar');
+    button.innerHTML = '<span><small>Comenzar evaluación</small><strong>Elegir iniciativa</strong></span><b aria-hidden="true">↑</b>';
+    button.addEventListener('click', openInitiativeChooser);
     document.body.appendChild(button);
 
-    const target = getDetail();
-    if (target) new MutationObserver(updateMobileEvaluationAccess).observe(target, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
-    document.addEventListener('click', () => setTimeout(updateMobileEvaluationAccess, 40), true);
+    const list = document.getElementById('initiativeList');
+    if (list) {
+      new MutationObserver(() => {
+        ensureChoiceNote();
+        updateMobileEvaluationAccess();
+      }).observe(list, { childList: true, subtree: true });
+
+      list.addEventListener('click', (event) => {
+        if (!event.target.closest('.card-button')) return;
+        getListPanel()?.classList.remove('s2v-pick-mode');
+      });
+    }
+
     window.addEventListener('resize', updateMobileEvaluationAccess);
-    window.addEventListener('s2v:dashboardready', updateMobileEvaluationAccess);
+    window.addEventListener('s2v:dashboardready', () => {
+      ensureChoiceNote();
+      updateMobileEvaluationAccess();
+    });
+    document.addEventListener('click', () => setTimeout(updateMobileEvaluationAccess, 40), true);
+    ensureChoiceNote();
     updateMobileEvaluationAccess();
   }
 
