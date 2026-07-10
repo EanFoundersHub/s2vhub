@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Science2Venture · Selection Hub — V34.10 Continuidad visible y contador</title>
+  <title>Science2Venture · Selection Hub — V34.11 Corrección Equidad</title>
   <meta name="s2v-build" content="V34.10-visible-continuity-counter-2026-07-10">
   <!-- BUILD: S2V V34.10 · continuidad visible + contador de secciones · responsive -->
   <meta name="description" content="Selection Hub de la convocatoria Science2Venture (EAN · Impacta): radiografía, mapa por componentes y evaluación de iniciativas científico-tecnológicas.">
@@ -16324,7 +16324,8 @@ window.S2V_Components = (function () {
       if (!criterion || card.classList.contains("submitted") || card.classList.contains("panel-locked")) return;
       card.querySelectorAll(".rating-option").forEach(btn => {
         btn.addEventListener("click", () => {
-          const group = btn.closest(".rating-scale");
+          const group = btn.closest(".rating-scale, .binary-bonus-options");
+          if (!group) return;
           group.querySelectorAll(".rating-option").forEach(option => {
             option.classList.toggle("active", option === btn);
             option.setAttribute("aria-pressed", option === btn ? "true" : "false");
@@ -17747,6 +17748,45 @@ Equipo Science2Venture`;
 
 
 
+
+<!-- V34.11-equidad-binary-fix-2026-07-10 -->
+
+<script>
+/* V34.11 · Respaldo funcional para Equidad e Inclusión */
+document.addEventListener('click', function(event) {
+  const option = event.target.closest('.binary-bonus-option');
+  if (!option || option.disabled) return;
+  const group = option.closest('.binary-bonus-options');
+  const card = option.closest('.criterion-eval-card');
+  if (!group || !card) return;
+  group.querySelectorAll('.binary-bonus-option').forEach(function(item) {
+    const selected = item === option;
+    item.classList.toggle('active', selected);
+    item.classList.toggle('yes', selected && Number(item.dataset.rating) === 100);
+    item.classList.toggle('no', selected && Number(item.dataset.rating) === 0);
+    item.setAttribute('aria-pressed', selected ? 'true' : 'false');
+  });
+  const rating = Number(option.dataset.rating);
+  const score = rating === 100 ? 50 : 0;
+  const questionScore = card.querySelector('[data-question-score]');
+  const criterionScore = card.querySelector('[data-criterion-score]');
+  if (questionScore) questionScore.textContent = score.toFixed(1) + ' / 50';
+  if (criterionScore) criterionScore.textContent = score.toFixed(1);
+  const result = card.querySelector('[data-selected-level]');
+  if (result) {
+    result.classList.add('is-visible');
+    result.innerHTML = rating === 100
+      ? '<strong>Bono marcado como aplicable</strong><span>Se sumarán 50 puntos únicamente si el puntaje base total es igual o inferior a 800.</span>'
+      : '<strong>Bono no aplicable</strong><span>No se sumarán puntos adicionales.</span>';
+  }
+  const criterion = typeof rubricByKey === 'function' ? rubricByKey(card.dataset.criterion) : null;
+  if (criterion && typeof scheduleCriterionAutosave === 'function' && typeof state !== 'undefined' && state.selectedId) {
+    scheduleCriterionAutosave(state.selectedId, criterion.key);
+  }
+  if (criterion && typeof updateCriterionNextAction === 'function') updateCriterionNextAction(card, criterion);
+  if (typeof updateEvaluationProgressUI === 'function') updateEvaluationProgressUI(document);
+}, true);
+</script>
 
 </body>
 </html>
