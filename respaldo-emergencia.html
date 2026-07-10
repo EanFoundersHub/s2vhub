@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Science2Venture · Respaldo de emergencia</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <style>
+    :root{--bg:#eef8f9;--card:#fff;--ink:#101828;--muted:#667085;--line:#d9e5e7;--teal:#0b7f86;--teal2:#55c9cc;--ok:#137a55;--warn:#9a6700;--danger:#b42318}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,#eef6f8,#dff5f6);color:var(--ink)}
+    .wrap{max-width:1080px;margin:0 auto;padding:24px}.hero{background:#083f45;color:#fff;border-radius:24px;padding:24px;box-shadow:0 16px 50px rgba(8,63,69,.18)}
+    .hero h1{margin:0 0 8px;font-size:clamp(26px,4vw,42px)}.hero p{margin:0;line-height:1.55;color:#d9f4f5}.badge{display:inline-block;margin-bottom:12px;padding:7px 10px;border-radius:999px;background:#d7f4f4;color:#064f54;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+    .alert{margin:18px 0;background:#fff7e6;border:1px solid #f2d28a;color:#6f4b00;border-radius:16px;padding:15px 17px;line-height:1.5}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0}.metric{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 24px rgba(16,24,40,.06)}.metric span{display:block;color:var(--muted);font-size:13px}.metric strong{display:block;font-size:30px;margin-top:5px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;margin:18px 0;box-shadow:0 10px 30px rgba(16,24,40,.07)}.card h2{margin:0 0 8px}.card p{color:var(--muted);line-height:1.55}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.btn{appearance:none;border:0;border-radius:14px;padding:13px 17px;font-weight:800;font-size:15px;cursor:pointer;min-height:48px}.btn.primary{background:var(--teal2);color:#073c41}.btn.secondary{background:#eef5f6;color:#17484d;border:1px solid #cfe0e2}.btn.dark{background:#0d3c42;color:#fff}.btn:disabled{opacity:.45;cursor:not-allowed}.status{margin-top:16px;border-radius:14px;padding:13px 15px;background:#eef8f3;color:var(--ok);border:1px solid #b7dfcf;font-weight:700;line-height:1.45}.status.warn{background:#fff7e6;color:var(--warn);border-color:#f2d28a}.status.err{background:#fff0ee;color:var(--danger);border-color:#f4b8b1}.kv{display:grid;grid-template-columns:190px 1fr;gap:8px 14px;margin-top:15px}.kv div:nth-child(odd){color:var(--muted);font-weight:700}.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f6f8fa;border:1px solid #e4e7ec;border-radius:12px;padding:12px;word-break:break-all;font-size:12px}.drop{border:2px dashed #b6d9dc;border-radius:18px;padding:20px;text-align:center;background:#f7fcfc}.small{font-size:12px;color:var(--muted)}.footer{padding:20px 0 34px;color:#667085;text-align:center;font-size:12px}
+    @media(max-width:760px){.wrap{padding:12px}.grid{grid-template-columns:1fr}.kv{grid-template-columns:1fr}.btn{width:100%}.hero,.card{border-radius:18px}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <span class="badge">Plan B sin Power Automate</span>
+      <h1>Respaldo de emergencia</h1>
+      <p>Esta página lee la información guardada en este mismo navegador y genera archivos descargables. No modifica, elimina ni envía datos.</p>
+    </section>
+
+    <div class="alert"><strong>Importante:</strong> abre esta página en una pestaña nueva, usando el mismo navegador y dispositivo donde estás evaluando. No cierres ni actualices la pestaña principal de Science2Venture.</div>
+
+    <section class="grid">
+      <article class="metric"><span>Respuestas de criterios</span><strong id="mResponses">0</strong></article>
+      <article class="metric"><span>Cierres y recomendaciones</span><strong id="mFinals">0</strong></article>
+      <article class="metric"><span>Sincronizaciones pendientes</span><strong id="mPending">0</strong></article>
+    </section>
+
+    <section class="card">
+      <h2>1. Guardar mi evaluación en este equipo</h2>
+      <p>Descarga los dos archivos. El JSON conserva todo el detalle técnico y el CSV permite revisar rápidamente las calificaciones y comentarios.</p>
+      <div class="kv">
+        <div>Evaluador detectado</div><div id="who">No identificado todavía</div>
+        <div>Fecha del respaldo</div><div id="when">—</div>
+        <div>Huella de integridad</div><div class="code" id="hash">Calculando…</div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="downloadJson">Descargar respaldo completo (.json)</button>
+        <button class="btn secondary" id="downloadCsv">Descargar versión legible (.csv)</button>
+        <button class="btn dark" id="copyBackup">Copiar respaldo al portapapeles</button>
+      </div>
+      <div class="status" id="status">Preparando el respaldo local…</div>
+    </section>
+
+    <section class="card">
+      <h2>2. Consolidar respaldos recibidos</h2>
+      <p>Esta sección es para coordinación. Carga varios archivos JSON enviados por los evaluadores y genera un único CSV consolidado, sin depender de SharePoint ni Power Automate.</p>
+      <div class="drop">
+        <input type="file" id="files" accept="application/json,.json" multiple />
+        <p class="small">Puedes seleccionar todos los respaldos recibidos al mismo tiempo.</p>
+      </div>
+      <div class="actions"><button class="btn primary" id="downloadMerged" disabled>Descargar consolidado (.csv)</button></div>
+      <div class="status warn" id="mergeStatus">Aún no se han cargado archivos.</div>
+    </section>
+
+    <div class="footer">Science2Venture · Herramienta local de contingencia · No utiliza Power Automate</div>
+  </main>
+
+<script>
+(function(){
+  'use strict';
+  const KEYS = {
+    session:'s2v_session_v30', responses:'s2v_component_responses_v30', finals:'s2v_final_recommendations_v30',
+    assignments:'s2v_assignments_v30', evaluators:'s2v_evaluators_v30', panels:'s2v_evaluation_panels_v30', pending:'s2v_pending_api_sync_v1'
+  };
+  const $ = id => document.getElementById(id);
+  const safeParse = (raw,fallback) => { try{return raw?JSON.parse(raw):fallback}catch(e){return fallback} };
+  const clean = v => String(v ?? '').replace(/[\u0000-\u001F\u007F]/g,' ').trim();
+  const csvCell = v => '"'+String(v ?? '').replace(/"/g,'""')+'"';
+  const nowIso = () => new Date().toISOString();
+  const slug = v => clean(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,50) || 'evaluador';
+  const saveFile = (name, content, type) => { const blob=new Blob([content],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500); };
+
+  function allS2VRaw(){ const out={}; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k.startsWith('s2v_')) out[k]=localStorage.getItem(k); } return out; }
+  function detect(){
+    const session=safeParse(localStorage.getItem(KEYS.session),{});
+    const responses=safeParse(localStorage.getItem(KEYS.responses),{});
+    const finals=safeParse(localStorage.getItem(KEYS.finals),{});
+    const assignments=safeParse(localStorage.getItem(KEYS.assignments),[]);
+    const evaluators=safeParse(localStorage.getItem(KEYS.evaluators),[]);
+    const panels=safeParse(localStorage.getItem(KEYS.panels),[]);
+    const pending=safeParse(localStorage.getItem(KEYS.pending),{});
+    const userId=clean(session.userId || session.id || session.evaluatorId);
+    const evaluator=(Array.isArray(evaluators)?evaluators:[]).find(e=>clean(e.id)===userId) || {};
+    const userName=clean(evaluator.name || evaluator.username || session.name || session.username || userId || 'Evaluador no identificado');
+    const ownResponses={}; Object.entries(responses||{}).forEach(([k,v])=>{ if(!userId || clean(v?.evaluatorId)===userId || k.startsWith(userId+'|')) ownResponses[k]=v; });
+    const ownFinals={}; Object.entries(finals||{}).forEach(([k,v])=>{ if(!userId || clean(v?.evaluatorId)===userId || k.startsWith(userId+'|')) ownFinals[k]=v; });
+    const snapshot={
+      schema:'s2v-emergency-backup-v1', generatedAt:nowIso(), origin:location.origin, href:location.href,
+      browser:navigator.userAgent, evaluator:{id:userId,name:userName,session},
+      counts:{responses:Object.keys(ownResponses).length,finalRecommendations:Object.keys(ownFinals).length,pendingSyncs:Object.keys(pending||{}).length},
+      responses:ownResponses, finalRecommendations:ownFinals, pendingSyncs:pending,
+      assignments:Array.isArray(assignments)?assignments.filter(a=>!userId || clean(a.evaluatorId)===userId || clean(a.userId)===userId || clean(a.evaluadorId)===userId):[],
+      panels, rawS2VLocalStorage:allS2VRaw()
+    };
+    return {snapshot,userName};
+  }
+  async function sha256(text){ try{ const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }catch(e){ return 'no-disponible'; } }
+  function rowsFromSnapshot(s){
+    const rows=[]; const evaluatorId=clean(s?.evaluator?.id); const evaluator=clean(s?.evaluator?.name);
+    Object.values(s?.responses||{}).forEach(v=>rows.push({recordType:'criterio',evaluatorId,evaluator,initiativeId:clean(v?.initiativeId),criterionKey:clean(v?.criterionKey),status:clean(v?.status),score:v?.score??'',updatedAt:clean(v?.updatedAt),sentAt:clean(v?.sentAt),ratings:JSON.stringify(v?.ratings??{}),comments:JSON.stringify(v?.comments??{}),criterionComment:clean(v?.criterionComment),confidentialNote:clean(v?.confidentialNote),recommendation:clean(v?.recommendation),strengths:'',gaps:'',teamFeedback:''}));
+    Object.values(s?.finalRecommendations||{}).forEach(v=>rows.push({recordType:'cierre',evaluatorId,evaluator,initiativeId:clean(v?.initiativeId),criterionKey:'cierreFinal',status:clean(v?.status),score:'',updatedAt:clean(v?.updatedAt),sentAt:clean(v?.sentAt),ratings:'',comments:'',criterionComment:'',confidentialNote:clean(v?.confidentialNote||v?.justification),recommendation:clean(v?.recommendation),strengths:clean(v?.strengths),gaps:clean(v?.gaps),teamFeedback:clean(v?.teamFeedback)}));
+    return rows;
+  }
+  function csvFromRows(rows){ const cols=['recordType','evaluatorId','evaluator','initiativeId','criterionKey','status','score','updatedAt','sentAt','ratings','comments','criterionComment','confidentialNote','recommendation','strengths','gaps','teamFeedback']; return '\uFEFF'+[cols.map(csvCell).join(','),...rows.map(r=>cols.map(c=>csvCell(r[c])).join(','))].join('\r\n'); }
+
+  let current=null, jsonText='', digest='';
+  async function init(){
+    try{
+      const d=detect(); current=d.snapshot; jsonText=JSON.stringify(current,null,2); digest=await sha256(jsonText); current.integrity={algorithm:'SHA-256',value:digest}; jsonText=JSON.stringify(current,null,2);
+      $('who').textContent=d.userName; $('when').textContent=new Date(current.generatedAt).toLocaleString('es-CO'); $('hash').textContent=digest;
+      $('mResponses').textContent=current.counts.responses; $('mFinals').textContent=current.counts.finalRecommendations; $('mPending').textContent=current.counts.pendingSyncs;
+      if(current.counts.responses===0 && current.counts.finalRecommendations===0){ $('status').className='status err'; $('status').textContent='No se encontraron evaluaciones locales para este usuario. Verifica que abriste esta página en el mismo navegador y dispositivo de la evaluación.'; }
+      else { $('status').textContent='Respaldo listo. Descarga el JSON y el CSV, y envíalos a coordinación.'; }
+    }catch(e){ $('status').className='status err'; $('status').textContent='No fue posible leer el almacenamiento local: '+e.message; }
+  }
+  $('downloadJson').addEventListener('click',()=>{ if(!current)return; const stamp=current.generatedAt.replace(/[:.]/g,'-'); saveFile(`S2V_respaldo_${slug(current.evaluator.name)}_${stamp}.json`,jsonText,'application/json;charset=utf-8'); $('status').textContent='JSON descargado. Conserva este archivo y envíalo a coordinación.'; });
+  $('downloadCsv').addEventListener('click',()=>{ if(!current)return; const stamp=current.generatedAt.replace(/[:.]/g,'-'); saveFile(`S2V_evaluacion_${slug(current.evaluator.name)}_${stamp}.csv`,csvFromRows(rowsFromSnapshot(current)),'text/csv;charset=utf-8'); $('status').textContent='CSV descargado. También descarga el JSON como respaldo completo.'; });
+  $('copyBackup').addEventListener('click',async()=>{ try{await navigator.clipboard.writeText(jsonText); $('status').textContent='Respaldo copiado al portapapeles. Pégalo en un archivo de texto o mensaje privado a coordinación.';}catch(e){$('status').className='status err';$('status').textContent='El navegador bloqueó el portapapeles. Usa la descarga JSON.';} });
+
+  let mergedRows=[];
+  $('files').addEventListener('change',async e=>{
+    mergedRows=[]; let valid=0, invalid=0; const seen=new Map();
+    for(const file of [...e.target.files]){
+      try{ const s=JSON.parse(await file.text()); if(!s || !s.schema || !s.responses) throw new Error('Formato no reconocido'); valid++; for(const r of rowsFromSnapshot(s)){ const key=[r.recordType,r.evaluatorId,r.initiativeId,r.criterionKey].join('|'); const prev=seen.get(key); if(!prev || clean(r.updatedAt)>clean(prev.updatedAt)) seen.set(key,r); } }catch(err){invalid++;}
+    }
+    mergedRows=[...seen.values()].sort((a,b)=>`${a.evaluator}|${a.initiativeId}|${a.criterionKey}`.localeCompare(`${b.evaluator}|${b.initiativeId}|${b.criterionKey}`));
+    $('downloadMerged').disabled=!mergedRows.length; $('mergeStatus').className=invalid?'status warn':'status'; $('mergeStatus').textContent=`${valid} respaldo(s) válido(s), ${invalid} inválido(s), ${mergedRows.length} registro(s) únicos listos para consolidar.`;
+  });
+  $('downloadMerged').addEventListener('click',()=>{ if(!mergedRows.length)return; saveFile(`S2V_consolidado_emergencia_${nowIso().replace(/[:.]/g,'-')}.csv`,csvFromRows(mergedRows),'text/csv;charset=utf-8'); });
+  init();
+})();
+</script>
+</body>
+</html>
