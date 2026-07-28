@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Science2Venture · Selection Hub — V36.33 Corrección del botón Actualizar comentarios</title>
+  <title>Science2Venture · Selection Hub — V36.34 Corrección del botón Actualizar comentarios</title>
   <meta name="s2v-build" content="V36.26-comentarios-coordinacion-2026-07-27">
   <!-- BUILD: S2V V34.17 · Panel E, tres evaluadores, nueve iniciativas (IDs internos corregidos) y protecciones de concurrencia -->
   <meta name="description" content="Selection Hub de la convocatoria Science2Venture (EAN · Impacta): radiografía, mapa por componentes y evaluación de iniciativas científico-tecnológicas.">
@@ -13485,6 +13485,21 @@ window.S2V_Components = (function () {
             "S2V-2026-05",
             "S2V-2026-24"
         ],
+        "noShowInitiativeIds": [
+            "S2V-2026-30"
+        ],
+        "evaluatorInitiativeIds": {
+            "ev-sara": [
+                "S2V-2026-16",
+                "S2V-2026-15",
+                "S2V-2026-14",
+                "S2V-2026-07",
+                "S2V-2026-10",
+                "S2V-2026-32",
+                "S2V-2026-05",
+                "S2V-2026-24"
+            ]
+        },
         "initiativeTimes": {
             "S2V-2026-16": "2:30 p. m.",
             "S2V-2026-30": "2:50 p. m.",
@@ -14034,14 +14049,40 @@ window.S2V_Components = (function () {
     state.finalRecommendations = clone(EMBEDDED_SHAREPOINT_AND_JSON.finalRecommendations);
     state.remoteEvaluationMeta = clone(EMBEDDED_SHAREPOINT_AND_JSON.remoteEvaluationMeta);
 
+    Object.keys(state.responses || {}).forEach(key => {
+      if (key.startsWith("ev-sara|S2V-2026-30|")) delete state.responses[key];
+    });
+    delete state.finalRecommendations?.["ev-sara|S2V-2026-30"];
+    delete state.remoteEvaluationMeta?.["ev-sara|S2V-2026-30"];
+
     writeStore(STORAGE_KEYS.responses, state.responses);
     writeStore(STORAGE_KEYS.finalRecommendations, state.finalRecommendations);
   }
 
-  const PANEL_CONFIGURATION_BUILD = "s2v-cierre-v36.10-consolidado-autoritativo-2026-07-24";
+  const PANEL_CONFIGURATION_BUILD = "s2v-v36.34-sara-8-offline-2026-07-28";
 
+
+  const SARA_STORAGE_MIGRATION = "s2v_sara_storage_migration_v36_34";
+
+  function migrateSaraLocalStorageV3634() {
+    if (localStorage.getItem(SARA_STORAGE_MIGRATION) === "done") return;
+
+    // Eliminar únicamente datos operativos que podían reconstruir la asignación anterior.
+    localStorage.removeItem(STORAGE_KEYS.assignments);
+    localStorage.removeItem(STORAGE_KEYS.responses);
+    localStorage.removeItem(STORAGE_KEYS.finalRecommendations);
+    localStorage.removeItem("s2v_panel_configuration_build");
+
+    // También limpiar colas antiguas de sincronización para que Sara funcione sin SharePoint.
+    localStorage.removeItem("s2v_pending_api_sync_v1");
+    localStorage.removeItem("s2v_pending_sync_queue");
+    localStorage.removeItem("s2v_sharepoint_sync_queue");
+
+    localStorage.setItem(SARA_STORAGE_MIGRATION, "done");
+  }
 
   function ensureInitialStores() {
+    migrateSaraLocalStorageV3634();
     const seed = buildInitialSeed();
     const storedBuild = localStorage.getItem("s2v_panel_configuration_build");
 
@@ -14311,9 +14352,17 @@ window.S2V_Components = (function () {
   }
 
   function assignmentsForEvaluator(id) {
-    const panelRows = generatedPanelAssignments().filter(a => a.evaluatorId === id);
+    const panelRows = generatedPanelAssignments().filter(a =>
+      a.evaluatorId === id
+      && !(id === "ev-sara" && a.initiativeId === "S2V-2026-30")
+    );
     const panelIds = panelInitiativeIds();
-    const directRows = state.assignments.filter(a => a.active !== false && a.evaluatorId === id && !panelIds.has(a.initiativeId));
+    const directRows = state.assignments.filter(a =>
+      a.active !== false
+      && a.evaluatorId === id
+      && !panelIds.has(a.initiativeId)
+      && !(id === "ev-sara" && a.initiativeId === "S2V-2026-30")
+    );
     return [...panelRows, ...directRows];
   }
 
