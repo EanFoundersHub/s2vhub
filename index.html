@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Science2Venture · Selection Hub — V36.26 Sincronización de comentarios de coordinación</title>
+  <title>Science2Venture · Selection Hub — V36.27 Corrección del botón Actualizar comentarios</title>
   <meta name="s2v-build" content="V36.26-comentarios-coordinacion-2026-07-27">
   <!-- BUILD: S2V V34.17 · Panel E, tres evaluadores, nueve iniciativas (IDs internos corregidos) y protecciones de concurrencia -->
   <meta name="description" content="Selection Hub de la convocatoria Science2Venture (EAN · Impacta): radiografía, mapa por componentes y evaluación de iniciativas científico-tecnológicas.">
@@ -12244,27 +12244,6 @@ window.S2V_DATA = {
     draw();
   }
 
-  document.addEventListener("click", event => {
-    const refreshButton = event.target.closest("[data-refresh-coordination-comments]");
-    if (refreshButton && state.role === "coordinacion") {
-      event.preventDefault();
-      refreshButton.disabled = true;
-      refreshButton.textContent = "Actualizando…";
-      syncCoordinationCommentsFromSharePoint({ force: true })
-        .then(() => updateResultsView())
-        .finally(() => {
-          refreshButton.disabled = false;
-          refreshButton.textContent = "Actualizar";
-        });
-      return;
-    }
-
-    const button = event.target.closest("[data-add-coordination-comment]");
-    if (!button || state.role !== "coordinacion") return;
-    event.preventDefault();
-    openCoordinationCommentDialog(button.dataset.addCoordinationComment);
-  });
-
   function init() {
     readTheme();
     resize();
@@ -19729,11 +19708,28 @@ window.S2V_Components = (function () {
     if (reset) reset.addEventListener("click", () => { state.resultsFilters = { search: "", status: "", route: "", evaluator: "", sort: "score-desc" }; state.resultExpandedId = null; renderResultsPanel(); });
     els.resultsPanel.onclick = e => {
       const refreshRemote = e.target.closest("[data-refresh-remote-progress]");
+      const refreshCoordComments = e.target.closest("[data-refresh-coordination-comments]");
       const addCoordComment = e.target.closest("[data-add-coordination-comment]");
       const toggle = e.target.closest("[data-toggle-result]");
       const view = e.target.closest("[data-view-result]");
       if (refreshRemote) {
         refreshCoordinatorProgress({ force: true, silent: false });
+        return;
+      }
+      if (refreshCoordComments && state.role === "coordinacion") {
+        e.preventDefault();
+        refreshCoordComments.disabled = true;
+        refreshCoordComments.textContent = "Actualizando…";
+        syncCoordinationCommentsFromSharePoint({ force: true })
+          .then(() => updateResultsView())
+          .catch(error => {
+            console.error("No fue posible actualizar los comentarios de coordinación.", error);
+            toastSafe("No fue posible actualizar los comentarios de coordinación.", { type: "error" });
+          })
+          .finally(() => {
+            refreshCoordComments.disabled = false;
+            refreshCoordComments.textContent = "Actualizar";
+          });
         return;
       }
       if (addCoordComment) {
