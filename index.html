@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Science2Venture · Selection Hub — V36.30 Corrección del botón Actualizar comentarios</title>
+  <title>Science2Venture · Selection Hub — V36.31 Corrección del botón Actualizar comentarios</title>
   <meta name="s2v-build" content="V36.26-comentarios-coordinacion-2026-07-27">
   <!-- BUILD: S2V V34.17 · Panel E, tres evaluadores, nueve iniciativas (IDs internos corregidos) y protecciones de concurrencia -->
   <meta name="description" content="Selection Hub de la convocatoria Science2Venture (EAN · Impacta): radiografía, mapa por componentes y evaluación de iniciativas científico-tecnológicas.">
@@ -14539,17 +14539,39 @@ window.S2V_Components = (function () {
     state.session = session;
     state.role = session.role;
     writeStore(STORAGE_KEYS.session, session);
-    loadData(APP_DATA);
 
-    // El acceso se resuelve completamente en el navegador. SharePoint nunca debe
-    // bloquear el ingreso, especialmente en Edge, donde una petición pendiente puede
-    // dejar el botón indefinidamente en “Validando acceso”.
-    showDashboard();
+    // Liberar el formulario antes de cualquier renderizado. Ningún cálculo local ni
+    // sincronización remota puede dejar el acceso detenido en “Validando acceso”.
     clearTimeout(loginWatchdog);
     setMessage("", "");
     btn.disabled = false;
     btn.classList.remove("loading");
     loginInProgress = false;
+
+    const isFastSaraLogin = session.userId === "ev-sara";
+    if (isFastSaraLogin) {
+      // Mostrar primero el tablero y completar su contenido en el siguiente ciclo.
+      // Esto evita que renderizados, filtros o datos históricos bloqueen la transición.
+      els.loginView.classList.add("hidden");
+      els.loginView.classList.remove("leaving");
+      els.dashboardView.classList.remove("hidden");
+      requestAnimationFrame(() => {
+        try {
+          loadData(APP_DATA);
+          showDashboard();
+        } catch (error) {
+          console.error("S2V: error al completar el tablero de Sara", error);
+          // El tablero permanece accesible aunque falle un componente secundario.
+          try { configureRoleView(); } catch (_) {}
+          try { switchTab("iniciativas"); } catch (_) {}
+          try { applyFilters(); } catch (_) {}
+          try { renderMetrics(); } catch (_) {}
+        }
+      });
+    } else {
+      loadData(APP_DATA);
+      showDashboard();
+    }
 
     if (state.role !== "coordinacion") {
       const isSara = state.session?.userId === "ev-sara";
@@ -14626,18 +14648,18 @@ window.S2V_Components = (function () {
   function showDashboard() {
     const fastSaraLogin = state.session?.userId === "ev-sara";
     const displayName = state.session?.name || state.session?.email || "Usuario";
-    els.userEmailLabel.textContent = displayName;
+    if (els.userEmailLabel) els.userEmailLabel.textContent = displayName;
     if (els.userAvatar) els.userAvatar.textContent = initialsOf(state.session?.name || state.session?.email);
     if (els.userGreeting) els.userGreeting.textContent = greetingByHour() + ",";
     if (els.userRoleLabel) els.userRoleLabel.textContent = state.role === "coordinacion" ? "Coordinación" : "Evaluador integral";
-    configureRoleView();
-    updateEvaluatorWelcome();
-    els.loginView.classList.add("leaving");
+    try { configureRoleView(); } catch (error) { console.warn("S2V: no fue posible configurar toda la vista", error); }
+    try { updateEvaluatorWelcome(); } catch (error) { console.warn("S2V: no fue posible actualizar el saludo", error); }
+    if (!fastSaraLogin) els.loginView.classList.add("leaving");
     setTimeout(() => {
       els.loginView.classList.add("hidden");
       els.loginView.classList.remove("leaving");
       els.dashboardView.classList.remove("hidden");
-      mountEvaluatorProgress();
+      try { mountEvaluatorProgress(); } catch (error) { console.warn("S2V: progreso no disponible", error); }
       showListSkeleton();
       staggerIn(".metric-card", 70);
       if (state.role === "coordinacion") {
