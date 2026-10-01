@@ -109,3 +109,142 @@ button,input,select{font:inherit}
 .tool-bank h2{margin:4px 0 0;color:var(--strong);font-size:clamp(1.6rem,3vw,2.4rem);letter-spacing:-.04em}.tool-bank p{max-width:700px;margin:0;color:var(--text);line-height:1.7}.tool-bank .notice{margin-top:8px;max-width:680px;width:100%}
 @media(max-width:900px){.hero-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.team-row{grid-template-columns:1fr}.person-contact{justify-content:flex-start}}
 @media(max-width:620px){.hero-stats{grid-template-columns:1fr 1fr}.hero-stats .stat:last-child{grid-column:1/-1}.contact-stack>div{grid-template-columns:1fr;gap:3px}}
+
+/* =========================================================
+   V41 EJECUTIVA · lectura tipo FeOracle / Visión Circular
+   Conserva el look & feel S2V, pero usa mejor el espacio.
+   ========================================================= */
+
+/* Portafolio */
+.hero-stats{grid-template-columns:repeat(3,minmax(0,1fr));align-content:stretch}
+.stat{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.stat strong{font-size:clamp(1.15rem,2.1vw,1.75rem);overflow-wrap:anywhere}
+.project-card{min-height:285px}
+.card-contact{margin-top:-4px;padding:12px 14px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border);display:grid;gap:3px}
+.card-contact span{font-size:.76rem;font-weight:800;color:var(--strong)}
+.card-contact small{font-size:.68rem;color:var(--muted);overflow-wrap:anywhere}
+
+/* Encabezado ejecutivo del proyecto */
+.detail-head{padding-bottom:30px}
+.detail-head h1{max-width:1180px}
+.project-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:24px}
+.project-kpi{min-width:0;border:1px solid var(--border);border-radius:16px;padding:15px 16px;background:color-mix(in srgb,var(--surface) 74%,transparent)}
+.project-kpi span{display:block;font-size:.61rem;line-height:1.25;font-weight:800;letter-spacing:.085em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.project-kpi strong{display:block;font-size:.86rem;line-height:1.35;color:var(--strong);overflow-wrap:anywhere}
+.project-kpi.is-funded{border-color:rgba(47,143,92,.26);background:rgba(47,143,92,.08)}
+.project-kpi.is-funded strong{color:#267447}
+
+/* Resumen ejecutivo */
+.executive-summary{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,.75fr);gap:16px;align-items:start}
+.summary-main-card,.funding-summary,.contact-summary,.summary-pair>article,.challenge-card,.team-section,.result-followup{border:1px solid var(--border);border-radius:20px;background:var(--surface-2)}
+.summary-main-card{padding:26px 28px;min-height:100%}
+.summary-main-card h2,.team-section h2,.application-intro h2{margin:6px 0 12px;color:var(--strong);font-size:clamp(1.35rem,2vw,1.9rem);letter-spacing:-.035em}
+.summary-main-card p,.summary-pair p,.challenge-card p{margin:0;color:var(--text);font-size:.89rem;line-height:1.75;white-space:pre-wrap}
+.section-kicker{display:inline-block;color:var(--teal-dark);font-size:.62rem;line-height:1.2;font-weight:850;letter-spacing:.11em;text-transform:uppercase}
+.summary-side{display:grid;gap:16px}
+.funding-summary,.contact-summary{padding:21px}
+.funding-summary>span,.contact-summary>span{display:block;font-size:.61rem;font-weight:850;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.funding-summary strong{display:block;color:var(--strong);font-size:1rem;line-height:1.35}
+.funding-summary b{display:block;margin-top:7px;color:var(--muted);font-size:1.25rem;letter-spacing:-.035em}
+.funding-summary.is-funded{border-color:rgba(47,143,92,.28);background:linear-gradient(145deg,rgba(47,143,92,.09),var(--surface-2))}
+.funding-summary.is-funded strong,.funding-summary.is-funded b{color:#267447}
+.summary-pair{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.summary-pair>article,.challenge-card{padding:22px 24px}
+.summary-pair h3,.challenge-card h3{margin:6px 0 10px;color:var(--strong);font-size:1rem}
+.challenge-card{grid-column:1/-1;border-left:4px solid var(--teal)}
+.team-section{grid-column:1/-1;padding:24px}
+.section-headline{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:16px}
+.section-headline h2{margin-bottom:0}
+.team-count{flex:0 0 auto;border-radius:999px;padding:7px 11px;background:var(--teal-bg);color:var(--teal-dark);font-size:.68rem;font-weight:800}
+
+/* Contacto principal */
+.lead-contact{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center}
+.lead-avatar,.person-avatar{display:grid;place-items:center;background:var(--strong);color:var(--surface);font-weight:800;letter-spacing:.04em}
+.lead-avatar{width:44px;height:44px;border-radius:14px;font-size:.72rem}
+.lead-copy{min-width:0;display:grid;gap:2px}
+.lead-copy strong{font-size:.91rem;color:var(--strong);overflow-wrap:anywhere}
+.lead-copy span{font-size:.73rem;color:var(--text);line-height:1.35}
+.lead-copy small{font-size:.68rem;color:var(--muted);line-height:1.35}
+.lead-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px;margin-top:3px}
+.contact-action{display:inline-flex;align-items:center;gap:7px;max-width:100%;border:1px solid var(--border);background:var(--surface);border-radius:11px;padding:8px 10px;color:var(--teal-dark);text-decoration:none;font-size:.7rem;font-weight:750;overflow-wrap:anywhere}
+.contact-action:hover{border-color:var(--teal-border);background:var(--teal-bg)}
+.contact-action.static{color:var(--muted)}
+.contact-action span{flex:0 0 auto}
+
+/* Equipo: tarjetas completas y contacto visible */
+.team-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.person-card{border:1px solid var(--border);border-radius:17px;background:var(--surface);padding:16px;display:grid;gap:12px;min-width:0}
+.person-top{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center}
+.person-avatar{width:46px;height:46px;border-radius:14px;font-size:.72rem;background:linear-gradient(145deg,var(--strong),#263746)}
+.person-id{min-width:0}
+.person-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.person-name-row h4{margin:0;color:var(--strong);font-size:.91rem;line-height:1.25;overflow-wrap:anywhere}
+.person-id p{margin:3px 0 0;color:var(--muted);font-size:.72rem;line-height:1.4}
+.leader-chip{display:inline-flex;border-radius:999px;padding:4px 7px;background:var(--teal-bg);color:var(--teal-dark);font-size:.55rem;font-weight:850;letter-spacing:.07em}
+.person-context{display:flex;flex-wrap:wrap;gap:6px}
+.person-context span{display:inline-flex;border-radius:999px;padding:5px 8px;background:var(--surface-2);border:1px solid var(--border);color:var(--muted);font-size:.62rem;line-height:1.25}
+.person-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto}
+.contact-muted,.muted-empty{color:var(--muted);font-size:.75rem;line-height:1.5}
+
+/* Postulación: secciones abiertas tipo FeOracle */
+.application-intro{display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:18px;padding:4px 2px}
+.application-intro h2{margin-bottom:0}
+.application-intro p{max-width:520px;margin:0;color:var(--muted);font-size:.78rem;line-height:1.55;text-align:right}
+.application-groups{display:flex;flex-direction:column;gap:16px}
+.app-section-card{width:100%;border:1px solid var(--border);border-radius:20px;background:var(--surface-2);overflow:hidden}
+.app-section-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 22px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,var(--surface),var(--surface-2))}
+.app-section-head h3{margin:0;color:var(--strong);font-size:1.02rem;letter-spacing:-.025em}
+.app-section-head span{font-size:.58rem;letter-spacing:.09em;font-weight:850;color:var(--teal-dark);text-transform:uppercase;white-space:nowrap}
+.app-field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 26px;padding:7px 22px 18px}
+.app-field{min-width:0;padding:13px 2px;border-bottom:1px solid var(--border)}
+.app-field.full{grid-column:1/-1}
+.app-field>span{display:block;margin-bottom:6px;color:var(--muted);font-size:.62rem;font-weight:850;letter-spacing:.065em;text-transform:uppercase}
+.app-field>div{color:var(--text);font-size:.84rem;line-height:1.62;white-space:pre-wrap;overflow-wrap:anywhere}
+.app-field ul{margin:0;padding-left:18px}.app-field a{color:var(--teal-dark);font-weight:750;text-decoration:none}
+.app-field a:hover{text-decoration:underline}
+
+/* Evaluación / revisión */
+.eval-stack{gap:16px}
+.eval-block{padding:22px 24px}
+.eval-block hr{border:0;border-top:1px solid var(--border);margin:18px 0}
+.result-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.result-item.accent{border-left:4px solid var(--teal)}
+
+/* Resultado consolidado: la financiación manda, no el comentario preliminar */
+.result-executive{display:grid;gap:16px}
+.funding-result{border:1px solid var(--border);border-radius:22px;padding:26px;background:linear-gradient(145deg,var(--surface),var(--surface-2))}
+.funding-result.is-funded{border-color:rgba(47,143,92,.30);background:linear-gradient(135deg,rgba(47,143,92,.10),var(--surface))}
+.funding-result-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 12px}
+.funding-result-grid>div{border:1px solid var(--border);border-radius:15px;background:color-mix(in srgb,var(--surface) 85%,transparent);padding:15px}
+.funding-result-grid span{display:block;color:var(--muted);font-size:.61rem;font-weight:850;letter-spacing:.075em;text-transform:uppercase;margin-bottom:7px}
+.funding-result-grid strong{display:block;color:var(--strong);font-size:.95rem;line-height:1.4;overflow-wrap:anywhere}
+.funding-result.is-funded .funding-result-grid>div:first-child strong,.funding-result.is-funded .funding-result-grid>div:nth-child(2) strong{color:#267447}
+.funding-result>p,.result-followup p{margin:0;color:var(--text);font-size:.84rem;line-height:1.65}
+.result-followup{padding:22px 24px}.result-followup h3{margin:6px 0 11px;color:var(--strong)}.result-followup p+p{margin-top:10px}
+
+/* Banco de herramientas */
+.tool-bank{display:block;min-height:0;padding:0;border:0;background:transparent;text-align:left}
+.tool-bank-head{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start;padding:24px;border:1px solid var(--border);border-radius:20px;background:linear-gradient(145deg,var(--surface),var(--surface-2));margin-bottom:16px}
+.tool-bank-head h2{margin:5px 0 7px;color:var(--strong);font-size:clamp(1.4rem,2.4vw,2rem);letter-spacing:-.04em}
+.tool-bank-head p{margin:0;color:var(--text);font-size:.86rem;line-height:1.65;max-width:850px}
+.tool-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.tool-card{min-height:170px;border:1px solid var(--border);border-radius:18px;background:var(--surface-2);padding:19px;display:flex;flex-direction:column}
+.tool-card>span{width:fit-content;border-radius:999px;padding:5px 8px;background:var(--teal-bg);color:var(--teal-dark);font-size:.55rem;font-weight:850;letter-spacing:.07em}
+.tool-card h3{margin:13px 0 7px;color:var(--strong);font-size:.96rem}
+.tool-card p{margin:0;color:var(--muted);font-size:.76rem;line-height:1.55}
+
+@media(max-width:1080px){
+  .executive-summary{grid-template-columns:1fr}
+  .summary-side{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .summary-pair,.team-section,.challenge-card{grid-column:auto}
+  .project-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .project-kpis,.summary-side,.summary-pair,.team-grid,.app-field-grid,.funding-result-grid,.tool-grid{grid-template-columns:1fr}
+  .app-field.full{grid-column:auto}
+  .application-intro{display:block}.application-intro p{text-align:left;margin-top:8px}
+  .section-headline{align-items:flex-start;flex-direction:column}.team-count{align-self:flex-start}
+  .app-section-head{align-items:flex-start;flex-direction:column;gap:6px}
+  .summary-main-card,.team-section,.funding-result{padding:20px}
+}
