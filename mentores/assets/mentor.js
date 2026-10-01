@@ -1,4 +1,3 @@
-
 (() => {
   "use strict";
   const app = document.getElementById("app");
@@ -14,28 +13,39 @@
     const s=String(v).trim().toLowerCase();
     return !s || ["null","undefined","nan","no reportado"].includes(s);
   };
-  const short = (s,n=230) => { s=clean(s); return s.length>n ? s.slice(0,n-1).trim()+"…" : s; };
-  const labelRoute = r => clean(r).replace("Ruta 1-3","Ruta 1–3").replace("Ruta 4-6","Ruta 4–6");
   const valueHtml = v => {
     if (Array.isArray(v)) return `<ul>${v.filter(x=>!empty(x)).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
     const s=clean(v);
     if (/^https?:\/\//i.test(s)) return `<a href="${esc(s)}" target="_blank" rel="noopener">${esc(s)}</a>`;
     return esc(s);
   };
+  const money = v => {
+    const n = Number(v);
+    if (!Number.isFinite(n) || n <= 0) return "";
+    return new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(n);
+  };
+  const fundingLabel = r => r?.fundingAssigned ? "Recibirá financiación" : "Sin financiación asignada";
+  const mailLink = v => empty(v) ? "" : `<a class="contact-link" href="mailto:${esc(clean(v))}">${esc(clean(v))}</a>`;
+  const phoneLink = v => {
+    if (empty(v)) return "";
+    const raw=clean(v), tel=raw.replace(/[^\d+]/g,"");
+    return `<a class="contact-link" href="tel:${esc(tel)}">${esc(raw)}</a>`;
+  };
 
   const fieldGroups = [
     ["Identificación del proyecto",[
       ["IDIniciativa","Código de iniciativa"],["EstadoPostulacion","Estado de postulación"],["FechaPostulacion","Fecha de postulación"],
-      ["NombreLider","Líder"],["Ciudad","Ciudad"],["Vinculacion","Vinculación"],["Modalidad","Modalidad"],["Enfoque","Enfoque"],
+      ["NombreLider","Líder / contacto principal"],["CorreoLider","Correo de contacto"],["TelefonoLider","Teléfono de contacto"],
+      ["Ciudad","Ciudad"],["Vinculacion","Vinculación"],["Modalidad","Modalidad"],["Enfoque","Enfoque"],
       ["EnfoqueDetalle","Detalle del enfoque"],["AreaConocimiento","Área de conocimiento"],["SurgeGrupoSemillero","¿Surge de grupo o semillero?"],
       ["GrupoSemillero","Grupo / semillero"],["AnoInicio","Año de inicio"]
     ]],
     ["Madurez tecnológica",[
-      ["RutaTRL","Ruta TRL declarada"],["TRLDeclarado","TRL declarado"],["TRLDetalle","Detalle TRL"],["CRLDeclarado","CRL declarado"],
+      ["TRLDeclarado","TRL declarado"],["TRLDetalle","Detalle TRL"],["CRLDeclarado","CRL declarado"],
       ["CRLDetalle","Detalle CRL"],["BRLDeclarado","BRL declarado"],["BRLDetalle","Detalle BRL"],["TipoTecnologia","Tipo de tecnología"],
       ["TecnologiaPropia","Tecnología propia"],["Complejidad","Complejidad"],["EntornoPrueba","Entorno de prueba"],["Brecha","Brecha principal"],
       ["EvidenciasTecnicas","Evidencias técnicas"],["EvidenciasConcretas","Evidencias concretas"],["TRLValidado","TRL validado"],
-      ["RutaValidada","Ruta validada"],["TRLValidacionEstado","Estado de validación TRL"],["TRLValidacionComparacion","Comparación TRL"],
+      ["TRLValidacionEstado","Estado de validación TRL"],["TRLValidacionComparacion","Comparación TRL"],
       ["TRLValidacionTipo","Tipo de validación"],["TRLValidacionTexto","Texto de validación TRL"],["TRLValidacionFecha","Fecha validación"],
       ["TRLValidacionEvaluador","Evaluador TRL"]
     ]],
@@ -109,9 +119,8 @@
 
   function renderPortfolio() {
     const d=state.data,m=d.mentor;
-    const routes=Object.entries(d.routeCounts||{});
-    const programs=[...new Set(d.projects.map(p=>p.result?.program).filter(Boolean))];
-    const routeOpts=[...new Set(d.projects.map(p=>labelRoute(p.result?.route)).filter(Boolean))];
+    const fundedCount=d.projects.filter(p=>p.result?.fundingAssigned).length;
+    const fundingTotal=d.projects.reduce((sum,p)=>sum+(Number(p.result?.fundingAmount)||0),0);
     app.innerHTML=`<section class="portfolio">
       <div class="mentor-hero">
         <article class="hero-main">
@@ -124,43 +133,46 @@
         </article>
         <aside class="hero-stats">
           <div class="stat"><strong>${d.initiativeCount}</strong><span>INICIATIVAS</span></div>
-          ${routes.map(([r,n])=>`<div class="stat"><strong>${n}</strong><span>${esc(labelRoute(r).toUpperCase())}</span></div>`).join("")}
+          <div class="stat"><strong>${fundedCount}</strong><span>CON FINANCIACIÓN</span></div>
+          <div class="stat"><strong>${fundingTotal ? esc(money(fundingTotal).replace(",00","")) : "—"}</strong><span>FINANCIACIÓN ASIGNADA</span></div>
         </aside>
       </div>
       <div class="toolbar">
         <div class="field search"><label>Buscar iniciativa</label><input id="searchInput" type="search" placeholder="Nombre, sector o enfoque"></div>
-        <div class="field"><label>Ruta</label><select id="routeFilter"><option value="">Todas</option>${routeOpts.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div>
-        <div class="field"><label>Programa</label><select id="programFilter"><option value="">Todos</option>${programs.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div>
       </div>
       <div id="projectGrid" class="project-grid"></div>
       <p class="footer-note">SelectionHub · Mentor View · Science2Venture 2026</p>
     </section>`;
-    ["searchInput","routeFilter","programFilter"].forEach(id=>document.getElementById(id)?.addEventListener("input", applyFilters));
+    document.getElementById("searchInput")?.addEventListener("input", applyFilters);
     renderCards();
   }
 
   function applyFilters() {
     const q=clean(document.getElementById("searchInput")?.value).toLowerCase();
-    const route=clean(document.getElementById("routeFilter")?.value);
-    const program=clean(document.getElementById("programFilter")?.value);
     state.filtered=state.data.projects.filter(p=>{
       const r=p.result||{};
       const hay=[p.name,r.sector,r.category,r.shortDescription].map(clean).join(" ").toLowerCase();
-      return (!q||hay.includes(q)) && (!route||labelRoute(r.route)===route) && (!program||clean(r.program)===program);
+      return !q||hay.includes(q);
     });
     renderCards();
   }
 
+  function fundingBadge(r) {
+    if(r?.fundingAssigned) {
+      return `<span class="badge funding-yes">FINANCIACIÓN · ${esc(money(r.fundingAmount).replace(",00",""))}</span>`;
+    }
+    return `<span class="badge funding-no">SIN FINANCIACIÓN ASIGNADA</span>`;
+  }
+
   function renderCards() {
     const grid=document.getElementById("projectGrid"); if(!grid) return;
-    if(!state.filtered.length){grid.innerHTML=`<div class="empty-filter">No hay iniciativas que coincidan con estos filtros.</div>`;return;}
-    grid.innerHTML=state.filtered.map((p,i)=>{
+    if(!state.filtered.length){grid.innerHTML=`<div class="empty-filter">No hay iniciativas que coincidan con esta búsqueda.</div>`;return;}
+    grid.innerHTML=state.filtered.map(p=>{
       const r=p.result||{};
       return `<article class="project-card" data-project="${esc(p.id)}" tabindex="0" role="button" aria-label="Ver ${esc(p.name)}">
         <div class="badges">
-          ${r.route?`<span class="badge teal">${esc(labelRoute(r.route))}</span>`:""}
+          ${fundingBadge(r)}
           ${r.trlValidatedByUnit?`<span class="badge">${esc(r.trlValidatedByUnit)}</span>`:""}
-          ${r.program?`<span class="badge gold">${esc(r.program)}</span>`:""}
         </div>
         <h2>${esc(p.name)}</h2>
         <p class="card-description">${esc(r.shortDescription||r.sourceDescription||r.description||"")}</p>
@@ -169,7 +181,8 @@
     }).join("");
     grid.querySelectorAll("[data-project]").forEach(card=>{
       const go=()=>{const p=state.data.projects.find(x=>x.id===card.dataset.project); if(p) openProject(p,true);};
-      card.addEventListener("click",go);card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});
+      card.addEventListener("click",go);
+      card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});
     });
   }
 
@@ -194,7 +207,7 @@
   });
 
   function renderDetail(){
-    const p=state.selected,r=p.result||{},a=p.application,m=state.data.mentor;
+    const p=state.selected,r=p.result||{},m=state.data.mentor;
     app.innerHTML=`<section class="detail-view">
       <button class="back-btn" id="backBtn" type="button">← Mis iniciativas</button>
       <article class="detail-shell">
@@ -202,16 +215,15 @@
           <p class="eyebrow">MENTOR · ${esc(m.name)}</p>
           <h1>${esc(p.name)}</h1>
           <div class="detail-meta">
-            ${r.route?`<span class="badge teal">${esc(labelRoute(r.route))}</span>`:""}
+            ${fundingBadge(r)}
             ${r.trlValidatedByUnit?`<span class="badge">${esc(r.trlValidatedByUnit)} · validado por UnIT</span>`:""}
-            ${r.program?`<span class="badge gold">${esc(r.program)}</span>`:""}
             ${r.sector?`<span class="badge">${esc(r.sector)}</span>`:""}
           </div>
         </header>
         <nav class="tabs" aria-label="Secciones de iniciativa">
           ${[
             ["summary","01 · RESUMEN"],["application","02 · POSTULACIÓN"],["panel","03 · EVALUACIÓN DEL PANEL"],
-            ["unit","04 · REVISIÓN INSTITUCIONAL"],["result","05 · RESULTADO"]
+            ["unit","04 · REVISIÓN INSTITUCIONAL"],["result","05 · RESULTADO"],["tools","06 · BANCO DE HERRAMIENTAS"]
           ].map(([id,l])=>`<button type="button" class="tab-btn ${id===state.activeTab?"active":""}" data-tab="${id}">${l}</button>`).join("")}
         </nav>
         <div class="tab-content" id="tabContent"></div>
@@ -231,20 +243,50 @@
     if(state.activeTab==="panel") c.innerHTML=panelHtml(r);
     if(state.activeTab==="unit") c.innerHTML=unitHtml(r);
     if(state.activeTab==="result") c.innerHTML=resultHtml(r);
+    if(state.activeTab==="tools") c.innerHTML=toolsHtml();
+  }
+
+  function teamHtml(r){
+    const team=Array.isArray(r.team)?r.team.filter(t=>t&&t.name):[];
+    if(!team.length) return `<p class="muted-empty">No se registró información de integrantes en esta sección.</p>`;
+    return `<div class="team-list">${team.map(t=>{
+      const role=[t.role,t.link].filter(x=>!empty(x)).join(" · ");
+      const contacts=[mailLink(t.email),phoneLink(t.phone)].filter(Boolean).join(`<span class="contact-sep">·</span>`);
+      return `<div class="team-row">
+        <div class="person-main"><b>${esc(t.name)}</b>${role?`<span>${esc(role)}</span>`:""}</div>
+        <div class="person-contact">${contacts||`<span class="contact-muted">Sin datos de contacto registrados</span>`}</div>
+      </div>`;
+    }).join("")}</div>`;
+  }
+
+  function leaderContactHtml(a){
+    if(!a) return `<p class="muted-empty">No se registró un contacto principal.</p>`;
+    const name=clean(a.NombreLider), role=clean(a.RolLider), email=clean(a.CorreoLider), phone=clean(a.TelefonoLider), city=clean(a.Ciudad);
+    if(!name&&!email&&!phone) return `<p class="muted-empty">No se registró un contacto principal.</p>`;
+    return `<div class="contact-card-body">
+      ${name?`<strong>${esc(name)}</strong>`:""}
+      ${role?`<span class="contact-role">${esc(role)}</span>`:""}
+      <div class="contact-stack">
+        ${email?`<div><span class="contact-key">Correo</span>${mailLink(email)}</div>`:""}
+        ${phone?`<div><span class="contact-key">Teléfono</span>${phoneLink(phone)}</div>`:""}
+        ${city?`<div><span class="contact-key">Ciudad</span><span>${esc(city)}</span></div>`:""}
+      </div>
+    </div>`;
   }
 
   function summaryHtml(r,a){
     const what = r.sourceDescription||r.description||a?.DescripcionCorta||"";
     const problem = a?.ProblemaDescripcion||r.problem||"";
     const proposal = a?.PropuestaValor||a?.PropuestaValorEstructura||r.valueProposition||"";
-    const team = Array.isArray(r.team)&&r.team.length ? `<div class="team-list">${r.team.map(t=>`<div class="team-row"><b>${esc(t.name||"Integrante")}</b><br><span>${esc(t.role||"")}${t.link?` · ${esc(t.link)}`:""}</span></div>`).join("")}</div>` : "No se registró información en esta sección.";
+    const trl = r.trlValidatedByUnit||r.trlValidated||a?.TRLDeclarado||"TRL sin dato";
     return `<div class="reading-grid">
       <article class="reading-card full"><span class="source-label">RESPUESTA DEL EQUIPO / DATOS DE POSTULACIÓN</span><h3>Qué hace</h3><p>${esc(what||"No se registró información en esta sección.")}</p></article>
       <article class="reading-card"><span class="source-label">RESPUESTA DEL EQUIPO</span><h3>Problema</h3><p>${esc(problem||"No se registró información en esta sección.")}</p></article>
       <article class="reading-card"><span class="source-label">RESPUESTA DEL EQUIPO</span><h3>Propuesta</h3><p>${esc(proposal||"No se registró información en esta sección.")}</p></article>
-      <article class="reading-card"><span class="source-label unit-src">ESTADO VALIDADO</span><h3>Estado</h3>
-        <p>${esc(r.trlValidatedByUnit||r.trlValidated||"TRL sin dato")} · ${esc(labelRoute(r.route)||"Ruta sin dato")} · ${esc(r.program||"Programa sin dato")}</p></article>
-      <article class="reading-card"><span class="source-label">EQUIPO</span><h3>Integrantes</h3>${typeof team==="string"?`<p>${esc(team)}</p>`:team}</article>
+      <article class="reading-card"><span class="source-label unit-src">MADUREZ TECNOLÓGICA</span><h3>Estado</h3><p>${esc(trl)}</p></article>
+      <article class="reading-card funding-card ${r.fundingAssigned?"is-funded":"not-funded"}"><span class="source-label result-src">FINANCIACIÓN</span><h3>${esc(fundingLabel(r))}</h3><p>${r.fundingAssigned?esc(money(r.fundingAmount).replace(",00","")):"No se registra un valor de financiación asignado en el consolidado."}</p></article>
+      <article class="reading-card contact-card"><span class="source-label">CONTACTO PRINCIPAL</span><h3>Datos de contacto</h3>${leaderContactHtml(a)}</article>
+      <article class="reading-card team-card"><span class="source-label">EQUIPO</span><h3>Integrantes</h3>${teamHtml(r)}</article>
     </div>`;
   }
 
@@ -271,26 +313,35 @@
   function unitHtml(r){
     const cc=Array.isArray(r.coordinationComments)?r.coordinationComments:[];
     return `<div class="eval-stack">
-      <div class="result-grid">
-        ${r.trlValidatedByUnit?`<div class="result-item"><span>TRL validado por UnIT</span><strong>${esc(r.trlValidatedByUnit)}</strong></div>`:""}
-        ${r.unitRoute?`<div class="result-item"><span>Ruta / nivel validado</span><strong>${esc(r.unitRoute)}</strong></div>`:""}
-      </div>
+      ${r.trlValidatedByUnit?`<div class="result-grid"><div class="result-item"><span>TRL validado por UnIT</span><strong>${esc(r.trlValidatedByUnit)}</strong></div></div>`:""}
       ${r.routeAdjustment?`<article class="eval-block"><span class="source-label unit-src">REVISIÓN INSTITUCIONAL / UNIT</span><h3>Ajuste registrado</h3><p>${esc(r.routeAdjustment)}</p></article>`:""}
       ${cc.length?`<article class="eval-block"><span class="source-label">COORDINACIÓN SCIENCE2VENTURE</span><h3>Comentarios de coordinación</h3>${cc.map(x=>`<p>${esc(x.text||"")}${x.date?`\n\n${esc(x.date)}`:""}</p>`).join("<hr style='border:0;border-top:1px solid var(--border);margin:18px 0'>")}</article>`:""}
-      ${!r.trlValidatedByUnit&&!r.unitRoute&&!r.routeAdjustment&&!cc.length?`<div class="notice">No se registró información en esta sección.</div>`:""}
+      ${!r.trlValidatedByUnit&&!r.routeAdjustment&&!cc.length?`<div class="notice">No se registró información en esta sección.</div>`:""}
     </div>`;
   }
 
   function resultHtml(r){
     const items=[
-      ["Ruta asignada",labelRoute(r.route)],["Programa",r.program],["Mentor",state.data.mentor.name],
-      ["Financiación",r.funding],["Modalidad",r.modality],["Acción requerida",r.action]
+      ["Mentor",state.data.mentor.name],
+      ["Financiación",fundingLabel(r)],
+      ["Valor asignado",r.fundingAssigned?money(r.fundingAmount).replace(",00",""):"—"],
+      ["Modalidad",r.modality],["Acción requerida",r.action]
     ].filter(([,v])=>!empty(v));
     return `<div class="eval-stack">
       <div class="result-grid">${items.map(([l,v])=>`<div class="result-item"><span>${esc(l)}</span><strong>${esc(v)}</strong></div>`).join("")}</div>
       ${r.decisionSummary?`<article class="eval-block"><span class="source-label result-src">RESULTADO FINAL</span><h3>Decisión / revisión</h3><p>${esc(r.decisionSummary)}</p></article>`:""}
       ${r.notes?`<article class="eval-block"><span class="source-label result-src">NOTA DE SEGUIMIENTO</span><h3>Nota</h3><p>${esc(r.notes)}</p></article>`:""}
     </div>`;
+  }
+
+  function toolsHtml(){
+    return `<section class="tool-bank">
+      <div class="tool-bank-icon" aria-hidden="true">↗</div>
+      <span class="source-label">BANCO DE HERRAMIENTAS</span>
+      <h2>Recursos para el acompañamiento</h2>
+      <p>En este espacio encontrarán los espacios, recursos y herramientas de apoyo para el acompañamiento de las iniciativas.</p>
+      <div class="notice">Los enlaces y recursos se habilitarán progresivamente durante el programa.</div>
+    </section>`;
   }
 
   load();
