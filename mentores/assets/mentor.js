@@ -41,12 +41,26 @@
     const raw=clean(v), tel=raw.replace(/[^\d+]/g,"");
     return `<a class="contact-action" href="tel:${esc(tel)}"><span>☎</span>${esc(raw)}</a>`;
   };
-  const legacyFundingReview = text => {
-    const s=clean(text).toLowerCase();
+  // Notas de coordinación interna que no deben exponerse a los mentores.
+  // Se eliminan solo frases de revisión/consulta con nombres internos; los nombres
+  // legítimos de líderes, integrantes o evaluadores permanecen intactos.
+  const internalCoordinationNote = text => {
+    const s=clean(text);
     if(!s) return false;
-    return /(revisar|validar|confirmar).*(andrés|andres|josé|jose)/i.test(s) && /(financ|recurso|invers)/i.test(s);
+    const verb=/(revisar|revisi[oó]n|consultar|validar|confirmar)/i;
+    const person=/(andr[eé]s|jos[eé](?:\s+alba)?)/i;
+    return verb.test(s) && person.test(s);
   };
-  const nonLegacy = (text,r) => !(r?.fundingAssigned && legacyFundingReview(text));
+  const stripInternalNotes = value => {
+    let s=clean(value);
+    if(!s) return "";
+    // Primero elimina paréntesis puramente internos, p. ej. "(revisión con José Alba)".
+    s=s.replace(/\s*\([^)]*(?:revisar|revisi[oó]n|consultar|validar|confirmar)[^)]*(?:andr[eé]s|jos[eé](?:\s+alba)?)[^)]*\)/gi,"");
+    // Luego elimina únicamente las oraciones/párrafos internos y conserva la observación técnica restante.
+    const parts=s.split(/(?:\r?\n)+|(?<=[.!?])\s+/).map(x=>x.trim()).filter(Boolean);
+    return parts.filter(x=>!internalCoordinationNote(x)).join(" " ).replace(/\s+/g," " ).trim();
+  };
+  const nonLegacy = text => !!stripInternalNotes(text);
   const initials = name => clean(name).split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]?.toUpperCase()||"").join("") || "S2V";
 
   const fieldGroups = [
@@ -327,35 +341,35 @@
   }
 
   function panelHtml(r){
-    const comments=[clean(r.observation1),clean(r.observation2)].filter(Boolean).filter(x=>nonLegacy(x,r));
+    const comments=[r.observation1,r.observation2].map(stripInternalNotes).filter(Boolean);
     const metrics=[["Puntaje global",r.platformScore],["Prioridad",r.priority],["Posición general",r.overallOrder],["Posición en grupo",r.routeRank]].filter(([,v])=>!empty(v));
     return `<div class="eval-stack">
       ${metrics.length?`<div class="result-grid panel-metrics">${metrics.map(([l,v],i)=>`<div class="result-item ${i===0?"accent":""}"><span>${esc(l)}</span><strong>${esc(v)}</strong></div>`).join("")}</div>`:""}
-      ${r.evaluationSummary&&nonLegacy(r.evaluationSummary,r)?`<article class="eval-block"><span class="source-label panel-src">SÍNTESIS DE EVALUACIÓN</span><h3>Lectura del panel</h3><p>${esc(r.evaluationSummary)}</p></article>`:""}
+      ${stripInternalNotes(r.evaluationSummary)?`<article class="eval-block"><span class="source-label panel-src">SÍNTESIS DE EVALUACIÓN</span><h3>Lectura del panel</h3><p>${esc(stripInternalNotes(r.evaluationSummary))}</p></article>`:""}
       ${comments.map((x,i)=>`<article class="eval-block"><span class="source-label panel-src">EVALUACIÓN DEL PANEL</span><h3>${comments.length>1?`Comentario ${i+1}`:"Comentario técnico"}</h3><p>${esc(x)}</p></article>`).join("")}
       ${!comments.length&&!metrics.length&&!r.evaluationSummary?`<div class="notice">No se registró información en esta sección.</div>`:""}
     </div>`;
   }
 
   function unitHtml(r){
-    const cc=(Array.isArray(r.coordinationComments)?r.coordinationComments:[]).filter(x=>nonLegacy(x?.text,r));
+    const cc=(Array.isArray(r.coordinationComments)?r.coordinationComments:[]).map(x=>({...x,text:stripInternalNotes(x?.text)})).filter(x=>x.text);
     const adjustment=clean(r.routeAdjustment);
     const showAdjustment=adjustment && !/founder|construye|ruta\s*[1-4]|trl\s*\d\s*[–-]\s*\d/i.test(adjustment);
     const declared=r.trlDeclared||"—", validated=r.trlValidatedByUnit||r.trlValidated||"—";
     return `<div class="eval-stack">
       <div class="trl-comparison"><div><span>TRL declarado</span><strong>${esc(declared)}</strong></div><div class="trl-arrow">→</div><div class="validated"><span>TRL validado</span><strong>${esc(validated)}</strong></div></div>
-      ${r.teamObservations&&nonLegacy(r.teamObservations,r)?`<article class="eval-block"><span class="source-label unit-src">REVISIÓN INSTITUCIONAL</span><h3>Observaciones técnicas</h3><p>${esc(r.teamObservations)}</p></article>`:""}
+      ${stripInternalNotes(r.teamObservations)?`<article class="eval-block"><span class="source-label unit-src">REVISIÓN INSTITUCIONAL</span><h3>Observaciones técnicas</h3><p>${esc(stripInternalNotes(r.teamObservations))}</p></article>`:""}
       ${showAdjustment?`<article class="eval-block"><span class="source-label unit-src">REVISIÓN INSTITUCIONAL / UNIT</span><h3>Ajuste registrado</h3><p>${esc(adjustment)}</p></article>`:""}
       ${cc.length?`<article class="eval-block"><span class="source-label">COORDINACIÓN SCIENCE2VENTURE</span><h3>Comentarios de coordinación</h3>${cc.map(x=>`<p>${esc(x.text||"")}${x.date?`\n\n${esc(x.date)}`:""}</p>`).join("<hr>")}</article>`:""}
-      ${!r.teamObservations&&!showAdjustment&&!cc.length?`<div class="notice">No se registraron observaciones adicionales después de la validación institucional.</div>`:""}
+      ${!stripInternalNotes(r.teamObservations)&&!showAdjustment&&!cc.length?`<div class="notice">No se registraron observaciones adicionales después de la validación institucional.</div>`:""}
     </div>`;
   }
 
   function resultHtml(r){
     const funded=!!r.fundingAssigned;
-    const action=clean(r.action), decision=clean(r.decisionSummary), notes=clean(r.notes);
-    const showAction=action && nonLegacy(action,r);
-    const showDecision=decision && nonLegacy(decision,r);
+    const action=stripInternalNotes(r.action), decision=stripInternalNotes(r.decisionSummary), notes=stripInternalNotes(r.notes);
+    const showAction=!!action;
+    const showDecision=!!decision;
     return `<div class="result-executive">
       <section class="funding-result ${funded?"is-funded":""}"><span class="section-kicker">RESULTADO CONSOLIDADO</span><div class="funding-result-grid"><div><span>Estado</span><strong>${esc(fundingLabel(r))}</strong></div><div><span>Valor asignado</span><strong>${funded?esc(money(r.fundingAmount)):"—"}</strong></div><div><span>Puntaje</span><strong>${r.platformScore??"—"}</strong></div><div><span>TRL validado</span><strong>${esc(r.trlValidatedByUnit||r.trlValidated||"—")}</strong></div><div><span>Prioridad</span><strong>${esc(r.priority||"—")}</strong></div><div><span>Mentor</span><strong>${esc(state.data.mentor.name)}</strong></div></div>${funded?`<p>La iniciativa cuenta con un valor numérico de financiación definido en el consolidado final.</p>`:`<p>No se registra un valor numérico de financiación asignado en el consolidado final.</p>`}</section>
       ${showAction||showDecision||notes?`<section class="result-followup"><span class="section-kicker">SEGUIMIENTO</span><h3>Observaciones vigentes</h3>${showDecision?`<p>${esc(decision)}</p>`:""}${showAction?`<p><b>Acción:</b> ${esc(action)}</p>`:""}${notes?`<p>${esc(notes)}</p>`:""}</section>`:""}
