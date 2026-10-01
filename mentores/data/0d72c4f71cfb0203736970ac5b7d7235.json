@@ -45,17 +45,40 @@
         "team": [
           {
             "name": "Liminal",
-            "role": "CEO",
-            "leader": "Sí",
+            "phone": "3167440032",
+            "email": "akerpel@universidadean.edu.co",
+            "city": "Bogotá",
             "link": "Colaborador administrativo",
-            "education": "Dirección de Servicios de Apoyo Académico"
+            "external": null,
+            "modality": null,
+            "educationLevel": null,
+            "undergrad": null,
+            "undergradOther": null,
+            "postgrad": null,
+            "postgradOther": null,
+            "area": "Dirección de Servicios de Apoyo Académico",
+            "faculty": null,
+            "role": "CEO",
+            "education": "Dirección de Servicios de Apoyo Académico",
+            "leader": "Sí"
           },
           {
             "name": "Rodrigo Sierra",
-            "role": "CPO",
-            "leader": "No",
+            "phone": "3102553695",
+            "email": "rasierra@universidadean.edu.co",
             "link": "Profesor / Investigador",
-            "education": "Facultad de Humanidades"
+            "external": null,
+            "modality": null,
+            "educationLevel": null,
+            "undergrad": null,
+            "undergradOther": null,
+            "postgrad": null,
+            "postgradOther": null,
+            "area": null,
+            "faculty": "Facultad de Humanidades",
+            "role": "CPO",
+            "education": "Facultad de Humanidades",
+            "leader": "No"
           }
         ],
         "coordinationComments": [],
@@ -72,7 +95,11 @@
         "trlValidatedByUnit": "",
         "unitRoute": "TRL 1-3",
         "teamObservations": "La tecnología tiene un alto potencial pero es necesario aún trabajar en el mercado, y la configuración general del negocio. Creo que la Ruta 1-3 es coherente con el estado de la tecnología.\n\nRevisar con Andrés y José, si es posible financiar la iniciativa.",
-        "routeAdjustment": ""
+        "routeAdjustment": "",
+        "fundingAmount": 14000000,
+        "fundingAssigned": true,
+        "fundingDisplay": "Recibirá financiación",
+        "teamCount": 2
       },
       "application": {
         "IDIniciativa": "S2V-2026-34",
@@ -167,7 +194,9 @@
         "EvidenciasTecnicas": "Sí, cuento con evidencias documentadas que pueden ser revisadas en esta convocatoria.",
         "EvidenciasConcretas": "Prototipo físico o digital con fotos o videos que lo muestren funcionando; reporte técnico interno con resultados experimentales documentados; software funcional con repositorio público.",
         "EquipoRazon": "Porque el equipo cubre los tres lados del problema (comportamiento, tecnología y mercado) y suma la capa de capital. Contenido: psicología clínica, neurociencia y ciencias del comportamiento; construcción: experiencia en IA, arquitectura y tecnología enterprise, matemáticas y ML/MLOps; mercado y capital: liderazgo de negocio y GTM, growth y marca, y finanzas con experiencia en spin-offs, valoración y fundraising. El proyecto nace dentro de la universidad, con acceso directo al usuario final y a facultades como primer campo de prueba.",
-        "RutaValidada": "Founder Hub · TRL 1–3"
+        "RutaValidada": "Founder Hub · TRL 1–3",
+        "CorreoLider": "akerpel@universidadean.edu.co",
+        "TelefonoLider": "3167440032"
       }
     },
     {
@@ -206,17 +235,40 @@
         "team": [
           {
             "name": "Carlos Iván Lemus Serna",
-            "role": "Investigador principal",
-            "leader": "Sí",
+            "phone": "3209374468",
+            "email": "lemuscarllitos2008@outlook.es",
+            "city": "Bogotá",
             "link": "Estudiante",
-            "education": "Carrera de Negocios Internacionales (opción de doble grado)"
+            "external": null,
+            "modality": "Presencial",
+            "educationLevel": "Pregrado",
+            "undergrad": "Carrera de Negocios Internacionales (opción de doble grado)",
+            "undergradOther": null,
+            "postgrad": null,
+            "postgradOther": null,
+            "area": null,
+            "faculty": null,
+            "role": "Investigador principal",
+            "education": "Carrera de Negocios Internacionales (opción de doble grado)",
+            "leader": "Sí"
           },
           {
             "name": "Manuela Maira Falla Alcala",
-            "role": "Análisis de mercado y la estructuración del modelo de negocio.",
-            "leader": "No",
+            "phone": "3118112613",
+            "email": "alcala.manu2430@gmail.com",
             "link": "Estudiante",
-            "education": "Carrera de Negocios Internacionales (opción de doble grado)"
+            "external": null,
+            "modality": "Presencial",
+            "educationLevel": "Pregrado",
+            "undergrad": "Carrera de Negocios Internacionales (opción de doble grado)",
+            "undergradOther": null,
+            "postgrad": null,
+            "postgradOther": null,
+            "area": null,
+            "faculty": null,
+            "role": "Análisis de mercado y la estructuración del modelo de negocio.",
+            "education": "Carrera de Negocios Internacionales (opción de doble grado)",
+            "leader": "No"
           }
         ],
         "coordinationComments": [],
@@ -233,7 +285,11 @@
         "trlValidatedByUnit": "TRL 3",
         "unitRoute": "TRL 1-3",
         "teamObservations": "",
-        "routeAdjustment": ""
+        "routeAdjustment": "",
+        "fundingAmount": null,
+        "fundingAssigned": false,
+        "fundingDisplay": "Sin financiación asignada",
+        "teamCount": 2
       },
       "application": {
         "IDIniciativa": "S2V-2026-26",
@@ -341,8 +397,11 @@
         "TRLValidacionTipo": "match",
         "TRLValidacionTexto": "El nivel TRL fue validado por la Gerencia de Investigación y Transferencia con base en la revisión de las evidencias y los soportes compartidos por la iniciativa.",
         "TRLValidacionFecha": "18/06/2026",
-        "TRLValidacionEvaluador": "Carlos Iván Lemus Serna"
+        "TRLValidacionEvaluador": "Carlos Iván Lemus Serna",
+        "TelefonoLider": "3209374468"
       }
     }
-  ]
+  ],
+  "fundedInitiativeCount": 1,
+  "fundingTotal": 14000000
 }
