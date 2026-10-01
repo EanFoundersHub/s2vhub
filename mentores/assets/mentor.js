@@ -24,6 +24,16 @@
     if (!Number.isFinite(n) || n <= 0) return "";
     return new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(n).replace(/\s/g," ");
   };
+  const moneyCompact = v => {
+    const n=Number(v);
+    if(!Number.isFinite(n)||n<=0) return "—";
+    if(n>=1000000){
+      const m=n/1000000;
+      return `$${Number.isInteger(m)?m:m.toFixed(1)} M`;
+    }
+    if(n>=1000) return `$${Math.round(n/1000)} mil`;
+    return `$${n}`;
+  };
   const fundingLabel = r => r?.fundingAssigned ? "Financiación asignada" : "Sin financiación asignada";
   const mailLink = v => empty(v) ? "" : `<a class="contact-action" href="mailto:${esc(clean(v))}"><span>✉</span>${esc(clean(v))}</a>`;
   const phoneLink = v => {
@@ -43,7 +53,8 @@
     ["Identificación del proyecto",[
       ["IDIniciativa","Código de iniciativa"],["EstadoPostulacion","Estado de postulación"],["FechaPostulacion","Fecha de postulación"],
       ["NombreLider","Líder / contacto principal"],["CorreoLider","Correo de contacto"],["TelefonoLider","Teléfono de contacto"],
-      ["Ciudad","Ciudad"],["Vinculacion","Vinculación"],["Modalidad","Modalidad"],["Enfoque","Enfoque"],
+      ["Ciudad","Ciudad"],["Vinculacion","Vinculación"],["NivelEducativo","Nivel educativo"],["Pregrado","Pregrado"],["Posgrado","Posgrado"],
+      ["Modalidad","Modalidad"],["Enfoque","Enfoque"],
       ["EnfoqueDetalle","Detalle del enfoque"],["AreaConocimiento","Área de conocimiento"],["SurgeGrupoSemillero","¿Surge de grupo o semillero?"],
       ["GrupoSemillero","Grupo / semillero"],["AnoInicio","Año de inicio"]
     ]],
@@ -122,16 +133,19 @@
     const d=state.data,m=d.mentor;
     const fundedCount=d.projects.filter(p=>p.result?.fundingAssigned).length;
     const fundingTotal=d.projects.reduce((sum,p)=>sum+(Number(p.result?.fundingAmount)||0),0);
+    const people=new Set();
+    d.projects.forEach(p=>(p.result?.team||[]).forEach(t=>{ if(t?.name) people.add(clean(t.name).toLowerCase()); }));
     app.innerHTML=`<section class="portfolio">
-      <div class="mentor-hero">
-        <article class="hero-main"><div class="avatar">${esc(m.initials||initials(m.name))}</div><div><p class="eyebrow">SCIENCE2VENTURE · COHORTE I 2026</p><h1>${esc(m.name)}</h1><p>Portafolio de iniciativas asignadas para acompañamiento.</p></div></article>
-        <aside class="hero-stats">
-          <div class="stat"><strong>${d.initiativeCount}</strong><span>INICIATIVAS</span></div>
-          <div class="stat"><strong>${fundedCount}</strong><span>CON FINANCIACIÓN</span></div>
-          <div class="stat"><strong>${fundingTotal ? esc(money(fundingTotal)) : "—"}</strong><span>RECURSOS ASIGNADOS</span></div>
-        </aside>
-      </div>
-      <div class="toolbar"><div class="field search"><label>Buscar iniciativa</label><input id="searchInput" type="search" placeholder="Nombre, sector o enfoque"></div></div>
+      <article class="mentor-banner">
+        <div class="mentor-banner-main"><div class="avatar">${esc(m.initials||initials(m.name))}</div><div><p class="eyebrow">SCIENCE2VENTURE · COHORTE I 2026</p><h1>${esc(m.name)}</h1><p>Portafolio de iniciativas asignadas para acompañamiento. La vista conserva la lógica de SelectionHub, organizada para lectura de mentoría.</p></div></div>
+        <div class="mentor-banner-kpis">
+          <div class="mentor-kpi"><span>Iniciativas</span><strong>${d.initiativeCount}</strong><small>asignadas</small></div>
+          <div class="mentor-kpi"><span>Financiadas</span><strong>${fundedCount}</strong><small>con valor definido</small></div>
+          <div class="mentor-kpi funding"><span>Recursos</span><strong>${fundingTotal ? esc(moneyCompact(fundingTotal)) : "—"}</strong><small>${fundingTotal?esc(money(fundingTotal)):"sin asignación"}</small></div>
+          <div class="mentor-kpi"><span>Equipo</span><strong>${people.size}</strong><small>personas registradas</small></div>
+        </div>
+      </article>
+      <div class="toolbar"><div class="field search"><label>Buscar iniciativa</label><input id="searchInput" type="search" placeholder="Nombre, sector, enfoque o contacto"></div></div>
       <div id="projectGrid" class="project-grid"></div>
       <p class="footer-note">SelectionHub · Mentor View · Science2Venture 2026</p>
     </section>`;
@@ -143,7 +157,8 @@
     const q=clean(document.getElementById("searchInput")?.value).toLowerCase();
     state.filtered=state.data.projects.filter(p=>{
       const r=p.result||{};
-      const hay=[p.name,r.sector,r.category,r.shortDescription].map(clean).join(" ").toLowerCase();
+      const team=(r.team||[]).map(t=>[t.name,t.email,t.phone].join(" ")).join(" ");
+      const hay=[p.name,r.sector,r.category,r.shortDescription,team].map(clean).join(" ").toLowerCase();
       return !q||hay.includes(q);
     });
     renderCards();
@@ -160,12 +175,20 @@
     grid.innerHTML=state.filtered.map(p=>{
       const r=p.result||{}, a=p.application||{}, team=Array.isArray(r.team)?r.team:[];
       const leader=team.find(t=>t.leader==="Sí")||team[0]||{};
-      return `<article class="project-card" data-project="${esc(p.id)}" tabindex="0" role="button" aria-label="Ver ${esc(p.name)}">
-        <div class="badges">${fundingBadge(r)}${r.trlValidatedByUnit?`<span class="badge">${esc(r.trlValidatedByUnit)}</span>`:""}</div>
+      const declared=r.trlDeclared||a.TRLDeclarado||"—";
+      const validated=r.trlValidatedByUnit||r.trlValidated||a.TRLValidado||"—";
+      return `<article class="project-card selection-card" data-project="${esc(p.id)}" tabindex="0" role="button" aria-label="Ver ${esc(p.name)}">
+        <div class="badges">${fundingBadge(r)}${r.priority?`<span class="badge">${esc(r.priority)}</span>`:""}</div>
         <h2>${esc(p.name)}</h2>
         <p class="card-description">${esc(r.shortDescription||r.sourceDescription||r.description||"")}</p>
+        <div class="selection-mini-grid">
+          <div><span>Puntaje</span><strong>${r.platformScore??"—"}</strong></div>
+          <div><span>TRL declarado</span><strong>${esc(declared)}</strong></div>
+          <div><span>TRL validado</span><strong>${esc(validated)}</strong></div>
+          <div><span>Financiación</span><strong>${r.fundingAssigned?esc(moneyCompact(r.fundingAmount)):"—"}</strong></div>
+        </div>
         <div class="card-contact"><span>${esc(leader.name||a.NombreLider||"")}</span>${leader.email||a.CorreoLider?`<small>${esc(leader.email||a.CorreoLider)}</small>`:""}</div>
-        <div class="card-footer"><span>${esc(r.sector||r.category||"")}</span><span class="view-link">VER INICIATIVA →</span></div>
+        <div class="card-footer"><span>${esc(r.sector||r.category||"")}</span><span class="view-link">VER EXPEDIENTE →</span></div>
       </article>`;
     }).join("");
     grid.querySelectorAll("[data-project]").forEach(card=>{
@@ -185,14 +208,31 @@
     if(state.data) backPortfolio(false);
   });
 
+  function processHtml(r,a){
+    const declared=r.trlDeclared||a?.TRLDeclarado||"—";
+    const validated=r.trlValidatedByUnit||r.trlValidated||a?.TRLValidado||"—";
+    const resultText=r.fundingAssigned?`Financiación · ${moneyCompact(r.fundingAmount)}`:"Sin financiación asignada";
+    return `<section class="selection-process" aria-label="Proceso de selección">
+      <div class="process-step"><span>01</span><div><small>POSTULACIÓN</small><strong>${esc(declared)}</strong><em>${esc(a?.FechaPostulacion||a?.EstadoPostulacion||"Recibida")}</em></div></div>
+      <div class="process-arrow">→</div>
+      <div class="process-step"><span>02</span><div><small>PANEL</small><strong>${r.platformScore??"—"} pts</strong><em>${esc(r.priority||"Evaluada")}</em></div></div>
+      <div class="process-arrow">→</div>
+      <div class="process-step"><span>03</span><div><small>REVISIÓN INSTITUCIONAL</small><strong>${esc(validated)}</strong><em>${r.trlValidatedByUnit?"Validado por UnIT":"Sin ajuste adicional"}</em></div></div>
+      <div class="process-arrow">→</div>
+      <div class="process-step ${r.fundingAssigned?"is-funded":""}"><span>04</span><div><small>RESULTADO</small><strong>${esc(resultText)}</strong><em>${r.fundingAssigned?esc(money(r.fundingAmount)):"Consolidado final"}</em></div></div>
+    </section>`;
+  }
+
   function projectKpis(r,a){
     const team=Array.isArray(r.team)?r.team:[];
-    const leader=team.find(t=>t.leader==="Sí")||team[0]||{};
-    const trl=r.trlValidatedByUnit||r.trlValidated||a?.TRLDeclarado||"—";
-    return `<div class="project-kpis">
-      <div class="project-kpi ${r.fundingAssigned?"is-funded":""}"><span>Financiación</span><strong>${r.fundingAssigned?esc(money(r.fundingAmount)):"Sin asignación"}</strong></div>
-      <div class="project-kpi"><span>Madurez</span><strong>${esc(trl)}</strong></div>
-      <div class="project-kpi"><span>Contacto principal</span><strong>${esc(leader.name||a?.NombreLider||"—")}</strong></div>
+    const declared=r.trlDeclared||a?.TRLDeclarado||"—";
+    const validated=r.trlValidatedByUnit||r.trlValidated||a?.TRLValidado||"—";
+    return `<div class="project-kpis selection-kpis">
+      <div class="project-kpi"><span>Puntaje SelectionHub</span><strong>${r.platformScore??"—"}</strong></div>
+      <div class="project-kpi"><span>TRL declarado</span><strong>${esc(declared)}</strong></div>
+      <div class="project-kpi"><span>TRL validado</span><strong>${esc(validated)}</strong></div>
+      <div class="project-kpi ${r.fundingAssigned?"is-funded":""}"><span>Financiación</span><strong>${r.fundingAssigned?esc(moneyCompact(r.fundingAmount)):"Sin asignación"}</strong></div>
+      <div class="project-kpi"><span>Prioridad</span><strong>${esc(r.priority||"—")}</strong></div>
       <div class="project-kpi"><span>Equipo registrado</span><strong>${team.length||"—"} integrante${team.length===1?"":"s"}</strong></div>
     </div>`;
   }
@@ -202,7 +242,7 @@
     app.innerHTML=`<section class="detail-view">
       <button class="back-btn" id="backBtn" type="button">← Mis iniciativas</button>
       <article class="detail-shell">
-        <header class="detail-head"><p class="eyebrow">MENTOR · ${esc(m.name)}</p><h1>${esc(p.name)}</h1><div class="detail-meta">${fundingBadge(r)}${r.trlValidatedByUnit?`<span class="badge">${esc(r.trlValidatedByUnit)} · validado</span>`:""}${r.sector?`<span class="badge">${esc(r.sector)}</span>`:""}</div>${projectKpis(r,a)}</header>
+        <header class="detail-head"><p class="eyebrow">MENTOR · ${esc(m.name)}</p><h1>${esc(p.name)}</h1><div class="detail-meta">${fundingBadge(r)}${r.trlValidatedByUnit?`<span class="badge">${esc(r.trlValidatedByUnit)} · validado</span>`:""}${r.sector?`<span class="badge">${esc(r.sector)}</span>`:""}</div>${projectKpis(r,a)}</header>${processHtml(r,a)}
         <nav class="tabs" aria-label="Secciones de iniciativa">
           ${[["summary","01 · RESUMEN"],["application","02 · POSTULACIÓN"],["panel","03 · EVALUACIÓN DEL PANEL"],["unit","04 · REVISIÓN INSTITUCIONAL"],["result","05 · RESULTADO"],["tools","06 · BANCO DE HERRAMIENTAS"]].map(([id,l])=>`<button type="button" class="tab-btn ${id===state.activeTab?"active":""}" data-tab="${id}">${l}</button>`).join("")}
         </nav>
@@ -257,12 +297,16 @@
     const problem = a?.ProblemaDescripcion||r.problem||"";
     const proposal = a?.PropuestaValor||a?.PropuestaValorEstructura||r.valueProposition||"";
     const challenge = a?.RetoPrincipal||r.followUpSummary||"";
-    return `<div class="executive-summary">
+    const declared=r.trlDeclared||a?.TRLDeclarado||"—";
+    const validated=r.trlValidatedByUnit||r.trlValidated||a?.TRLValidado||"—";
+    const quick=[["Código",a?.IDIniciativa||r.id],["Sector",r.sector||r.category],["Año de inicio",a?.AnoInicio||r.yearStarted],["Ventas",r.hasSales?"Sí":"No / no reportadas"],["TRL",`${declared} → ${validated}`],["Puntaje",r.platformScore??"—"]].filter(([,v])=>!empty(v));
+    return `<div class="executive-summary selection-summary">
       <section class="summary-main-card"><span class="section-kicker">LECTURA EJECUTIVA</span><h2>¿Qué hace la iniciativa?</h2><p>${esc(what||"No se registró información en esta sección.")}</p></section>
       <aside class="summary-side">
-        <article class="funding-summary ${r.fundingAssigned?"is-funded":""}"><span>FINANCIACIÓN</span><strong>${esc(fundingLabel(r))}</strong><b>${r.fundingAssigned?esc(money(r.fundingAmount)):"—"}</b></article>
-        <article class="contact-summary"><span>CONTACTO PRINCIPAL</span>${leaderContactHtml(r,a)}</article>
+        <article class="funding-summary ${r.fundingAssigned?"is-funded":""}"><span>RESULTADO DE FINANCIACIÓN</span><strong>${esc(fundingLabel(r))}</strong><b>${r.fundingAssigned?esc(money(r.fundingAmount)):"—"}</b></article>
+        <article class="contact-summary"><span>CONTACTO DEL EQUIPO</span>${leaderContactHtml(r,a)}</article>
       </aside>
+      <section class="quick-facts">${quick.map(([l,v])=>`<div><span>${esc(l)}</span><strong>${esc(v)}</strong></div>`).join("")}</section>
       <section class="summary-pair"><article><span class="section-kicker">PROBLEMA</span><h3>Necesidad que aborda</h3><p>${esc(problem||"No se registró información en esta sección.")}</p></article><article><span class="section-kicker">PROPUESTA DE VALOR</span><h3>Solución planteada</h3><p>${esc(proposal||"No se registró información en esta sección.")}</p></article></section>
       ${challenge?`<section class="challenge-card"><span class="section-kicker">RETO PRINCIPAL</span><h3>Lo que el equipo espera resolver</h3><p>${esc(challenge)}</p></section>`:""}
       <section class="team-section"><div class="section-headline"><div><span class="section-kicker">EQUIPO REGISTRADO</span><h2>Integrantes y datos de contacto</h2></div><span class="team-count">${Array.isArray(r.team)?r.team.length:0} integrantes</span></div>${teamHtml(r)}</section>
@@ -284,10 +328,12 @@
 
   function panelHtml(r){
     const comments=[clean(r.observation1),clean(r.observation2)].filter(Boolean).filter(x=>nonLegacy(x,r));
+    const metrics=[["Puntaje global",r.platformScore],["Prioridad",r.priority],["Posición general",r.overallOrder],["Posición en grupo",r.routeRank]].filter(([,v])=>!empty(v));
     return `<div class="eval-stack">
-      ${r.platformScore!==null&&r.platformScore!==undefined?`<div class="result-grid"><div class="result-item accent"><span>Puntaje global</span><strong>${esc(r.platformScore)}</strong></div></div>`:""}
+      ${metrics.length?`<div class="result-grid panel-metrics">${metrics.map(([l,v],i)=>`<div class="result-item ${i===0?"accent":""}"><span>${esc(l)}</span><strong>${esc(v)}</strong></div>`).join("")}</div>`:""}
+      ${r.evaluationSummary&&nonLegacy(r.evaluationSummary,r)?`<article class="eval-block"><span class="source-label panel-src">SÍNTESIS DE EVALUACIÓN</span><h3>Lectura del panel</h3><p>${esc(r.evaluationSummary)}</p></article>`:""}
       ${comments.map((x,i)=>`<article class="eval-block"><span class="source-label panel-src">EVALUACIÓN DEL PANEL</span><h3>${comments.length>1?`Comentario ${i+1}`:"Comentario técnico"}</h3><p>${esc(x)}</p></article>`).join("")}
-      ${!comments.length&&!(r.platformScore!==null&&r.platformScore!==undefined)?`<div class="notice">No se registró información en esta sección.</div>`:""}
+      ${!comments.length&&!metrics.length&&!r.evaluationSummary?`<div class="notice">No se registró información en esta sección.</div>`:""}
     </div>`;
   }
 
@@ -295,11 +341,13 @@
     const cc=(Array.isArray(r.coordinationComments)?r.coordinationComments:[]).filter(x=>nonLegacy(x?.text,r));
     const adjustment=clean(r.routeAdjustment);
     const showAdjustment=adjustment && !/founder|construye|ruta\s*[1-4]|trl\s*\d\s*[–-]\s*\d/i.test(adjustment);
+    const declared=r.trlDeclared||"—", validated=r.trlValidatedByUnit||r.trlValidated||"—";
     return `<div class="eval-stack">
-      ${r.trlValidatedByUnit?`<div class="result-grid"><div class="result-item accent"><span>TRL validado por UnIT</span><strong>${esc(r.trlValidatedByUnit)}</strong></div></div>`:""}
+      <div class="trl-comparison"><div><span>TRL declarado</span><strong>${esc(declared)}</strong></div><div class="trl-arrow">→</div><div class="validated"><span>TRL validado</span><strong>${esc(validated)}</strong></div></div>
+      ${r.teamObservations&&nonLegacy(r.teamObservations,r)?`<article class="eval-block"><span class="source-label unit-src">REVISIÓN INSTITUCIONAL</span><h3>Observaciones técnicas</h3><p>${esc(r.teamObservations)}</p></article>`:""}
       ${showAdjustment?`<article class="eval-block"><span class="source-label unit-src">REVISIÓN INSTITUCIONAL / UNIT</span><h3>Ajuste registrado</h3><p>${esc(adjustment)}</p></article>`:""}
       ${cc.length?`<article class="eval-block"><span class="source-label">COORDINACIÓN SCIENCE2VENTURE</span><h3>Comentarios de coordinación</h3>${cc.map(x=>`<p>${esc(x.text||"")}${x.date?`\n\n${esc(x.date)}`:""}</p>`).join("<hr>")}</article>`:""}
-      ${!r.trlValidatedByUnit&&!showAdjustment&&!cc.length?`<div class="notice">No se registró información adicional en esta sección.</div>`:""}
+      ${!r.teamObservations&&!showAdjustment&&!cc.length?`<div class="notice">No se registraron observaciones adicionales después de la validación institucional.</div>`:""}
     </div>`;
   }
 
@@ -309,7 +357,7 @@
     const showAction=action && nonLegacy(action,r);
     const showDecision=decision && nonLegacy(decision,r);
     return `<div class="result-executive">
-      <section class="funding-result ${funded?"is-funded":""}"><span class="section-kicker">RESULTADO CONSOLIDADO</span><div class="funding-result-grid"><div><span>Estado</span><strong>${esc(fundingLabel(r))}</strong></div><div><span>Valor asignado</span><strong>${funded?esc(money(r.fundingAmount)):"—"}</strong></div><div><span>Mentor</span><strong>${esc(state.data.mentor.name)}</strong></div></div>${funded?`<p>La iniciativa cuenta con un valor de financiación definido en el consolidado final.</p>`:`<p>No se registra un valor numérico de financiación asignado en el consolidado final.</p>`}</section>
+      <section class="funding-result ${funded?"is-funded":""}"><span class="section-kicker">RESULTADO CONSOLIDADO</span><div class="funding-result-grid"><div><span>Estado</span><strong>${esc(fundingLabel(r))}</strong></div><div><span>Valor asignado</span><strong>${funded?esc(money(r.fundingAmount)):"—"}</strong></div><div><span>Puntaje</span><strong>${r.platformScore??"—"}</strong></div><div><span>TRL validado</span><strong>${esc(r.trlValidatedByUnit||r.trlValidated||"—")}</strong></div><div><span>Prioridad</span><strong>${esc(r.priority||"—")}</strong></div><div><span>Mentor</span><strong>${esc(state.data.mentor.name)}</strong></div></div>${funded?`<p>La iniciativa cuenta con un valor numérico de financiación definido en el consolidado final.</p>`:`<p>No se registra un valor numérico de financiación asignado en el consolidado final.</p>`}</section>
       ${showAction||showDecision||notes?`<section class="result-followup"><span class="section-kicker">SEGUIMIENTO</span><h3>Observaciones vigentes</h3>${showDecision?`<p>${esc(decision)}</p>`:""}${showAction?`<p><b>Acción:</b> ${esc(action)}</p>`:""}${notes?`<p>${esc(notes)}</p>`:""}</section>`:""}
     </div>`;
   }
