@@ -296,3 +296,17 @@ html[data-theme="dark"] .brand-logo-dark{display:block}
   .brand-logo{max-width:124px}
   .brand-copy small{display:none}
 }
+
+/* V44 · Banco de Herramientas con recursos descargables */
+.resource-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.resource-card{min-height:255px;border:1px solid var(--border);border-radius:20px;background:var(--surface-2);padding:21px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--soft)}
+.resource-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.resource-type{display:inline-flex;width:fit-content;border-radius:999px;padding:5px 8px;background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal-dark);font-size:.56rem;font-weight:850;letter-spacing:.07em}
+.resource-format{color:var(--muted);font-size:.61rem;font-weight:850;letter-spacing:.08em}
+.resource-card h3{margin:5px 0 0;color:var(--strong);font-size:1.02rem;line-height:1.35;letter-spacing:-.02em}
+.resource-card p{margin:0;color:var(--muted);font-size:.78rem;line-height:1.62;flex:1}
+.resource-action{display:inline-flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;padding:11px 13px;border-radius:12px;border:1px solid var(--teal-border);background:var(--teal-bg);color:var(--teal-dark);text-decoration:none;font-size:.68rem;font-weight:850;letter-spacing:.04em;transition:.18s ease}
+.resource-action:hover{transform:translateY(-1px);background:rgba(85,201,204,.22)}
+.resource-action span{font-size:1rem;line-height:1}
+@media(max-width:980px){.resource-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.resource-grid{grid-template-columns:1fr}.resource-card{min-height:0}}

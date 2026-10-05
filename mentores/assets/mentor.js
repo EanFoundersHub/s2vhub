@@ -377,14 +377,12 @@
   }
 
   function toolsHtml(){
-    const tools=[
-      ["Guías de acompañamiento","Materiales para orientar las sesiones de mentoría y seguimiento."],
-      ["Formatos de seguimiento","Recursos para documentar avances, acuerdos y próximos pasos."],
-      ["Validación y mercado","Herramientas para apoyar experimentos, entrevistas y lectura de mercado."],
-      ["Pitch y narrativa","Recursos para estructurar mensajes, presentaciones y conversaciones clave."],
-      ["Recursos del programa","Enlaces, espacios y materiales habilitados durante Science2Venture."]
+    const resources=[
+      {type:"PRESENTACIÓN",title:"Kick-Off Mentores · Cohorte I 2026",description:"Presentación de arranque para mentores: contexto de Science2Venture, ruta de acompañamiento, rol del mentor, asignaciones, seguimientos y próximos pasos.",file:"./recursos/kick-off-mentores-cohorte-i-2026.pptx",format:"PPTX"},
+      {type:"FORMATO",title:"Plan de acompañamiento individual S2V",description:"Formato de trabajo para estructurar y registrar el acompañamiento individual de cada iniciativa durante la ruta.",file:"./recursos/plan-acompanamiento-individual-s2v.xlsx",format:"XLSX"},
+      {type:"LÍNEA BASE",title:"Líneas Base Construye S2V",description:"Archivo de línea base para el seguimiento de las iniciativas de Science2Venture vinculadas a la ruta Construye.",file:"./recursos/lineas-base-construye-s2v.xlsx",format:"XLSX"}
     ];
-    return `<section class="tool-bank"><div class="tool-bank-head"><div class="tool-bank-icon">↗</div><div><span class="source-label">BANCO DE HERRAMIENTAS</span><h2>Recursos para el acompañamiento</h2><p>En este espacio encontrarán los recursos, enlaces y herramientas de apoyo para el acompañamiento de las iniciativas.</p></div></div><div class="tool-grid">${tools.map(([t,d])=>`<article class="tool-card"><span>PRÓXIMAMENTE</span><h3>${esc(t)}</h3><p>${esc(d)}</p></article>`).join("")}</div><div class="notice">Los enlaces y recursos se habilitarán progresivamente durante el programa.</div></section>`;
+    return `<section class="tool-bank"><div class="tool-bank-head"><div class="tool-bank-icon">↗</div><div><span class="source-label">BANCO DE HERRAMIENTAS</span><h2>Recursos para el acompañamiento</h2><p>Documentos de trabajo disponibles para los mentores de Science2Venture. Los archivos se descargan directamente desde esta plataforma.</p></div></div><div class="resource-grid">${resources.map(r=>`<article class="resource-card"><div class="resource-card-top"><span class="resource-type">${esc(r.type)}</span><span class="resource-format">${esc(r.format)}</span></div><h3>${esc(r.title)}</h3><p>${esc(r.description)}</p><a class="resource-action" href="${esc(r.file)}" download>DESCARGAR ARCHIVO <span aria-hidden="true">↓</span></a></article>`).join("")}</div><div class="notice">Estos recursos son comunes para los mentores y estarán disponibles desde el Banco de Herramientas de cada iniciativa.</div></section>`;
   }
 
   load();
