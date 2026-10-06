@@ -135,7 +135,9 @@
       if(!state.data?.mentor || !Array.isArray(state.data.projects)) throw new Error("invalid");
       state.filtered = [...state.data.projects];
       renderPortfolio();
-      if(location.hash.startsWith("#project=")) {
+      if(location.hash === "#tools") {
+        renderToolsHub(false);
+      } else if(location.hash.startsWith("#project=")) {
         const id=decodeURIComponent(location.hash.slice(9));
         const project=state.data.projects.find(p=>p.id===id);
         if(project) openProject(project,false);
@@ -151,7 +153,7 @@
     d.projects.forEach(p=>(p.result?.team||[]).forEach(t=>{ if(t?.name) people.add(clean(t.name).toLowerCase()); }));
     app.innerHTML=`<section class="portfolio">
       <article class="mentor-banner">
-        <div class="mentor-banner-main"><div class="avatar">${esc(m.initials||initials(m.name))}</div><div><p class="eyebrow">SCIENCE2VENTURE · COHORTE I 2026</p><h1>${esc(m.name)}</h1><p>Portafolio de iniciativas asignadas para acompañamiento. La vista conserva la lógica de SelectionHub, organizada para lectura de mentoría.</p></div></div>
+        <div class="mentor-banner-main"><div class="avatar">${esc(m.initials||initials(m.name))}</div><div class="mentor-banner-copy"><p class="eyebrow">SCIENCE2VENTURE · COHORTE I 2026</p><h1>${esc(m.name)}</h1><p>Portafolio de iniciativas asignadas para acompañamiento. La vista conserva la lógica de SelectionHub, organizada para lectura de mentoría.</p></div><button class="tools-entry" id="toolsEntryBtn" type="button" aria-label="Abrir Banco de Herramientas"><span class="tools-entry-icon">↗</span><span class="tools-entry-copy"><b>BANCO DE HERRAMIENTAS</b><small>3 recursos para el acompañamiento</small></span><span class="tools-entry-arrow">→</span></button></div>
         <div class="mentor-banner-kpis">
           <div class="mentor-kpi"><span>Iniciativas</span><strong>${d.initiativeCount}</strong><small>asignadas</small></div>
           <div class="mentor-kpi"><span>Financiadas</span><strong>${fundedCount}</strong><small>con valor definido</small></div>
@@ -164,6 +166,7 @@
       <p class="footer-note">SelectionHub · Mentor View · Science2Venture 2026</p>
     </section>`;
     document.getElementById("searchInput")?.addEventListener("input", applyFilters);
+    document.getElementById("toolsEntryBtn")?.addEventListener("click",()=>renderToolsHub(true));
     renderCards();
   }
 
@@ -217,7 +220,15 @@
     renderDetail(); window.scrollTo({top:0,behavior:"smooth"});
   }
   function backPortfolio(push=true){ state.selected=null; if(push) history.pushState({},"",location.pathname+location.search); renderPortfolio(); window.scrollTo({top:0,behavior:"smooth"}); }
+  function renderToolsHub(push=true){
+    state.selected=null;
+    if(push) history.pushState({tools:true},"",location.pathname+location.search+"#tools");
+    app.innerHTML=`<section class="tools-view"><button class="back-btn" id="toolsBackBtn" type="button">← Mis iniciativas</button><article class="tools-shell">${toolsHtml()}</article><p class="footer-note">Banco de Herramientas · Science2Venture 2026</p></section>`;
+    document.getElementById("toolsBackBtn")?.addEventListener("click",()=>backPortfolio(true));
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
   window.addEventListener("popstate",()=>{
+    if(location.hash === "#tools"){ renderToolsHub(false); return; }
     if(location.hash.startsWith("#project=")){ const id=decodeURIComponent(location.hash.slice(9)); const p=state.data?.projects?.find(x=>x.id===id); if(p){state.selected=p;renderDetail();return;} }
     if(state.data) backPortfolio(false);
   });
@@ -258,7 +269,7 @@
       <article class="detail-shell">
         <header class="detail-head"><p class="eyebrow">MENTOR · ${esc(m.name)}</p><h1>${esc(p.name)}</h1><div class="detail-meta">${fundingBadge(r)}${r.trlValidatedByUnit?`<span class="badge">${esc(r.trlValidatedByUnit)} · validado</span>`:""}${r.sector?`<span class="badge">${esc(r.sector)}</span>`:""}</div>${projectKpis(r,a)}</header>${processHtml(r,a)}
         <nav class="tabs" aria-label="Secciones de iniciativa">
-          ${[["summary","01 · RESUMEN"],["application","02 · POSTULACIÓN"],["panel","03 · EVALUACIÓN DEL PANEL"],["unit","04 · REVISIÓN INSTITUCIONAL"],["result","05 · RESULTADO"],["tools","06 · BANCO DE HERRAMIENTAS"]].map(([id,l])=>`<button type="button" class="tab-btn ${id===state.activeTab?"active":""}" data-tab="${id}">${l}</button>`).join("")}
+          ${[["summary","01 · RESUMEN"],["application","02 · POSTULACIÓN"],["panel","03 · EVALUACIÓN DEL PANEL"],["unit","04 · REVISIÓN INSTITUCIONAL"],["result","05 · RESULTADO"]].map(([id,l])=>`<button type="button" class="tab-btn ${id===state.activeTab?"active":""}" data-tab="${id}">${l}</button>`).join("")}
         </nav>
         <div class="tab-content" id="tabContent"></div>
       </article>
@@ -277,7 +288,6 @@
     if(state.activeTab==="panel") c.innerHTML=panelHtml(r);
     if(state.activeTab==="unit") c.innerHTML=unitHtml(r);
     if(state.activeTab==="result") c.innerHTML=resultHtml(r);
-    if(state.activeTab==="tools") c.innerHTML=toolsHtml();
   }
 
   function teamContext(t){
@@ -382,7 +392,7 @@
       {type:"FORMATO",title:"Plan de acompañamiento individual S2V",description:"Formato de trabajo para estructurar y registrar el acompañamiento individual de cada iniciativa durante la ruta.",file:"./recursos/plan-acompanamiento-individual-s2v.xlsx",format:"XLSX"},
       {type:"LÍNEA BASE",title:"Líneas Base Construye S2V",description:"Archivo de línea base para el seguimiento de las iniciativas de Science2Venture vinculadas a la ruta Construye.",file:"./recursos/lineas-base-construye-s2v.xlsx",format:"XLSX"}
     ];
-    return `<section class="tool-bank"><div class="tool-bank-head"><div class="tool-bank-icon">↗</div><div><span class="source-label">BANCO DE HERRAMIENTAS</span><h2>Recursos para el acompañamiento</h2><p>Documentos de trabajo disponibles para los mentores de Science2Venture. Los archivos se descargan directamente desde esta plataforma.</p></div></div><div class="resource-grid">${resources.map(r=>`<article class="resource-card"><div class="resource-card-top"><span class="resource-type">${esc(r.type)}</span><span class="resource-format">${esc(r.format)}</span></div><h3>${esc(r.title)}</h3><p>${esc(r.description)}</p><a class="resource-action" href="${esc(r.file)}" download>DESCARGAR ARCHIVO <span aria-hidden="true">↓</span></a></article>`).join("")}</div><div class="notice">Estos recursos son comunes para los mentores y estarán disponibles desde el Banco de Herramientas de cada iniciativa.</div></section>`;
+    return `<section class="tool-bank"><div class="tool-bank-head"><div class="tool-bank-icon">↗</div><div><span class="source-label">BANCO DE HERRAMIENTAS</span><h2>Recursos para el acompañamiento</h2><p>Documentos de trabajo disponibles para los mentores de Science2Venture. Los archivos se descargan directamente desde esta plataforma.</p></div></div><div class="resource-grid">${resources.map(r=>`<article class="resource-card"><div class="resource-card-top"><span class="resource-type">${esc(r.type)}</span><span class="resource-format">${esc(r.format)}</span></div><h3>${esc(r.title)}</h3><p>${esc(r.description)}</p><a class="resource-action" href="${esc(r.file)}" download>DESCARGAR ARCHIVO <span aria-hidden="true">↓</span></a></article>`).join("")}</div><div class="notice">Estos recursos son comunes para todos los mentores y están disponibles directamente desde el ingreso principal de Mentor View.</div></section>`;
   }
 
   load();
