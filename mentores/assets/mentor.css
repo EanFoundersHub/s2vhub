@@ -403,3 +403,46 @@ html[data-theme="dark"] .brand-logo-dark{display:block}
   .tools-entry-arrow{width:34px;height:34px}
   .tools-entry-copy b{font-size:.72rem}
 }
+
+
+/* V47 · Registro simple de bitácoras */
+.mentor-banner-actions{display:grid;gap:10px;align-self:stretch}
+.mentor-banner-actions .tools-entry{min-height:76px;grid-template-columns:44px minmax(0,1fr) 34px;padding:13px 14px}
+.mentor-banner-actions .tools-entry-icon{width:44px;height:44px;border-radius:14px}
+.mentor-banner-actions .tools-entry-arrow{width:34px;height:34px}
+.bitacora-entry{border-color:rgba(212,168,83,.34)}
+.bitacora-entry:before{background:var(--gold)}
+.bitacora-entry .tools-entry-icon{background:var(--gold-bg);border-color:rgba(212,168,83,.32);color:#9b752d}
+.bitacora-entry:hover{border-color:var(--gold);background:linear-gradient(145deg,var(--surface) 0%,var(--gold-bg) 145%)}
+
+body.modal-open{overflow:hidden}
+.bitacora-modal[hidden]{display:none!important}
+.bitacora-modal{position:fixed;inset:0;z-index:300;display:grid;place-items:center;padding:22px}
+.bitacora-backdrop{position:absolute;inset:0;background:rgba(7,14,20,.58);backdrop-filter:blur(8px)}
+.bitacora-dialog{position:relative;width:min(760px,100%);max-height:min(88vh,820px);overflow:auto;border:1px solid var(--border);border-radius:26px;background:var(--surface);box-shadow:0 28px 90px rgba(0,0,0,.28)}
+.bitacora-head{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;padding:27px 28px 22px;border-bottom:1px solid var(--border);background:linear-gradient(145deg,var(--surface),var(--surface-2))}
+.bitacora-head h2{margin:5px 0 6px;color:var(--strong);font-size:clamp(1.55rem,3vw,2.25rem);letter-spacing:-.04em}
+.bitacora-head p{margin:0;color:var(--muted);font-size:.78rem;line-height:1.55}
+.bitacora-close{flex:0 0 auto;width:38px;height:38px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--strong);font-size:1.35rem;line-height:1;cursor:pointer}
+.bitacora-form{padding:24px 28px 27px}
+.bitacora-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px 18px}
+.bitacora-field{display:grid;gap:7px;min-width:0}
+.bitacora-field>span{color:var(--muted);font-size:.63rem;font-weight:850;letter-spacing:.075em;text-transform:uppercase}
+.bitacora-field input,.bitacora-field select,.bitacora-field textarea{width:100%;border:1px solid var(--border);border-radius:13px;background:var(--surface-2);color:var(--strong);padding:12px 13px;outline:none;transition:border-color .16s ease,box-shadow .16s ease;background-color .16s ease}
+.bitacora-field textarea{resize:vertical;min-height:118px;line-height:1.6}
+.bitacora-field input:focus,.bitacora-field select:focus,.bitacora-field textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(85,201,204,.13);background:var(--surface)}
+.bitacora-field input[readonly]{color:var(--muted);cursor:default}
+.bitacora-full{grid-column:1/-1}
+.bitacora-status{min-height:22px;margin-top:16px;padding:0 2px;color:var(--muted);font-size:.76rem;font-weight:650}
+.bitacora-status.is-success{color:#267447}
+.bitacora-status.is-error{color:#a53a3a}
+.bitacora-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:8px;padding-top:17px;border-top:1px solid var(--border)}
+.bitacora-secondary,.bitacora-save{border-radius:12px;padding:11px 15px;font-size:.68rem;font-weight:850;letter-spacing:.045em;cursor:pointer}
+.bitacora-secondary{border:1px solid var(--border);background:var(--surface);color:var(--muted)}
+.bitacora-save{border:1px solid var(--teal-dark);background:var(--strong);color:var(--surface);min-width:175px}
+.bitacora-save:hover{transform:translateY(-1px)}
+.bitacora-save:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+@media(max-width:1120px){.mentor-banner-actions{grid-column:1/-1;grid-template-columns:1fr 1fr}.mentor-banner-actions .tools-entry{grid-column:auto}}
+@media(max-width:760px){.mentor-banner-actions{grid-template-columns:1fr}.bitacora-grid{grid-template-columns:1fr}.bitacora-full{grid-column:auto}}
+@media(max-width:560px){.bitacora-modal{padding:10px}.bitacora-dialog{border-radius:20px;max-height:94vh}.bitacora-head{padding:21px 18px 17px}.bitacora-form{padding:18px}.bitacora-actions{flex-direction:column-reverse}.bitacora-secondary,.bitacora-save{width:100%}}

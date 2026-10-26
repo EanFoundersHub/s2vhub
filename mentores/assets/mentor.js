@@ -4,6 +4,7 @@
   const params = new URLSearchParams(location.search);
   const access = (params.get("access") || "").trim();
   const state = { data:null, filtered:[], selected:null, activeTab:"summary" };
+  const BITACORA_URL = 'https://defaultc06fb5591b684b84a14f47d0d837a5.ab.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/10/workflows/111d5c434a8e4b809e196466d38a02a4/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=iVrvxbnltN1_GPun1u9Wi3gQixTF0KCyaA_CIQthb-Q';
 
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
   const clean = v => (v === null || v === undefined ? "" : String(v).trim());
@@ -153,7 +154,7 @@
     d.projects.forEach(p=>(p.result?.team||[]).forEach(t=>{ if(t?.name) people.add(clean(t.name).toLowerCase()); }));
     app.innerHTML=`<section class="portfolio">
       <article class="mentor-banner">
-        <div class="mentor-banner-main"><div class="avatar">${esc(m.initials||initials(m.name))}</div><div class="mentor-banner-copy"><p class="eyebrow">SCIENCE2VENTURE · COHORTE I 2026</p><h1>${esc(m.name)}</h1><p>Portafolio de iniciativas asignadas para acompañamiento. La vista conserva la lógica de SelectionHub, organizada para lectura de mentoría.</p></div><button class="tools-entry" id="toolsEntryBtn" type="button" aria-label="Abrir Banco de Herramientas"><span class="tools-entry-icon">↗</span><span class="tools-entry-copy"><b>BANCO DE HERRAMIENTAS</b><small>3 recursos para el acompañamiento</small></span><span class="tools-entry-arrow">→</span></button></div>
+        <div class="mentor-banner-main"><div class="avatar">${esc(m.initials||initials(m.name))}</div><div class="mentor-banner-copy"><p class="eyebrow">SCIENCE2VENTURE · COHORTE I 2026</p><h1>${esc(m.name)}</h1><p>Portafolio de iniciativas asignadas para acompañamiento. La vista conserva la lógica de SelectionHub, organizada para lectura de mentoría.</p></div><div class="mentor-banner-actions"><button class="tools-entry" id="toolsEntryBtn" type="button" aria-label="Abrir Banco de Herramientas"><span class="tools-entry-icon">↗</span><span class="tools-entry-copy"><b>BANCO DE HERRAMIENTAS</b><small>3 recursos para el acompañamiento</small></span><span class="tools-entry-arrow">→</span></button><button class="tools-entry bitacora-entry" id="bitacoraEntryBtn" type="button" aria-label="Registrar bitácora"><span class="tools-entry-icon">＋</span><span class="tools-entry-copy"><b>REGISTRAR BITÁCORA</b><small>Avances y compromisos de la sesión</small></span><span class="tools-entry-arrow">→</span></button></div></div>
         <div class="mentor-banner-kpis">
           <div class="mentor-kpi"><span>Iniciativas</span><strong>${d.initiativeCount}</strong><small>asignadas</small></div>
           <div class="mentor-kpi"><span>Financiadas</span><strong>${fundedCount}</strong><small>con valor definido</small></div>
@@ -167,6 +168,7 @@
     </section>`;
     document.getElementById("searchInput")?.addEventListener("input", applyFilters);
     document.getElementById("toolsEntryBtn")?.addEventListener("click",()=>renderToolsHub(true));
+    document.getElementById("bitacoraEntryBtn")?.addEventListener("click",openBitacoraModal);
     renderCards();
   }
 
@@ -384,6 +386,66 @@
       <section class="funding-result ${funded?"is-funded":""}"><span class="section-kicker">RESULTADO CONSOLIDADO</span><div class="funding-result-grid"><div><span>Estado</span><strong>${esc(fundingLabel(r))}</strong></div><div><span>Valor asignado</span><strong>${funded?esc(money(r.fundingAmount)):"—"}</strong></div><div><span>Puntaje</span><strong>${r.platformScore??"—"}</strong></div><div><span>TRL validado</span><strong>${esc(r.trlValidatedByUnit||r.trlValidated||"—")}</strong></div><div><span>Prioridad</span><strong>${esc(r.priority||"—")}</strong></div><div><span>Mentor</span><strong>${esc(state.data.mentor.name)}</strong></div></div>${funded?`<p>La iniciativa cuenta con un valor numérico de financiación definido en el consolidado final.</p>`:`<p>No se registra un valor numérico de financiación asignado en el consolidado final.</p>`}</section>
       ${showAction||showDecision||notes?`<section class="result-followup"><span class="section-kicker">SEGUIMIENTO</span><h3>Observaciones vigentes</h3>${showDecision?`<p>${esc(decision)}</p>`:""}${showAction?`<p><b>Acción:</b> ${esc(action)}</p>`:""}${notes?`<p>${esc(notes)}</p>`:""}</section>`:""}
     </div>`;
+  }
+
+
+
+  function localDateValue(){
+    const d=new Date();
+    const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function ensureBitacoraModal(){
+    let modal=document.getElementById("bitacoraModal");
+    if(modal) return modal;
+    modal=document.createElement("div");
+    modal.id="bitacoraModal";
+    modal.className="bitacora-modal";
+    modal.hidden=true;
+    modal.innerHTML=`<div class="bitacora-backdrop" data-bita-close></div><section class="bitacora-dialog" role="dialog" aria-modal="true" aria-labelledby="bitacoraTitle"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ACOMPAÑAMIENTO</span><h2 id="bitacoraTitle">Registrar bitácora</h2><p>Registra únicamente los avances y compromisos acordados durante la sesión.</p></div><button class="bitacora-close" type="button" data-bita-close aria-label="Cerrar">×</button></header><form id="bitacoraForm" class="bitacora-form"><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="bitaMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="bitaIniciativa" required><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field"><span>Fecha de sesión</span><input id="bitaFecha" type="date" required></label><label class="bitacora-field bitacora-full"><span>Avances</span><textarea id="bitaAvances" required rows="5" placeholder="¿Qué avances se lograron o revisaron durante la sesión?"></textarea></label><label class="bitacora-field bitacora-full"><span>Compromisos</span><textarea id="bitaCompromisos" required rows="5" placeholder="¿Qué compromisos quedaron acordados?"></textarea></label></div><div id="bitacoraStatus" class="bitacora-status" role="status" aria-live="polite"></div><footer class="bitacora-actions"><button class="bitacora-secondary" type="button" data-bita-close>Cancelar</button><button class="bitacora-save" id="bitacoraSave" type="submit">GUARDAR BITÁCORA</button></footer></form></section>`;
+    document.body.appendChild(modal);
+    modal.querySelectorAll("[data-bita-close]").forEach(el=>el.addEventListener("click",closeBitacoraModal));
+    modal.querySelector("#bitacoraForm")?.addEventListener("submit",submitBitacora);
+    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.hidden) closeBitacoraModal();});
+    return modal;
+  }
+
+  function openBitacoraModal(){
+    const modal=ensureBitacoraModal();
+    const mentor=modal.querySelector("#bitaMentor"), select=modal.querySelector("#bitaIniciativa"), fecha=modal.querySelector("#bitaFecha"), avances=modal.querySelector("#bitaAvances"), compromisos=modal.querySelector("#bitaCompromisos"), status=modal.querySelector("#bitacoraStatus");
+    mentor.value=state.data?.mentor?.name||"";
+    select.innerHTML=`<option value="">Seleccionar iniciativa</option>${(state.data?.projects||[]).map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("")}`;
+    fecha.value=localDateValue();
+    avances.value=""; compromisos.value=""; status.textContent=""; status.className="bitacora-status";
+    modal.hidden=false; document.body.classList.add("modal-open");
+    setTimeout(()=>select.focus(),0);
+  }
+
+  function closeBitacoraModal(){
+    const modal=document.getElementById("bitacoraModal"); if(!modal) return;
+    modal.hidden=true; document.body.classList.remove("modal-open");
+  }
+
+  async function submitBitacora(event){
+    event.preventDefault();
+    const modal=document.getElementById("bitacoraModal"); if(!modal) return;
+    const select=modal.querySelector("#bitaIniciativa"), fecha=modal.querySelector("#bitaFecha"), avances=modal.querySelector("#bitaAvances"), compromisos=modal.querySelector("#bitaCompromisos"), status=modal.querySelector("#bitacoraStatus"), save=modal.querySelector("#bitacoraSave");
+    const payload={mentor:clean(state.data?.mentor?.name),iniciativa:clean(select.value),fechaSesion:clean(fecha.value),avances:clean(avances.value),compromisos:clean(compromisos.value)};
+    if(Object.values(payload).some(empty)){status.textContent="Completa todos los campos antes de guardar.";status.className="bitacora-status is-error";return;}
+    save.disabled=true; save.textContent="GUARDANDO…"; status.textContent="Registrando la bitácora…"; status.className="bitacora-status";
+    try{
+      const response=await fetch(BITACORA_URL,{method:"POST",headers:{"Content-Type":"application/json; charset=utf-8"},body:JSON.stringify(payload)});
+      const raw=await response.text(); let result={};
+      try{result=raw?JSON.parse(raw):{};}catch(e){}
+      if(!response.ok||result.ok!==true) throw new Error(result.mensaje||`Power Automate respondió ${response.status}`);
+      status.textContent="Bitácora guardada correctamente."; status.className="bitacora-status is-success";
+      avances.value=""; compromisos.value="";
+      setTimeout(closeBitacoraModal,900);
+    }catch(error){
+      console.error("Error guardando bitácora",error);
+      status.textContent="No fue posible guardar la bitácora. Intenta nuevamente."; status.className="bitacora-status is-error";
+    }finally{save.disabled=false;save.textContent="GUARDAR BITÁCORA";}
   }
 
   function toolsHtml(){
