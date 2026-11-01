@@ -446,3 +446,39 @@ body.modal-open{overflow:hidden}
 @media(max-width:1120px){.mentor-banner-actions{grid-column:1/-1;grid-template-columns:1fr 1fr}.mentor-banner-actions .tools-entry{grid-column:auto}}
 @media(max-width:760px){.mentor-banner-actions{grid-template-columns:1fr}.bitacora-grid{grid-template-columns:1fr}.bitacora-full{grid-column:auto}}
 @media(max-width:560px){.bitacora-modal{padding:10px}.bitacora-dialog{border-radius:20px;max-height:94vh}.bitacora-head{padding:21px 18px 17px}.bitacora-form{padding:18px}.bitacora-actions{flex-direction:column-reverse}.bitacora-secondary,.bitacora-save{width:100%}}
+
+/* V48 · Etapa 0 · carga y asociación documental */
+.etapa0-entry{border-color:var(--teal-border)}
+.etapa0-entry:before{background:var(--teal)}
+.etapa0-entry .tools-entry-icon{background:var(--teal-bg);border-color:var(--teal-border);color:var(--teal-dark)}
+.etapa0-dialog{width:min(820px,100%)}
+.docs-intro{margin-bottom:20px;padding:17px 18px;border:1px solid var(--border);border-radius:16px;background:linear-gradient(145deg,var(--surface-2),var(--surface))}
+.docs-intro>span{display:block;color:var(--teal-dark);font-size:.6rem;font-weight:850;letter-spacing:.08em}
+.docs-intro>strong{display:block;margin:5px 0 6px;color:var(--strong);font-size:1rem}
+.docs-intro>p{margin:0;color:var(--muted);font-size:.76rem;line-height:1.58}
+.doc-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.doc-type-option{position:relative;display:block;cursor:pointer}
+.doc-type-option input{position:absolute;opacity:0;pointer-events:none}
+.doc-type-option>span{display:block;height:100%;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2);transition:.16s ease}
+.doc-type-option b{display:block;color:var(--strong);font-size:.72rem;letter-spacing:.04em}
+.doc-type-option small{display:block;margin-top:5px;color:var(--muted);font-size:.68rem;line-height:1.45}
+.doc-type-option input:checked+span{border-color:var(--teal);background:var(--teal-bg);box-shadow:0 0 0 2px rgba(85,201,204,.10)}
+.docs-upload-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:19px}
+.docs-upload-btn,.docs-verify-btn{border-radius:13px;padding:13px 14px;font-size:.67rem;font-weight:850;letter-spacing:.04em;cursor:pointer}
+.docs-upload-btn{border:1px solid var(--teal-dark);background:var(--strong);color:var(--surface)}
+.docs-verify-btn{border:1px solid var(--teal-border);background:var(--teal-bg);color:var(--teal-dark)}
+.docs-upload-btn:disabled,.docs-verify-btn:disabled{opacity:.55;cursor:not-allowed}
+.docs-pending-wrap{margin-top:16px;border-top:1px solid var(--border);padding-top:17px}
+.docs-pending-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px}
+.docs-pending-head span{color:var(--strong);font-size:.65rem;font-weight:850;letter-spacing:.055em}
+.docs-pending-head small{color:var(--muted);font-size:.65rem}
+.pending-file-list{display:grid;gap:8px}
+.pending-file{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 13px;border:1px solid var(--border);border-radius:13px;background:var(--surface-2);cursor:pointer}
+.pending-file:has(input:checked){border-color:var(--teal);background:var(--teal-bg)}
+.pending-file input{accent-color:var(--teal-dark)}
+.pending-file-main{min-width:0}
+.pending-file-main b{display:block;color:var(--strong);font-size:.75rem;overflow-wrap:anywhere}
+.pending-file-main small{display:block;margin-top:3px;color:var(--muted);font-size:.64rem}
+.pending-file-id{color:var(--muted);font-size:.62rem;font-weight:800}
+.docs-associate-btn{width:100%;margin-top:12px}
+@media(max-width:640px){.doc-type-grid,.docs-upload-actions{grid-template-columns:1fr}.docs-pending-head{align-items:flex-start;flex-direction:column}.pending-file{grid-template-columns:auto minmax(0,1fr)}.pending-file-id{grid-column:2}}
