@@ -5,6 +5,10 @@
   const access = (params.get("access") || "").trim();
   const state = { data:null, filtered:[], selected:null, activeTab:"summary" };
   const BITACORA_URL = 'https://defaultc06fb5591b684b84a14f47d0d837a5.ab.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/10/workflows/111d5c434a8e4b809e196466d38a02a4/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=iVrvxbnltN1_GPun1u9Wi3gQixTF0KCyaA_CIQthb-Q';
+  const DOCS_CONFIG = window.S2V_DOCS_CONFIG || {};
+  const DOC_UPLOAD_URL = String(DOCS_CONFIG.uploadRequestUrl || "").trim();
+  const DOC_SEARCH_URL = String(DOCS_CONFIG.searchPendingUrl || "").trim();
+  const DOC_ASSOCIATE_URL = String(DOCS_CONFIG.associateFileUrl || "").trim();
 
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
   const clean = v => (v === null || v === undefined ? "" : String(v).trim());
@@ -154,7 +158,7 @@
     d.projects.forEach(p=>(p.result?.team||[]).forEach(t=>{ if(t?.name) people.add(clean(t.name).toLowerCase()); }));
     app.innerHTML=`<section class="portfolio">
       <article class="mentor-banner">
-        <div class="mentor-banner-main"><div class="avatar">${esc(m.initials||initials(m.name))}</div><div class="mentor-banner-copy"><p class="eyebrow">SCIENCE2VENTURE · COHORTE I 2026</p><h1>${esc(m.name)}</h1><p>Portafolio de iniciativas asignadas para acompañamiento. La vista conserva la lógica de SelectionHub, organizada para lectura de mentoría.</p></div><div class="mentor-banner-actions"><button class="tools-entry" id="toolsEntryBtn" type="button" aria-label="Abrir Banco de Herramientas"><span class="tools-entry-icon">↗</span><span class="tools-entry-copy"><b>BANCO DE HERRAMIENTAS</b><small>3 recursos para el acompañamiento</small></span><span class="tools-entry-arrow">→</span></button><button class="tools-entry bitacora-entry" id="bitacoraEntryBtn" type="button" aria-label="Registrar bitácora"><span class="tools-entry-icon">＋</span><span class="tools-entry-copy"><b>REGISTRAR BITÁCORA</b><small>Avances y compromisos de la sesión</small></span><span class="tools-entry-arrow">→</span></button></div></div>
+        <div class="mentor-banner-main"><div class="avatar">${esc(m.initials||initials(m.name))}</div><div class="mentor-banner-copy"><p class="eyebrow">SCIENCE2VENTURE · COHORTE I 2026</p><h1>${esc(m.name)}</h1><p>Portafolio de iniciativas asignadas para acompañamiento. La vista conserva la lógica de SelectionHub, organizada para lectura de mentoría.</p></div><div class="mentor-banner-actions"><button class="tools-entry" id="toolsEntryBtn" type="button" aria-label="Abrir Banco de Herramientas"><span class="tools-entry-icon">↗</span><span class="tools-entry-copy"><b>BANCO DE HERRAMIENTAS</b><small>3 recursos para el acompañamiento</small></span><span class="tools-entry-arrow">→</span></button><button class="tools-entry bitacora-entry" id="bitacoraEntryBtn" type="button" aria-label="Registrar bitácora"><span class="tools-entry-icon">＋</span><span class="tools-entry-copy"><b>REGISTRAR BITÁCORA</b><small>Avances y compromisos de la sesión</small></span><span class="tools-entry-arrow">→</span></button><button class="tools-entry etapa0-entry" id="etapa0EntryBtn" type="button" aria-label="Abrir Etapa 0"><span class="tools-entry-icon">0</span><span class="tools-entry-copy"><b>ETAPA 0 · ARRANQUE</b><small>Plan de trabajo y diagnóstico</small></span><span class="tools-entry-arrow">→</span></button></div></div>
         <div class="mentor-banner-kpis">
           <div class="mentor-kpi"><span>Iniciativas</span><strong>${d.initiativeCount}</strong><small>asignadas</small></div>
           <div class="mentor-kpi"><span>Financiadas</span><strong>${fundedCount}</strong><small>con valor definido</small></div>
@@ -168,7 +172,7 @@
     </section>`;
     document.getElementById("searchInput")?.addEventListener("input", applyFilters);
     document.getElementById("toolsEntryBtn")?.addEventListener("click",()=>renderToolsHub(true));
-    document.getElementById("bitacoraEntryBtn")?.addEventListener("click",openBitacoraModal);
+    document.getElementById("bitacoraEntryBtn")?.addEventListener("click",openBitacoraModal);\n    document.getElementById("etapa0EntryBtn")?.addEventListener("click",openEtapa0Modal);
     renderCards();
   }
 
@@ -389,6 +393,134 @@
   }
 
 
+
+  function docsConfigReady(){
+    return !!(DOC_UPLOAD_URL && DOC_SEARCH_URL && DOC_ASSOCIATE_URL);
+  }
+
+  function docsStatus(modal,message,type=""){
+    const el=modal?.querySelector("#docsStatus"); if(!el) return;
+    el.textContent=message||"";
+    el.className=`bitacora-status${type?` is-${type}`:""}`;
+  }
+
+  function ensureEtapa0Modal(){
+    let modal=document.getElementById("etapa0Modal");
+    if(modal) return modal;
+    modal=document.createElement("div");
+    modal.id="etapa0Modal";
+    modal.className="bitacora-modal etapa0-modal";
+    modal.hidden=true;
+    modal.innerHTML=`<div class="bitacora-backdrop" data-docs-close></div><section class="bitacora-dialog etapa0-dialog" role="dialog" aria-modal="true" aria-labelledby="etapa0Title"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ETAPA 0</span><h2 id="etapa0Title">Arranque y línea base</h2><p>Carga y asocia los documentos iniciales de cada iniciativa.</p></div><button class="bitacora-close" type="button" data-docs-close aria-label="Cerrar">×</button></header><div class="bitacora-form"><div class="docs-intro"><span>DOCUMENTOS DE LA ETAPA</span><strong>Plan de trabajo + Diagnóstico</strong><p>Selecciona la iniciativa y el tipo de documento. La carga se realiza en Microsoft y luego se verifica aquí para dejar el archivo asociado correctamente.</p></div><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="docsMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="docsIniciativa"><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field bitacora-full"><span>Tipo de documento</span><div class="doc-type-grid"><label class="doc-type-option"><input type="radio" name="docsTipo" value="Plan de trabajo" checked><span><b>PLAN DE TRABAJO</b><small>Organización del acompañamiento, objetivos e hitos.</small></span></label><label class="doc-type-option"><input type="radio" name="docsTipo" value="Diagnóstico"><span><b>DIAGNÓSTICO</b><small>Línea base y lectura inicial de la iniciativa.</small></span></label></div></label></div><div class="docs-upload-actions"><button class="docs-upload-btn" id="docsUploadBtn" type="button">1 · CARGAR DOCUMENTO ↗</button><button class="docs-verify-btn" id="docsVerifyBtn" type="button">2 · YA LO CARGUÉ · VERIFICAR</button></div><div id="docsStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="docsPendingWrap" class="docs-pending-wrap" hidden><div class="docs-pending-head"><span>ARCHIVOS PENDIENTES ENCONTRADOS</span><small>Selecciona únicamente el archivo que acabas de cargar.</small></div><div id="docsPendingList" class="pending-file-list"></div><button class="bitacora-save docs-associate-btn" id="docsAssociateBtn" type="button">ASOCIAR A LA INICIATIVA</button></div></div></section>`;
+    document.body.appendChild(modal);
+    modal.querySelectorAll("[data-docs-close]").forEach(el=>el.addEventListener("click",closeEtapa0Modal));
+    modal.querySelector("#docsUploadBtn")?.addEventListener("click",openDocsUpload);
+    modal.querySelector("#docsVerifyBtn")?.addEventListener("click",searchPendingDocs);
+    modal.querySelector("#docsAssociateBtn")?.addEventListener("click",associatePendingDoc);
+    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.hidden) closeEtapa0Modal();});
+    return modal;
+  }
+
+  function openEtapa0Modal(){
+    const modal=ensureEtapa0Modal();
+    modal.querySelector("#docsMentor").value=state.data?.mentor?.name||"";
+    const select=modal.querySelector("#docsIniciativa");
+    select.innerHTML=`<option value="">Seleccionar iniciativa</option>${(state.data?.projects||[]).map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("")}`;
+    modal.querySelector("#docsPendingWrap").hidden=true;
+    modal.querySelector("#docsPendingList").innerHTML="";
+    modal._pendingDocs=[];
+    docsStatus(modal,docsConfigReady()?"Selecciona la iniciativa y el documento que vas a cargar.":"La sección está lista. Falta conectar los enlaces de carga y automatización.");
+    modal.hidden=false; document.body.classList.add("modal-open");
+    setTimeout(()=>select.focus(),0);
+  }
+
+  function closeEtapa0Modal(){
+    const modal=document.getElementById("etapa0Modal"); if(!modal) return;
+    modal.hidden=true; document.body.classList.remove("modal-open");
+  }
+
+  function selectedDocType(modal){
+    return clean(modal?.querySelector('input[name="docsTipo"]:checked')?.value);
+  }
+
+  function openDocsUpload(){
+    const modal=document.getElementById("etapa0Modal"); if(!modal) return;
+    const initiative=clean(modal.querySelector("#docsIniciativa")?.value);
+    if(!initiative){docsStatus(modal,"Selecciona primero la iniciativa.","error");return;}
+    if(!DOC_UPLOAD_URL){docsStatus(modal,"El enlace de carga todavía no está configurado.","error");return;}
+    const since=new Date(Date.now()-30000).toISOString();
+    modal.dataset.since=since;
+    try{sessionStorage.setItem("s2v_docs_since",since);}catch(e){}
+    window.open(DOC_UPLOAD_URL,"_blank","noopener");
+    docsStatus(modal,"Se abrió la solicitud de archivos de Microsoft. Cuando termine la carga, vuelve aquí y pulsa “Ya lo cargué · Verificar”.");
+  }
+
+  function normalizePendingDoc(item,index){
+    const id=Number(item?.ID ?? item?.Id ?? item?.ItemInternalId ?? item?.id);
+    const name=clean(item?.["{FilenameWithExtension}"] ?? item?.FileLeafRef ?? item?.Name ?? item?.nombreArchivo ?? `Archivo ${index+1}`);
+    const identifier=clean(item?.["{Identifier}"] ?? item?.Identifier ?? item?.identificadorArchivo);
+    const path=clean(item?.["{FullPath}"] ?? item?.["{Path}"] ?? item?.Path ?? item?.rutaArchivo);
+    const created=clean(item?.Created ?? item?.created ?? item?.fechaCarga);
+    return {raw:item,id,name,identifier,path,created};
+  }
+
+  function renderPendingDocs(modal,items){
+    const wrap=modal.querySelector("#docsPendingWrap"), list=modal.querySelector("#docsPendingList");
+    modal._pendingDocs=items;
+    wrap.hidden=!items.length;
+    if(!items.length){list.innerHTML="";return;}
+    list.innerHTML=items.map((f,i)=>`<label class="pending-file"><input type="radio" name="pendingDoc" value="${i}" ${i===0?"checked":""}><span class="pending-file-main"><b>${esc(f.name)}</b><small>${f.created?esc(new Date(f.created).toLocaleString("es-CO")):"Carga reciente"}</small></span><span class="pending-file-id">ID ${Number.isFinite(f.id)?esc(f.id):"—"}</span></label>`).join("");
+  }
+
+  async function searchPendingDocs(){
+    const modal=document.getElementById("etapa0Modal"); if(!modal) return;
+    const initiative=clean(modal.querySelector("#docsIniciativa")?.value);
+    if(!initiative){docsStatus(modal,"Selecciona primero la iniciativa.","error");return;}
+    if(!DOC_SEARCH_URL){docsStatus(modal,"El flujo de verificación todavía no está conectado.","error");return;}
+    const btn=modal.querySelector("#docsVerifyBtn");
+    let since=modal.dataset.since;
+    try{since=since||sessionStorage.getItem("s2v_docs_since");}catch(e){}
+    if(!since) since=new Date(Date.now()-30*60*1000).toISOString();
+    btn.disabled=true; btn.textContent="VERIFICANDO…"; docsStatus(modal,"Buscando cargas pendientes recientes…");
+    try{
+      const response=await fetch(DOC_SEARCH_URL,{method:"POST",headers:{"Content-Type":"application/json; charset=utf-8"},body:JSON.stringify({desde:since})});
+      const raw=await response.text(); let result={};
+      try{result=raw?JSON.parse(raw):{};}catch(e){}
+      if(!response.ok||result.ok!==true) throw new Error(`Power Automate respondió ${response.status}`);
+      const items=(Array.isArray(result.archivos)?result.archivos:[]).map(normalizePendingDoc).filter(x=>Number.isFinite(x.id)&&x.identifier);
+      renderPendingDocs(modal,items);
+      docsStatus(modal,items.length?`${items.length} archivo${items.length===1?"":"s"} pendiente${items.length===1?"":"s"} encontrado${items.length===1?"":"s"}. Selecciona el que acabas de cargar.`:"No encontré una carga nueva todavía. Puede tardar unos segundos en aparecer.",items.length?"success":"");
+    }catch(error){
+      console.error("Error buscando cargas S2V",error);
+      docsStatus(modal,"No fue posible verificar las cargas. Intenta nuevamente en unos segundos.","error");
+    }finally{btn.disabled=false;btn.textContent="2 · YA LO CARGUÉ · VERIFICAR";}
+  }
+
+  async function associatePendingDoc(){
+    const modal=document.getElementById("etapa0Modal"); if(!modal) return;
+    const initiative=clean(modal.querySelector("#docsIniciativa")?.value);
+    const type=selectedDocType(modal);
+    const selected=modal.querySelector('input[name="pendingDoc"]:checked');
+    const file=selected?modal._pendingDocs?.[Number(selected.value)]:null;
+    if(!initiative||!type){docsStatus(modal,"Selecciona la iniciativa y el tipo de documento.","error");return;}
+    if(!file){docsStatus(modal,"Selecciona el archivo que quieres asociar.","error");return;}
+    if(!DOC_ASSOCIATE_URL){docsStatus(modal,"El flujo de asociación todavía no está conectado.","error");return;}
+    const btn=modal.querySelector("#docsAssociateBtn");
+    const payload={archivoId:file.id,nombreArchivo:file.name,identificadorArchivo:file.identifier,rutaArchivo:file.path,fechaCarga:file.created,mentor:clean(state.data?.mentor?.name),iniciativa:initiative,etapa:"Etapa 0",tipoDocumento:type,asociacionEmpresa:true,bitacoraId:null,fechaBitacora:null,fechaSesion:null};
+    btn.disabled=true; btn.textContent="ASOCIANDO…"; docsStatus(modal,"Organizando el archivo dentro de la iniciativa…");
+    try{
+      const response=await fetch(DOC_ASSOCIATE_URL,{method:"POST",headers:{"Content-Type":"application/json; charset=utf-8"},body:JSON.stringify(payload)});
+      const raw=await response.text(); let result={};
+      try{result=raw?JSON.parse(raw):{};}catch(e){}
+      if(!response.ok||result.ok!==true) throw new Error(`Power Automate respondió ${response.status}`);
+      docsStatus(modal,`${type} asociado correctamente a ${initiative}.`,"success");
+      modal._pendingDocs=(modal._pendingDocs||[]).filter(x=>x.id!==file.id);
+      renderPendingDocs(modal,modal._pendingDocs);
+    }catch(error){
+      console.error("Error asociando archivo S2V",error);
+      docsStatus(modal,"No fue posible asociar el archivo. Revisa el flujo e intenta nuevamente.","error");
+    }finally{btn.disabled=false;btn.textContent="ASOCIAR A LA INICIATIVA";}
+  }
 
   function localDateValue(){
     const d=new Date();
