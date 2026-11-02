@@ -457,11 +457,11 @@
   }
 
   function normalizePendingDoc(item,index){
-    const id=Number(item?.ID ?? item?.Id ?? item?.ItemInternalId ?? item?.id);
-    const name=clean(item?.["{FilenameWithExtension}"] ?? item?.FileLeafRef ?? item?.Name ?? item?.nombreArchivo ?? `Archivo ${index+1}`);
-    const identifier=clean(item?.["{Identifier}"] ?? item?.Identifier ?? item?.identificadorArchivo);
-    const path=clean(item?.["{FullPath}"] ?? item?.["{Path}"] ?? item?.Path ?? item?.rutaArchivo);
-    const created=clean(item?.Created ?? item?.created ?? item?.fechaCarga);
+    const id=clean(item?.Id ?? item?.ID ?? item?.ItemInternalId ?? item?.id);
+    const name=clean(item?.Name ?? item?.DisplayName ?? item?.["{FilenameWithExtension}"] ?? item?.FileLeafRef ?? item?.nombreArchivo ?? `Archivo ${index+1}`);
+    const identifier=clean(item?.Id ?? item?.Identifier ?? item?.["{Identifier}"] ?? item?.identificadorArchivo ?? id);
+    const path=clean(item?.Path ?? item?.["{FullPath}"] ?? item?.["{Path}"] ?? item?.rutaArchivo);
+    const created=clean(item?.LastModified ?? item?.Created ?? item?.created ?? item?.fechaCarga);
     return {raw:item,id,name,identifier,path,created};
   }
 
@@ -470,7 +470,7 @@
     modal._pendingDocs=items;
     wrap.hidden=!items.length;
     if(!items.length){list.innerHTML="";return;}
-    list.innerHTML=items.map((f,i)=>`<label class="pending-file"><input type="radio" name="pendingDoc" value="${i}" ${i===0?"checked":""}><span class="pending-file-main"><b>${esc(f.name)}</b><small>${f.created?esc(new Date(f.created).toLocaleString("es-CO")):"Carga reciente"}</small></span><span class="pending-file-id">ID ${Number.isFinite(f.id)?esc(f.id):"—"}</span></label>`).join("");
+    list.innerHTML=items.map((f,i)=>`<label class="pending-file"><input type="radio" name="pendingDoc" value="${i}" ${i===0?"checked":""}><span class="pending-file-main"><b>${esc(f.name)}</b><small>${f.created?esc(new Date(f.created).toLocaleString("es-CO")):"Carga reciente"}</small></span><span class="pending-file-id">ONEDRIVE</span></label>`).join("");
   }
 
   async function searchPendingDocs(){
@@ -488,7 +488,7 @@
       const raw=await response.text(); let result={};
       try{result=raw?JSON.parse(raw):{};}catch(e){}
       if(!response.ok||result.ok!==true) throw new Error(`Power Automate respondió ${response.status}`);
-      const items=(Array.isArray(result.archivos)?result.archivos:[]).map(normalizePendingDoc).filter(x=>Number.isFinite(x.id)&&x.identifier);
+      const items=(Array.isArray(result.archivos)?result.archivos:[]).map(normalizePendingDoc).filter(x=>!!x.id&&!!x.identifier);
       renderPendingDocs(modal,items);
       docsStatus(modal,items.length?`${items.length} archivo${items.length===1?"":"s"} pendiente${items.length===1?"":"s"} encontrado${items.length===1?"":"s"}. Selecciona el que acabas de cargar.`:"No encontré una carga nueva todavía. Puede tardar unos segundos en aparecer.",items.length?"success":"");
     }catch(error){
