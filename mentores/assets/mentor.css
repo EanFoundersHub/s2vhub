@@ -888,3 +888,50 @@ body.modal-open{overflow:hidden}
   .home-stage-card{padding:18px}
   .home-stage-top{grid-template-columns:1fr}
 }
+
+
+/* V54 · Acciones directas dentro de cada requisito de Etapa 0 */
+.stage-requirements.actionable article{
+  align-items:stretch;
+}
+.requirement-content{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+}
+.requirement-content em{
+  margin-bottom:12px;
+}
+.requirement-action{
+  margin-top:auto;
+  width:100%;
+  border:1px solid var(--teal-border);
+  border-radius:11px;
+  background:var(--teal-bg);
+  color:var(--teal-dark);
+  padding:10px 11px;
+  font-size:.59rem;
+  font-weight:900;
+  letter-spacing:.035em;
+  cursor:pointer;
+  transition:.18s ease;
+}
+.requirement-action:hover{
+  transform:translateY(-1px);
+  border-color:var(--teal);
+  box-shadow:var(--soft);
+}
+.requirement-action.gold{
+  border-color:rgba(212,168,83,.34);
+  background:var(--gold-bg);
+  color:#8a6828;
+}
+.utility-actions{
+  grid-template-columns:1fr 1fr;
+}
+.utility-actions .secondary-work-action{
+  grid-column:auto;
+}
+@media(max-width:760px){
+  .utility-actions{grid-template-columns:1fr}
+}
