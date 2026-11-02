@@ -618,3 +618,17 @@ body.modal-open{overflow:hidden}
   .initiative-section .project-grid{padding:0 14px 18px}
   .modal-requirements{grid-template-columns:1fr}
 }
+
+
+/* V50 · Soportes asociados a bitácoras */
+.bitacora-dialog-wide{width:min(860px,100%)}
+.bita-attachments{margin-top:22px;padding-top:20px;border-top:1px solid var(--border)}
+.bita-attachments-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:14px}
+.bita-attachments-head span{display:block;color:var(--teal-dark);font-size:.58rem;font-weight:900;letter-spacing:.08em}
+.bita-attachments-head h3{margin:5px 0 5px;color:var(--strong);font-size:1rem}
+.bita-attachments-head p{margin:0;color:var(--muted);font-size:.7rem;line-height:1.5;max-width:580px}
+.bita-saved-chip{flex:0 0 auto;border:1px solid rgba(47,143,92,.28);border-radius:999px;background:rgba(47,143,92,.10);color:#267447;padding:7px 10px;font-size:.58rem;font-weight:900;letter-spacing:.05em}
+@media(max-width:620px){
+  .bita-attachments-head{flex-direction:column}
+  .bita-saved-chip{align-self:flex-start}
+}
