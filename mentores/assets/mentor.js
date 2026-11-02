@@ -483,7 +483,7 @@
     if(!since) since=new Date(Date.now()-30*60*1000).toISOString();
     btn.disabled=true; btn.textContent="VERIFICANDO…"; docsStatus(modal,"Buscando cargas pendientes recientes…");
     try{
-      const response=await fetch(DOC_SEARCH_URL,{method:"POST",headers:{"Content-Type":"application/json; charset=utf-8"},body:JSON.stringify({desde:since})});
+      const response=await fetch(DOC_SEARCH_URL,{method:"POST",headers:{"Content-Type":"application/json; charset=utf-8","X-S2V-Access":access},body:JSON.stringify({desde:since})});
       const raw=await response.text(); let result={};
       try{result=raw?JSON.parse(raw):{};}catch(e){}
       if(!response.ok||result.ok!==true) throw new Error(`Power Automate respondió ${response.status}`);
@@ -509,7 +509,7 @@
     const payload={archivoId:file.id,nombreArchivo:file.name,identificadorArchivo:file.identifier,rutaArchivo:file.path,fechaCarga:file.created,mentor:clean(state.data?.mentor?.name),iniciativa:initiative,etapa:"Etapa 0",tipoDocumento:type,asociacionEmpresa:true,bitacoraId:null,fechaBitacora:null,fechaSesion:null};
     btn.disabled=true; btn.textContent="ASOCIANDO…"; docsStatus(modal,"Organizando el archivo dentro de la iniciativa…");
     try{
-      const response=await fetch(DOC_ASSOCIATE_URL,{method:"POST",headers:{"Content-Type":"application/json; charset=utf-8"},body:JSON.stringify(payload)});
+      const response=await fetch(DOC_ASSOCIATE_URL,{method:"POST",headers:{"Content-Type":"application/json; charset=utf-8","X-S2V-Access":access},body:JSON.stringify(payload)});
       const raw=await response.text(); let result={};
       try{result=raw?JSON.parse(raw):{};}catch(e){}
       if(!response.ok||result.ok!==true) throw new Error(`Power Automate respondió ${response.status}`);
