@@ -172,7 +172,8 @@
     </section>`;
     document.getElementById("searchInput")?.addEventListener("input", applyFilters);
     document.getElementById("toolsEntryBtn")?.addEventListener("click",()=>renderToolsHub(true));
-    document.getElementById("bitacoraEntryBtn")?.addEventListener("click",openBitacoraModal);\n    document.getElementById("etapa0EntryBtn")?.addEventListener("click",openEtapa0Modal);
+    document.getElementById("bitacoraEntryBtn")?.addEventListener("click",openBitacoraModal);
+    document.getElementById("etapa0EntryBtn")?.addEventListener("click",openEtapa0Modal);
     renderCards();
   }
 
