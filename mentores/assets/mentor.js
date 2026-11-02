@@ -9,6 +9,7 @@
   const DOC_UPLOAD_URL = String(DOCS_CONFIG.uploadRequestUrl || "").trim();
   const DOC_SEARCH_URL = String(DOCS_CONFIG.searchPendingUrl || "").trim();
   const DOC_ASSOCIATE_URL = String(DOCS_CONFIG.associateFileUrl || "").trim();
+  const DOC_TRACKING_URL = String(DOCS_CONFIG.trackingUrl || "").trim();
 
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
   const clean = v => (v === null || v === undefined ? "" : String(v).trim());
@@ -141,6 +142,7 @@
       state.activity = readMentorActivity();
       state.filtered = [...state.data.projects];
       renderPortfolio();
+      syncTracking().catch(()=>{});
       if(location.hash === "#tools") {
         renderToolsHub(false);
       } else if(location.hash.startsWith("#project=")) {
@@ -179,6 +181,37 @@
     state.activity.bitacoras=[{...item,recordedAt:new Date().toISOString()},...(state.activity.bitacoras||[])].slice(0,120);
     writeMentorActivity();
     updateStageTrackingViews();
+  }
+
+  async function syncTracking(){
+    if(!DOC_TRACKING_URL) return;
+    try{
+      const response=await fetch(DOC_TRACKING_URL,{method:"POST",headers:{"Content-Type":"application/json; charset=utf-8","X-S2V-Access":access},body:JSON.stringify({mentor:clean(state.data?.mentor?.name)})});
+      const raw=await response.text(); let result={};
+      try{result=raw?JSON.parse(raw):{};}catch(e){}
+      if(!response.ok||result.ok!==true) return;
+      const docs=Array.isArray(result.archivos)?result.archivos.map(x=>({
+        iniciativa:clean(x.Iniciativa??x.iniciativa),
+        tipoDocumento:clean(x.TipoDocumento??x.tipoDocumento),
+        nombreArchivo:clean(x.Nombre??x.nombreArchivo??x.FileLeafRef),
+        fechaCarga:clean(x.Created??x.fechaCarga),
+        recordedAt:clean(x.Modified??x.Created??x.fechaCarga)||new Date().toISOString(),
+        server:true
+      })):[];
+      const bitacoras=Array.isArray(result.bitacoras)?result.bitacoras.map(x=>({
+        iniciativa:clean(x.Iniciativa??x.iniciativa),
+        fechaSesion:clean(x.FechaSesion??x.fechaSesion),
+        avances:clean(x.Avances??x.avances),
+        compromisos:clean(x.Compromisos??x.compromisos),
+        recordedAt:clean(x.Modified??x.Created??x.fechaSesion)||new Date().toISOString(),
+        server:true
+      })):[];
+      if(docs.length||bitacoras.length){
+        state.activity={docs,bitacoras};
+        writeMentorActivity();
+        updateStageTrackingViews();
+      }
+    }catch(e){ console.warn("Seguimiento histórico no disponible",e); }
   }
 
   function activityForInitiative(name){
@@ -275,7 +308,7 @@
       </section>
 
       <section class="activity-section">
-        <div class="workspace-heading"><div><span>MI TRAZABILIDAD</span><h2>Archivos y bitácoras</h2><p>Los registros nuevos realizados desde Mentor View aparecen aquí. En el siguiente paso conectaremos la consulta histórica de SharePoint para mostrar también registros anteriores y desde otros dispositivos.</p></div></div>
+        <div class="workspace-heading"><div><span>MI TRAZABILIDAD</span><h2>Archivos y bitácoras</h2><p>${DOC_TRACKING_URL?"Historial sincronizado desde el seguimiento de Science2Venture.":"Los registros nuevos realizados desde Mentor View aparecen aquí. La consulta histórica de SharePoint aún no está conectada; por ahora se conserva el historial de este navegador."}</p></div></div>
         <div id="activityHistory">${activityHistoryHtml()}</div>
       </section>
 
