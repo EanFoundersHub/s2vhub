@@ -692,3 +692,14 @@ body.modal-open{overflow:hidden}
   .project-route-current{grid-template-columns:1fr}
   .project-route-current>div:first-child{grid-column:auto}
 }
+
+
+/* V52 · Ruta única Science2Venture */
+.single-route-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 24px 20px}
+.single-route-summary>div{border:1px solid var(--border);border-radius:15px;background:var(--surface-2);padding:14px 16px}
+.single-route-summary span{display:block;color:var(--muted);font-size:.55rem;font-weight:900;letter-spacing:.08em}
+.single-route-summary strong{display:block;margin:5px 0 2px;color:var(--strong);font-size:1rem}
+.single-route-summary small{display:block;color:var(--muted);font-size:.62rem;line-height:1.4}
+.route-months{display:block;margin:2px 0 7px;color:var(--teal-dark)!important;font-size:.6rem!important;font-weight:750}
+.route-stage-main em{display:inline-block;margin-top:7px;border-radius:999px;background:var(--gold-bg);color:#8a6828;font-style:normal;font-size:.58rem;font-weight:850;padding:5px 8px}
+@media(max-width:760px){.single-route-summary{grid-template-columns:1fr;padding:0 18px 18px}}
