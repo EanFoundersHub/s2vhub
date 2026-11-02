@@ -3,7 +3,7 @@
   const app = document.getElementById("app");
   const params = new URLSearchParams(location.search);
   const access = (params.get("access") || "").trim();
-  const state = { data:null, filtered:[], selected:null, activeTab:"summary" };
+  const state = { data:null, filtered:[], selected:null, activeTab:"summary", activity:{docs:[],bitacoras:[]} };
   const BITACORA_URL = 'https://defaultc06fb5591b684b84a14f47d0d837a5.ab.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/10/workflows/111d5c434a8e4b809e196466d38a02a4/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=iVrvxbnltN1_GPun1u9Wi3gQixTF0KCyaA_CIQthb-Q';
   const DOCS_CONFIG = window.S2V_DOCS_CONFIG || {};
   const DOC_UPLOAD_URL = String(DOCS_CONFIG.uploadRequestUrl || "").trim();
@@ -138,6 +138,7 @@
       if(!res.ok) throw new Error("invalid");
       state.data = await res.json();
       if(!state.data?.mentor || !Array.isArray(state.data.projects)) throw new Error("invalid");
+      state.activity = readMentorActivity();
       state.filtered = [...state.data.projects];
       renderPortfolio();
       if(location.hash === "#tools") {
@@ -150,30 +151,146 @@
     } catch(e) { invalid("Enlace no válido","El enlace no corresponde a un acceso activo de Mentor View."); }
   }
 
+  function activityStorageKey(){ return `s2v_activity_${access}`; }
+
+  function readMentorActivity(){
+    try{
+      const parsed=JSON.parse(localStorage.getItem(activityStorageKey())||"{}");
+      return {
+        docs:Array.isArray(parsed.docs)?parsed.docs.slice(0,120):[],
+        bitacoras:Array.isArray(parsed.bitacoras)?parsed.bitacoras.slice(0,120):[]
+      };
+    }catch(e){ return {docs:[],bitacoras:[]}; }
+  }
+
+  function writeMentorActivity(){
+    try{ localStorage.setItem(activityStorageKey(),JSON.stringify(state.activity||{docs:[],bitacoras:[]})); }catch(e){}
+  }
+
+  function recordMentorDoc(doc){
+    state.activity=state.activity||{docs:[],bitacoras:[]};
+    state.activity.docs=[{...doc,recordedAt:new Date().toISOString()},...(state.activity.docs||[])].slice(0,120);
+    writeMentorActivity();
+    updateStageTrackingViews();
+  }
+
+  function recordMentorBitacora(item){
+    state.activity=state.activity||{docs:[],bitacoras:[]};
+    state.activity.bitacoras=[{...item,recordedAt:new Date().toISOString()},...(state.activity.bitacoras||[])].slice(0,120);
+    writeMentorActivity();
+    updateStageTrackingViews();
+  }
+
+  function activityForInitiative(name){
+    const key=clean(name).toLowerCase();
+    const docs=(state.activity?.docs||[]).filter(x=>clean(x.iniciativa).toLowerCase()===key);
+    const bitacoras=(state.activity?.bitacoras||[]).filter(x=>clean(x.iniciativa).toLowerCase()===key);
+    return {docs,bitacoras};
+  }
+
+  function validatedTrl(p){
+    const r=p?.result||{},a=p?.application||{};
+    return clean(r.trlValidatedByUnit||r.trlValidated||a.TRLValidado||r.trlDeclared||a.TRLDeclarado);
+  }
+
+  function routeBand(p){
+    const trl=validatedTrl(p);
+    const n=Number((trl.match(/\d+/)||[])[0]);
+    if(n>=7) return "TRL 7–9";
+    if(n>=4) return "TRL 4–6";
+    if(n>=1) return "TRL 1–3";
+    return "Ruta por validar";
+  }
+
+  function stageProjectListHtml(){
+    return (state.data?.projects||[]).map(p=>{
+      const a=activityForInitiative(p.name);
+      const hasPlan=a.docs.some(x=>clean(x.tipoDocumento).toLowerCase()==="plan de trabajo");
+      const hasDiag=a.docs.some(x=>clean(x.tipoDocumento).toLowerCase()==="diagnóstico");
+      return `<article class="stage-project-row">
+        <div class="stage-project-main"><span class="stage-route">${esc(routeBand(p))}</span><strong>${esc(p.name)}</strong><small>${esc(validatedTrl(p)||"TRL por validar")}</small></div>
+        <div class="stage-check ${hasDiag?"is-done":""}"><span>${hasDiag?"✓":"○"}</span><div><b>Diagnóstico</b><small>${hasDiag?"Registrado":"Pendiente"}</small></div></div>
+        <div class="stage-check ${hasPlan?"is-done":""}"><span>${hasPlan?"✓":"○"}</span><div><b>Plan de trabajo</b><small>${hasPlan?"Registrado":"Pendiente"}</small></div></div>
+        <div class="stage-check ${a.bitacoras.length?"is-done":""}"><span>${a.bitacoras.length?"✓":"○"}</span><div><b>Bitácoras</b><small>${a.bitacoras.length} registrada${a.bitacoras.length===1?"":"s"}</small></div></div>
+      </article>`;
+    }).join("");
+  }
+
+  function activityHistoryHtml(){
+    const docs=(state.activity?.docs||[]).slice(0,8);
+    const bitas=(state.activity?.bitacoras||[]).slice(0,8);
+    const docsHtml=docs.length?docs.map(x=>`<article class="history-item"><div class="history-icon">↥</div><div><span>ARCHIVO · ${esc(x.tipoDocumento||"Documento")}</span><strong>${esc(x.nombreArchivo||"Archivo asociado")}</strong><small>${esc(x.iniciativa||"")} · ${esc(new Date(x.recordedAt||Date.now()).toLocaleString("es-CO"))}</small></div></article>`).join(""):`<div class="history-empty">Todavía no hay archivos registrados en el historial local de esta vista.</div>`;
+    const bitasHtml=bitas.length?bitas.map(x=>`<article class="history-item"><div class="history-icon">✓</div><div><span>BITÁCORA</span><strong>${esc(x.iniciativa||"Sesión de mentoría")}</strong><small>${esc(x.fechaSesion||"")} · ${esc(x.avances||"").slice(0,120)}${clean(x.avances).length>120?"…":""}</small></div></article>`).join(""):`<div class="history-empty">Todavía no hay bitácoras registradas en el historial local de esta vista.</div>`;
+    return `<div class="history-columns"><section><div class="history-head"><div><span>ARCHIVOS ASOCIADOS</span><h3>Entregables registrados</h3></div><button type="button" class="history-action" id="historyDocsAction">CARGAR / ASOCIAR</button></div><div class="history-list">${docsHtml}</div></section><section><div class="history-head"><div><span>BITÁCORAS DE MENTORÍA</span><h3>Sesiones registradas</h3></div><button type="button" class="history-action gold" id="historyBitaAction">REGISTRAR BITÁCORA</button></div><div class="history-list">${bitasHtml}</div></section></div>`;
+  }
+
+  function updateStageTrackingViews(){
+    const p=document.getElementById("stageProjectList"); if(p) p.innerHTML=stageProjectListHtml();
+    const h=document.getElementById("activityHistory"); if(h){h.innerHTML=activityHistoryHtml();bindHistoryActions();}
+  }
+
+  function bindHistoryActions(){
+    document.getElementById("historyDocsAction")?.addEventListener("click",openEtapa0Modal);
+    document.getElementById("historyBitaAction")?.addEventListener("click",openBitacoraModal);
+  }
+
   function renderPortfolio() {
     const d=state.data,m=d.mentor;
-    const fundedCount=d.projects.filter(p=>p.result?.fundingAssigned).length;
-    const fundingTotal=d.projects.reduce((sum,p)=>sum+(Number(p.result?.fundingAmount)||0),0);
     const people=new Set();
     d.projects.forEach(p=>(p.result?.team||[]).forEach(t=>{ if(t?.name) people.add(clean(t.name).toLowerCase()); }));
-    app.innerHTML=`<section class="portfolio">
-      <article class="mentor-banner">
-        <div class="mentor-banner-main"><div class="avatar">${esc(m.initials||initials(m.name))}</div><div class="mentor-banner-copy"><p class="eyebrow">SCIENCE2VENTURE · COHORTE I 2026</p><h1>${esc(m.name)}</h1><p>Portafolio de iniciativas asignadas para acompañamiento. La vista conserva la lógica de SelectionHub, organizada para lectura de mentoría.</p></div><div class="mentor-banner-actions"><button class="tools-entry" id="toolsEntryBtn" type="button" aria-label="Abrir Banco de Herramientas"><span class="tools-entry-icon">↗</span><span class="tools-entry-copy"><b>BANCO DE HERRAMIENTAS</b><small>3 recursos para el acompañamiento</small></span><span class="tools-entry-arrow">→</span></button><button class="tools-entry bitacora-entry" id="bitacoraEntryBtn" type="button" aria-label="Registrar bitácora"><span class="tools-entry-icon">＋</span><span class="tools-entry-copy"><b>REGISTRAR BITÁCORA</b><small>Avances y compromisos de la sesión</small></span><span class="tools-entry-arrow">→</span></button><button class="tools-entry etapa0-entry" id="etapa0EntryBtn" type="button" aria-label="Abrir Etapa 0"><span class="tools-entry-icon">0</span><span class="tools-entry-copy"><b>ETAPA 0 · ARRANQUE</b><small>Plan de trabajo y diagnóstico</small></span><span class="tools-entry-arrow">→</span></button></div></div>
-        <div class="mentor-banner-kpis">
-          <div class="mentor-kpi"><span>Iniciativas</span><strong>${d.initiativeCount}</strong><small>asignadas</small></div>
-          <div class="mentor-kpi"><span>Financiadas</span><strong>${fundedCount}</strong><small>con valor definido</small></div>
-          <div class="mentor-kpi funding"><span>Recursos</span><strong>${fundingTotal ? esc(moneyCompact(fundingTotal)) : "—"}</strong><small>${fundingTotal?esc(money(fundingTotal)):"sin asignación"}</small></div>
-          <div class="mentor-kpi"><span>Equipo</span><strong>${people.size}</strong><small>personas registradas</small></div>
+    const totalRequired=d.projects.length*2;
+    const localDocs=(state.activity?.docs||[]).filter(x=>["plan de trabajo","diagnóstico"].includes(clean(x.tipoDocumento).toLowerCase()));
+    const completedKeys=new Set(localDocs.map(x=>`${clean(x.iniciativa).toLowerCase()}|${clean(x.tipoDocumento).toLowerCase()}`));
+    const completed=Math.min(totalRequired,completedKeys.size);
+    app.innerHTML=`<section class="portfolio mentor-workspace">
+      <article class="mentor-banner mentor-banner-work">
+        <div class="mentor-banner-main">
+          <div class="avatar">${esc(m.initials||initials(m.name))}</div>
+          <div class="mentor-banner-copy"><p class="eyebrow">SCIENCE2VENTURE · MENTOR VIEW</p><h1>${esc(m.name)}</h1><p>Tu espacio de acompañamiento. Aquí encuentras lo que debes completar en la etapa actual, tus iniciativas asignadas y el registro de tu trabajo.</p></div>
+          <div class="mentor-identity"><span>MENTOR ASIGNADO</span><strong>${esc(m.name)}</strong><small>${d.initiativeCount} iniciativas · ${people.size} personas en los equipos</small></div>
         </div>
       </article>
-      <div class="toolbar"><div class="field search"><label>Buscar iniciativa</label><input id="searchInput" type="search" placeholder="Nombre, sector, enfoque o contacto"></div></div>
-      <div id="projectGrid" class="project-grid"></div>
-      <p class="footer-note">SelectionHub · Mentor View · Science2Venture 2026</p>
+
+      <section class="current-stage">
+        <div class="stage-hero">
+          <div class="stage-number">0</div>
+          <div class="stage-copy"><span class="stage-label">ETAPA ACTUAL · ARRANQUE Y LÍNEA BASE</span><h2>Primero entendemos dónde está cada iniciativa y acordamos cómo avanzar.</h2><p>En esta etapa el mentor construye con cada equipo la línea base técnico-comercial, prioriza brechas y deja un plan individual de acompañamiento.</p></div>
+          <div class="stage-progress-card"><span>ENTREGABLES BASE</span><strong>${completed} / ${totalRequired}</strong><small>2 por iniciativa: diagnóstico + plan de trabajo</small><div class="stage-progress-bar"><i style="width:${totalRequired?Math.round((completed/totalRequired)*100):0}%"></i></div></div>
+        </div>
+        <div class="stage-requirements">
+          <article><span class="requirement-step">01</span><div><b>Diagnóstico / línea base</b><p>Lectura inicial de BRL/MRL/CRL o readiness, brechas, supuestos, riesgos y situación técnico-comercial.</p><em>Se carga por cada iniciativa.</em></div></article>
+          <article><span class="requirement-step">02</span><div><b>Plan de trabajo individual</b><p>Objetivos de acompañamiento, prioridades, KPIs, hitos y acciones acordadas con el equipo.</p><em>Se carga por cada iniciativa.</em></div></article>
+          <article><span class="requirement-step">03</span><div><b>Bitácora de cada sesión</b><p>Registra avances revisados y compromisos acordados. Es la trazabilidad del acompañamiento, no otro entregable técnico.</p><em>Se registra después de cada mentoría.</em></div></article>
+        </div>
+        <div class="stage-actions">
+          <button class="primary-work-action" id="etapa0EntryBtn" type="button"><span>0</span><div><b>CARGAR ENTREGABLES DE ETAPA 0</b><small>Diagnóstico y plan de trabajo</small></div><i>→</i></button>
+          <button class="secondary-work-action gold" id="bitacoraEntryBtn" type="button"><span>＋</span><div><b>REGISTRAR BITÁCORA</b><small>Avances y compromisos de una sesión</small></div><i>→</i></button>
+          <button class="secondary-work-action" id="toolsEntryBtn" type="button"><span>↗</span><div><b>BANCO DE HERRAMIENTAS</b><small>Formatos y recursos de acompañamiento</small></div><i>→</i></button>
+        </div>
+      </section>
+
+      <section class="tracking-section">
+        <div class="workspace-heading"><div><span>SEGUIMIENTO DE ETAPA 0</span><h2>Qué falta por cada iniciativa</h2><p>Una sola lectura para saber qué ya registraste y qué sigue pendiente.</p></div></div>
+        <div id="stageProjectList" class="stage-project-list">${stageProjectListHtml()}</div>
+      </section>
+
+      <section class="activity-section">
+        <div class="workspace-heading"><div><span>MI TRAZABILIDAD</span><h2>Archivos y bitácoras</h2><p>Los registros nuevos realizados desde Mentor View aparecen aquí. En el siguiente paso conectaremos la consulta histórica de SharePoint para mostrar también registros anteriores y desde otros dispositivos.</p></div></div>
+        <div id="activityHistory">${activityHistoryHtml()}</div>
+      </section>
+
+      <section class="initiative-section">
+        <div class="workspace-heading initiative-heading"><div><span>INICIATIVAS ASIGNADAS</span><h2>Expedientes de los equipos</h2><p>Consulta la información técnica y de selección cuando la necesites durante la mentoría.</p></div><div class="field search compact-search"><label>Buscar iniciativa</label><input id="searchInput" type="search" placeholder="Nombre, sector o contacto"></div></div>
+        <div id="projectGrid" class="project-grid"></div>
+      </section>
+
+      <p class="footer-note">Mentor View · Science2Venture 2026</p>
     </section>`;
     document.getElementById("searchInput")?.addEventListener("input", applyFilters);
     document.getElementById("toolsEntryBtn")?.addEventListener("click",()=>renderToolsHub(true));
     document.getElementById("bitacoraEntryBtn")?.addEventListener("click",openBitacoraModal);
     document.getElementById("etapa0EntryBtn")?.addEventListener("click",openEtapa0Modal);
+    bindHistoryActions();
     renderCards();
   }
 
@@ -412,7 +529,7 @@
     modal.id="etapa0Modal";
     modal.className="bitacora-modal etapa0-modal";
     modal.hidden=true;
-    modal.innerHTML=`<div class="bitacora-backdrop" data-docs-close></div><section class="bitacora-dialog etapa0-dialog" role="dialog" aria-modal="true" aria-labelledby="etapa0Title"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ETAPA 0</span><h2 id="etapa0Title">Arranque y línea base</h2><p>Carga y asocia los documentos iniciales de cada iniciativa.</p></div><button class="bitacora-close" type="button" data-docs-close aria-label="Cerrar">×</button></header><div class="bitacora-form"><div class="docs-intro"><span>DOCUMENTOS DE LA ETAPA</span><strong>Plan de trabajo + Diagnóstico</strong><p>Selecciona la iniciativa y el tipo de documento. La carga se realiza en Microsoft y luego se verifica aquí para dejar el archivo asociado correctamente.</p></div><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="docsMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="docsIniciativa"><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field bitacora-full"><span>Tipo de documento</span><div class="doc-type-grid"><label class="doc-type-option"><input type="radio" name="docsTipo" value="Plan de trabajo" checked><span><b>PLAN DE TRABAJO</b><small>Organización del acompañamiento, objetivos e hitos.</small></span></label><label class="doc-type-option"><input type="radio" name="docsTipo" value="Diagnóstico"><span><b>DIAGNÓSTICO</b><small>Línea base y lectura inicial de la iniciativa.</small></span></label></div></label></div><div class="docs-upload-actions"><button class="docs-upload-btn" id="docsUploadBtn" type="button">1 · CARGAR DOCUMENTO ↗</button><button class="docs-verify-btn" id="docsVerifyBtn" type="button">2 · YA LO CARGUÉ · VERIFICAR</button></div><div id="docsStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="docsPendingWrap" class="docs-pending-wrap" hidden><div class="docs-pending-head"><span>ARCHIVOS PENDIENTES ENCONTRADOS</span><small>Selecciona únicamente el archivo que acabas de cargar.</small></div><div id="docsPendingList" class="pending-file-list"></div><button class="bitacora-save docs-associate-btn" id="docsAssociateBtn" type="button">ASOCIAR A LA INICIATIVA</button></div></div></section>`;
+    modal.innerHTML=`<div class="bitacora-backdrop" data-docs-close></div><section class="bitacora-dialog etapa0-dialog" role="dialog" aria-modal="true" aria-labelledby="etapa0Title"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ETAPA 0</span><h2 id="etapa0Title">Entregables de arranque y línea base</h2><p>Por cada iniciativa debes dejar asociado un diagnóstico y un plan de trabajo individual.</p></div><button class="bitacora-close" type="button" data-docs-close aria-label="Cerrar">×</button></header><div class="bitacora-form"><div class="docs-intro docs-intro-clear"><span>QUÉ DEBES COMPLETAR</span><strong>2 entregables por iniciativa</strong><div class="modal-requirements"><div><b>1 · Diagnóstico / línea base</b><small>Brechas, readiness, supuestos, riesgos y situación inicial.</small></div><div><b>2 · Plan de trabajo individual</b><small>Prioridades, KPIs, objetivos e hitos acordados.</small></div></div></div><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="docsMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="docsIniciativa"><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field bitacora-full"><span>¿Qué vas a cargar?</span><div class="doc-type-grid"><label class="doc-type-option"><input type="radio" name="docsTipo" value="Diagnóstico" checked><span><b>DIAGNÓSTICO / LÍNEA BASE</b><small>Lectura inicial y priorización de brechas de la iniciativa.</small></span></label><label class="doc-type-option"><input type="radio" name="docsTipo" value="Plan de trabajo"><span><b>PLAN DE TRABAJO INDIVIDUAL</b><small>Objetivos, prioridades, KPIs e hitos del acompañamiento.</small></span></label></div></label></div><div class="docs-upload-actions"><button class="docs-upload-btn" id="docsUploadBtn" type="button">1 · CARGAR EN MICROSOFT ↗</button><button class="docs-verify-btn" id="docsVerifyBtn" type="button">2 · VERIFICAR CARGA</button></div><div id="docsStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="docsPendingWrap" class="docs-pending-wrap" hidden><div class="docs-pending-head"><span>ARCHIVO ENCONTRADO</span><small>Confirma que sea el documento que acabas de cargar.</small></div><div id="docsPendingList" class="pending-file-list"></div><button class="bitacora-save docs-associate-btn" id="docsAssociateBtn" type="button">ASOCIAR Y MARCAR COMO REGISTRADO</button></div><div class="modal-local-history"><span>REGISTROS DE ESTA INICIATIVA</span><div id="docsInitiativeHistory" class="modal-history-list"></div></div></div></section>`;
     document.body.appendChild(modal);
     modal.querySelectorAll("[data-docs-close]").forEach(el=>el.addEventListener("click",closeEtapa0Modal));
     modal.querySelector("#docsUploadBtn")?.addEventListener("click",openDocsUpload);
@@ -427,12 +544,25 @@
     modal.querySelector("#docsMentor").value=state.data?.mentor?.name||"";
     const select=modal.querySelector("#docsIniciativa");
     select.innerHTML=`<option value="">Seleccionar iniciativa</option>${(state.data?.projects||[]).map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("")}`;
+    select.onchange=()=>renderModalInitiativeHistory(modal,select.value);
+    renderModalInitiativeHistory(modal,select.value);
     modal.querySelector("#docsPendingWrap").hidden=true;
     modal.querySelector("#docsPendingList").innerHTML="";
     modal._pendingDocs=[];
     docsStatus(modal,docsConfigReady()?"Selecciona la iniciativa y el documento que vas a cargar.":"La sección está lista. Falta conectar los enlaces de carga y automatización.");
     modal.hidden=false; document.body.classList.add("modal-open");
     setTimeout(()=>select.focus(),0);
+  }
+
+  function renderModalInitiativeHistory(modal,initiative){
+    const target=modal?.querySelector("#docsInitiativeHistory"); if(!target) return;
+    if(!initiative){target.innerHTML='<div class="history-empty compact">Selecciona una iniciativa para ver sus registros.</div>';return;}
+    const a=activityForInitiative(initiative);
+    const rows=[
+      ...a.docs.map(x=>({kind:"Archivo",title:x.tipoDocumento||"Documento",detail:x.nombreArchivo||"",date:x.recordedAt})),
+      ...a.bitacoras.map(x=>({kind:"Bitácora",title:x.fechaSesion||"Sesión",detail:x.avances||"",date:x.recordedAt}))
+    ].sort((x,y)=>new Date(y.date||0)-new Date(x.date||0));
+    target.innerHTML=rows.length?rows.slice(0,8).map(x=>`<div class="modal-history-row"><span>${esc(x.kind)}</span><div><b>${esc(x.title)}</b><small>${esc(x.detail).slice(0,130)}${clean(x.detail).length>130?"…":""}</small></div></div>`).join(""):'<div class="history-empty compact">Aún no hay registros locales para esta iniciativa.</div>';
   }
 
   function closeEtapa0Modal(){
@@ -515,6 +645,8 @@
       try{result=raw?JSON.parse(raw):{};}catch(e){}
       if(!response.ok||result.ok!==true) throw new Error(`Power Automate respondió ${response.status}`);
       docsStatus(modal,`${type} asociado correctamente a ${initiative}.`,"success");
+      recordMentorDoc({iniciativa:initiative,tipoDocumento:type,nombreArchivo:file.name,fechaCarga:file.created});
+      renderModalInitiativeHistory(modal,initiative);
       modal._pendingDocs=(modal._pendingDocs||[]).filter(x=>x.id!==file.id);
       renderPendingDocs(modal,modal._pendingDocs);
     }catch(error){
@@ -573,6 +705,7 @@
       try{result=raw?JSON.parse(raw):{};}catch(e){}
       if(!response.ok||result.ok!==true) throw new Error(result.mensaje||`Power Automate respondió ${response.status}`);
       status.textContent="Bitácora guardada correctamente."; status.className="bitacora-status is-success";
+      recordMentorBitacora(payload);
       avances.value=""; compromisos.value="";
       setTimeout(closeBitacoraModal,900);
     }catch(error){
