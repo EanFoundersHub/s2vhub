@@ -3,7 +3,7 @@
   const app = document.getElementById("app");
   const params = new URLSearchParams(location.search);
   const access = (params.get("access") || "").trim();
-  const state = { data:null, filtered:[], selected:null, activeTab:"summary", activity:{docs:[],bitacoras:[]} };
+  const state = { data:null, filtered:[], selected:null, activeTab:"summary", workspaceTab:"home", activity:{docs:[],bitacoras:[]} };
   const BITACORA_URL = 'https://defaultc06fb5591b684b84a14f47d0d837a5.ab.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/10/workflows/111d5c434a8e4b809e196466d38a02a4/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=iVrvxbnltN1_GPun1u9Wi3gQixTF0KCyaA_CIQthb-Q';
   const DOCS_CONFIG = window.S2V_DOCS_CONFIG || {};
   const DOC_UPLOAD_URL = String(DOCS_CONFIG.uploadRequestUrl || "").trim();
@@ -239,12 +239,12 @@
     weeks:"32 semanas",
     mentoringTotal:"12 h",
     stages:[
-      {n:0,name:"Arranque y línea base",weeks:"Sem. 1–4",duration:"4 semanas",months:"Aprox. octubre de 2026",mentorHours:"2 h",hito:"Línea base + KPIs + plan individual + hitos técnico-comerciales."},
-      {n:1,name:"Validación problema y cliente",weeks:"Sem. 5–10",duration:"6 semanas",months:"Aprox. noviembre y diciembre de 2026",mentorHours:"2 h",hito:"20 a 50 validaciones en campo de problema, cliente/JTBD e ICP priorizados."},
-      {n:2,name:"Validación propuesta de valor y oportunidad comercial",weeks:"Sem. 11–16",duration:"6 semanas",months:"Aprox. enero y febrero de 2027",mentorHours:"2 h",hito:"Cliente/segmento priorizado + propuesta de valor revisada.",followup:"Seguimiento técnico 1 al cierre de la etapa."},
-      {n:3,name:"Modelo de negocio y experimentación",weeks:"Sem. 17–22",duration:"6 semanas",months:"Aprox. marzo y abril de 2027",mentorHours:"2 h",hito:"Modelo de negocio definido + base financiera estructurada + aspectos legales priorizados."},
-      {n:4,name:"GTM temprano, growth y lógica económica",weeks:"Sem. 22–27",duration:"6 semanas",months:"Aprox. mayo y junio de 2027",mentorHours:"2 h",hito:"PMV fortalecido + estrategia inicial de salida + criterios de tracción."},
-      {n:5,name:"Impacto",weeks:"Sem. 27–32",duration:"6 semanas",months:"Aprox. julio y agosto de 2027",mentorHours:"2 h",hito:"Sostenibilidad + narrativa de impacto + plan de trabajo a 6 meses.",followup:"Seguimiento técnico 2 y cierre de la ruta."}
+      {n:0,name:"Arranque y línea base",weeks:"Sem. 1–4",duration:"4 semanas",months:"OCTUBRE 2026",mentorHours:"2 h",hito:"Línea base + KPIs + plan individual + hitos técnico-comerciales."},
+      {n:1,name:"Validación problema y cliente",weeks:"Sem. 5–10",duration:"6 semanas",months:"NOVIEMBRE – DICIEMBRE 2026",mentorHours:"2 h",hito:"20 a 50 validaciones en campo de problema, cliente/JTBD e ICP priorizados."},
+      {n:2,name:"Validación propuesta de valor y oportunidad comercial",weeks:"Sem. 11–16",duration:"6 semanas",months:"ENERO – FEBRERO 2027",mentorHours:"2 h",hito:"Cliente/segmento priorizado + propuesta de valor revisada.",followup:"Seguimiento técnico 1 al cierre de la etapa."},
+      {n:3,name:"Modelo de negocio y experimentación",weeks:"Sem. 17–22",duration:"6 semanas",months:"MARZO – ABRIL 2027",mentorHours:"2 h",hito:"Modelo de negocio definido + base financiera estructurada + aspectos legales priorizados."},
+      {n:4,name:"GTM temprano, growth y lógica económica",weeks:"Sem. 22–27",duration:"6 semanas",months:"MAYO – JUNIO 2027",mentorHours:"2 h",hito:"PMV fortalecido + estrategia inicial de salida + criterios de tracción."},
+      {n:5,name:"Impacto",weeks:"Sem. 27–32",duration:"6 semanas",months:"JULIO – AGOSTO 2027",mentorHours:"2 h",hito:"Sostenibilidad + narrativa de impacto + plan de trabajo a 6 meses.",followup:"Seguimiento técnico 2 y cierre de la ruta."}
     ]
   };
 
@@ -261,7 +261,7 @@
           const next=S2V_ROUTE.stages[i+1];
           return `<article class="route-stage ${s.n===0?"is-current":""}">
             <div class="route-stage-number"><span>ETAPA</span><strong>E${s.n}</strong></div>
-            <div class="route-stage-main"><span>${esc(s.weeks)} · ${esc(s.duration)}</span><h4>${esc(s.name)}</h4><small class="route-months">${esc(s.months)}</small><p><b>Hito requerido:</b> ${esc(s.hito)}</p>${s.followup?`<em>${esc(s.followup)}</em>`:""}</div>
+            <div class="route-stage-main"><span>${esc(s.weeks)} · ${esc(s.duration)}</span><h4>${esc(s.name)}</h4><span class="route-month-badge">${esc(s.months)}</span><p><b>Hito requerido:</b> ${esc(s.hito)}</p>${s.followup?`<em>${esc(s.followup)}</em>`:""}</div>
             <div class="route-stage-hours"><span>MENTORÍA</span><strong>${esc(s.mentorHours)}</strong><small>2 sesiones quincenales</small></div>
             <div class="route-stage-next"><span>${next?"QUÉ SIGUE":"CIERRE"}</span><strong>${next?`Etapa ${next.n}`:"Fin de ruta"}</strong><small>${next?esc(next.name):"Seguimiento final + próximos pasos"}</small></div>
           </article>`;
@@ -313,6 +313,35 @@
     document.getElementById("historyBitaAction")?.addEventListener("click",openBitacoraModal);
   }
 
+  function workspaceNavHtml(){
+    const bitaCount=(state.activity?.bitacoras||[]).length;
+    const docs=(state.activity?.docs||[]).filter(x=>["plan de trabajo","diagnóstico"].includes(clean(x.tipoDocumento).toLowerCase()));
+    const completed=new Set(docs.map(x=>`${clean(x.iniciativa).toLowerCase()}|${clean(x.tipoDocumento).toLowerCase()}`)).size;
+    const total=(state.data?.projects||[]).length*2;
+    return `<nav class="workspace-nav" aria-label="Navegación Mentor View">
+      <button type="button" data-workspace-tab="home" class="${state.workspaceTab==="home"?"active":""}"><span>⌂</span><b>Inicio</b></button>
+      <button type="button" data-workspace-tab="initiatives" class="${state.workspaceTab==="initiatives"?"active":""}"><span>${state.data?.initiativeCount||0}</span><b>Mis iniciativas</b></button>
+      <button type="button" data-workspace-tab="bitacoras" class="${state.workspaceTab==="bitacoras"?"active":""}"><span>${bitaCount}</span><b>Bitácoras</b></button>
+      <button type="button" data-workspace-tab="deliverables" class="${state.workspaceTab==="deliverables"?"active":""}"><span>${completed}/${total}</span><b>Entregables</b></button>
+      <button type="button" data-workspace-tab="route" class="${state.workspaceTab==="route"?"active":""}"><span>6</span><b>Ruta</b></button>
+    </nav>`;
+  }
+
+  function setWorkspaceTab(tab,scroll=true){
+    state.workspaceTab=tab;
+    document.querySelectorAll("[data-workspace-tab]").forEach(btn=>btn.classList.toggle("active",btn.dataset.workspaceTab===tab));
+    document.querySelectorAll("[data-workspace-panel]").forEach(panel=>panel.hidden=panel.dataset.workspacePanel!==tab);
+    if(scroll){
+      const nav=document.querySelector(".workspace-nav");
+      if(nav) window.scrollTo({top:Math.max(0,nav.getBoundingClientRect().top+window.scrollY-18),behavior:"smooth"});
+    }
+  }
+
+  function bindWorkspaceNav(){
+    document.querySelectorAll("[data-workspace-tab]").forEach(btn=>btn.addEventListener("click",()=>setWorkspaceTab(btn.dataset.workspaceTab)));
+    document.querySelectorAll("[data-open-workspace]").forEach(btn=>btn.addEventListener("click",()=>setWorkspaceTab(btn.dataset.openWorkspace)));
+  }
+
   function renderPortfolio() {
     const d=state.data,m=d.mentor;
     const people=new Set();
@@ -321,59 +350,89 @@
     const localDocs=(state.activity?.docs||[]).filter(x=>["plan de trabajo","diagnóstico"].includes(clean(x.tipoDocumento).toLowerCase()));
     const completedKeys=new Set(localDocs.map(x=>`${clean(x.iniciativa).toLowerCase()}|${clean(x.tipoDocumento).toLowerCase()}`));
     const completed=Math.min(totalRequired,completedKeys.size);
+    const bitaCount=(state.activity?.bitacoras||[]).length;
+
     app.innerHTML=`<section class="portfolio mentor-workspace">
       <article class="mentor-banner mentor-banner-work">
         <div class="mentor-banner-main">
           <div class="avatar">${esc(m.initials||initials(m.name))}</div>
-          <div class="mentor-banner-copy"><p class="eyebrow">SCIENCE2VENTURE · MENTOR VIEW</p><h1>${esc(m.name)}</h1><p>Tu espacio de acompañamiento. Aquí encuentras lo que debes completar en la etapa actual, tus iniciativas asignadas y el registro de tu trabajo.</p></div>
-          <div class="mentor-identity"><span>MENTOR ASIGNADO</span><strong>${esc(m.name)}</strong><small>${d.initiativeCount} iniciativas · ${people.size} personas en los equipos</small></div>
+          <div class="mentor-banner-copy"><p class="eyebrow">SCIENCE2VENTURE · MENTOR VIEW</p><h1>${esc(m.name)}</h1><p>Tu espacio de acompañamiento. Consulta tus iniciativas, registra bitácoras, carga entregables y revisa la ruta sin perderte entre pantallas.</p></div>
+          <div class="mentor-identity"><span>MENTOR ASIGNADO</span><strong>${esc(m.name)}</strong><small>${d.initiativeCount} iniciativas · 12 h de mentoría en toda la ruta</small></div>
         </div>
       </article>
 
-      <section class="current-stage">
-        <div class="stage-hero">
-          <div class="stage-number">0</div>
-          <div class="stage-copy"><span class="stage-label">ETAPA ACTUAL · ARRANQUE Y LÍNEA BASE</span><h2>Primero entendemos dónde está cada iniciativa y acordamos cómo avanzar.</h2><p>En esta etapa el mentor construye con cada equipo la línea base técnico-comercial, prioriza brechas y deja un plan individual de acompañamiento.</p></div>
-          <div class="stage-progress-card"><span>ENTREGABLES BASE</span><strong>${completed} / ${totalRequired}</strong><small>2 por iniciativa: diagnóstico + plan de trabajo</small><div class="stage-progress-bar"><i style="width:${totalRequired?Math.round((completed/totalRequired)*100):0}%"></i></div></div>
-        </div>
-        <div class="stage-requirements">
-          <article><span class="requirement-step">01</span><div><b>Diagnóstico / línea base</b><p>Lectura inicial de BRL/MRL/CRL o readiness, brechas, supuestos, riesgos y situación técnico-comercial.</p><em>Se carga por cada iniciativa.</em></div></article>
-          <article><span class="requirement-step">02</span><div><b>Plan de trabajo individual</b><p>Objetivos de acompañamiento, prioridades, KPIs, hitos y acciones acordadas con el equipo.</p><em>Se carga por cada iniciativa.</em></div></article>
-          <article><span class="requirement-step">03</span><div><b>Bitácora de cada sesión</b><p>Registra avances revisados y compromisos acordados. Es la trazabilidad del acompañamiento, no otro entregable técnico.</p><em>Se registra después de cada mentoría.</em></div></article>
-        </div>
-        <div class="stage-actions">
-          <button class="primary-work-action" id="etapa0EntryBtn" type="button"><span>0</span><div><b>CARGAR ENTREGABLES DE ETAPA 0</b><small>Diagnóstico y plan de trabajo</small></div><i>→</i></button>
-          <button class="secondary-work-action gold" id="bitacoraEntryBtn" type="button"><span>＋</span><div><b>REGISTRAR BITÁCORA</b><small>Avances y compromisos de una sesión</small></div><i>→</i></button>
-          <button class="secondary-work-action" id="toolsEntryBtn" type="button"><span>↗</span><div><b>BANCO DE HERRAMIENTAS</b><small>Formatos y recursos de acompañamiento</small></div><i>→</i></button>
-        </div>
-      </section>
+      ${workspaceNavHtml()}
 
-      ${mentorRoutesHtml()}
+      <div class="workspace-panel" data-workspace-panel="home" ${state.workspaceTab==="home"?"":"hidden"}>
+        <section class="home-dashboard">
+          <div class="home-stage-card">
+            <div class="home-stage-top"><span class="stage-number small">0</span><div><span class="stage-label">ETAPA ACTUAL</span><h2>Arranque y línea base</h2><p>Octubre 2026 · Semanas 1–4 · 2 horas de mentoría</p></div></div>
+            <div class="home-stage-hito"><span>HITO DE LA ETAPA</span><strong>Línea base + KPIs + plan individual + hitos técnico-comerciales.</strong><small>Después sigue: Etapa 1 · Validación problema y cliente · Noviembre–Diciembre 2026</small></div>
+          </div>
 
-      <section class="tracking-section">
-        <div class="workspace-heading"><div><span>SEGUIMIENTO DE ETAPA 0</span><h2>Qué falta por cada iniciativa</h2><p>Una sola lectura para saber qué ya registraste y qué sigue pendiente.</p></div></div>
-        <div id="stageProjectList" class="stage-project-list">${stageProjectListHtml()}</div>
-      </section>
+          <div class="home-action-grid">
+            <button type="button" class="home-action-card" data-open-workspace="initiatives"><span class="home-action-icon">${d.initiativeCount}</span><div><b>MIS INICIATIVAS</b><strong>Ver equipos asignados</strong><small>Expedientes, contactos y datos técnicos.</small></div><i>→</i></button>
+            <button type="button" class="home-action-card gold" id="homeBitacoraBtn"><span class="home-action-icon">＋</span><div><b>BITÁCORAS</b><strong>Registrar una mentoría</strong><small>${bitaCount} bitácora${bitaCount===1?"":"s"} registrada${bitaCount===1?"":"s"}.</small></div><i>→</i></button>
+            <button type="button" class="home-action-card" data-open-workspace="deliverables"><span class="home-action-icon">${completed}</span><div><b>ENTREGABLES</b><strong>Diagnóstico y plan de trabajo</strong><small>${completed} de ${totalRequired} entregables registrados.</small></div><i>→</i></button>
+            <button type="button" class="home-action-card" data-open-workspace="route"><span class="home-action-icon">6</span><div><b>RUTA</b><strong>Ver etapas, meses e hitos</strong><small>32 semanas · 12 h de mentoría.</small></div><i>→</i></button>
+          </div>
 
-      <section class="activity-section">
-        <div class="workspace-heading"><div><span>MI TRAZABILIDAD</span><h2>Archivos y bitácoras</h2><p>${DOC_TRACKING_URL?"Historial sincronizado desde el seguimiento de Science2Venture.":"Los registros nuevos realizados desde Mentor View aparecen aquí. La consulta histórica de SharePoint aún no está conectada; por ahora se conserva el historial de este navegador."}</p></div></div>
-        <div id="activityHistory">${activityHistoryHtml()}</div>
-      </section>
+          <section class="home-current-work">
+            <div class="workspace-heading"><div><span>QUÉ DEBES HACER AHORA</span><h2>Etapa 0</h2><p>La prioridad es completar la línea base y el plan de trabajo de cada iniciativa y registrar cada mentoría realizada.</p></div></div>
+            <div class="stage-requirements">
+              <article><span class="requirement-step">01</span><div><b>Diagnóstico / línea base</b><p>Brechas, readiness, supuestos, riesgos y situación técnico-comercial.</p><em>1 por iniciativa.</em></div></article>
+              <article><span class="requirement-step">02</span><div><b>Plan de trabajo individual</b><p>Prioridades, KPIs, hitos y acciones acordadas con el equipo.</p><em>1 por iniciativa.</em></div></article>
+              <article><span class="requirement-step">03</span><div><b>Bitácora de cada sesión</b><p>Avances, compromisos y soportes de la mentoría.</p><em>Después de cada sesión.</em></div></article>
+            </div>
+            <div class="stage-actions">
+              <button class="primary-work-action" id="etapa0EntryBtn" type="button"><span>↥</span><div><b>CARGAR ENTREGABLES</b><small>Diagnóstico y plan de trabajo</small></div><i>→</i></button>
+              <button class="secondary-work-action gold" id="bitacoraEntryBtn" type="button"><span>＋</span><div><b>REGISTRAR BITÁCORA</b><small>Avances, compromisos y soportes</small></div><i>→</i></button>
+              <button class="secondary-work-action" id="toolsEntryBtn" type="button"><span>↗</span><div><b>BANCO DE HERRAMIENTAS</b><small>Formatos y recursos</small></div><i>→</i></button>
+            </div>
+          </section>
+        </section>
+      </div>
 
-      <section class="initiative-section">
-        <div class="workspace-heading initiative-heading"><div><span>INICIATIVAS ASIGNADAS</span><h2>Expedientes de los equipos</h2><p>Consulta la información técnica y de selección cuando la necesites durante la mentoría.</p></div><div class="field search compact-search"><label>Buscar iniciativa</label><input id="searchInput" type="search" placeholder="Nombre, sector o contacto"></div></div>
-        <div id="projectGrid" class="project-grid"></div>
-      </section>
+      <div class="workspace-panel" data-workspace-panel="initiatives" ${state.workspaceTab==="initiatives"?"":"hidden"}>
+        <section class="initiative-section standalone">
+          <div class="workspace-heading initiative-heading"><div><span>MIS INICIATIVAS</span><h2>${d.initiativeCount} equipos asignados</h2><p>Abre cualquier expediente para consultar el contexto técnico, el equipo y la información de selección.</p></div><div class="field search compact-search"><label>Buscar iniciativa</label><input id="searchInput" type="search" placeholder="Nombre, sector o contacto"></div></div>
+          <div id="projectGrid" class="project-grid"></div>
+        </section>
+      </div>
+
+      <div class="workspace-panel" data-workspace-panel="bitacoras" ${state.workspaceTab==="bitacoras"?"":"hidden"}>
+        <section class="activity-section standalone">
+          <div class="workspace-heading action-heading"><div><span>BITÁCORAS DE MENTORÍA</span><h2>Registro de sesiones</h2><p>Después de cada mentoría registra avances, compromisos y, cuando aplique, los soportes de la sesión.</p></div><button type="button" class="section-primary-btn gold" id="bitacoraTabBtn">＋ REGISTRAR BITÁCORA</button></div>
+          <div id="activityHistory">${activityHistoryHtml()}</div>
+        </section>
+      </div>
+
+      <div class="workspace-panel" data-workspace-panel="deliverables" ${state.workspaceTab==="deliverables"?"":"hidden"}>
+        <section class="tracking-section standalone">
+          <div class="workspace-heading action-heading"><div><span>ENTREGABLES · ETAPA 0</span><h2>Diagnóstico y plan de trabajo</h2><p>Revisa qué falta por iniciativa y carga los documentos correspondientes.</p></div><button type="button" class="section-primary-btn" id="deliverablesTabBtn">↥ CARGAR ENTREGABLE</button></div>
+          <div class="deliverables-progress"><span>AVANCE</span><strong>${completed} / ${totalRequired}</strong><small>entregables registrados</small><div class="stage-progress-bar"><i style="width:${totalRequired?Math.round((completed/totalRequired)*100):0}%"></i></div></div>
+          <div id="stageProjectList" class="stage-project-list">${stageProjectListHtml()}</div>
+        </section>
+      </div>
+
+      <div class="workspace-panel" data-workspace-panel="route" ${state.workspaceTab==="route"?"":"hidden"}>
+        ${mentorRoutesHtml()}
+      </div>
 
       <p class="footer-note">Mentor View · Science2Venture 2026</p>
     </section>`;
+
     document.getElementById("searchInput")?.addEventListener("input", applyFilters);
     document.getElementById("toolsEntryBtn")?.addEventListener("click",()=>renderToolsHub(true));
     document.getElementById("bitacoraEntryBtn")?.addEventListener("click",openBitacoraModal);
+    document.getElementById("homeBitacoraBtn")?.addEventListener("click",openBitacoraModal);
+    document.getElementById("bitacoraTabBtn")?.addEventListener("click",openBitacoraModal);
     document.getElementById("etapa0EntryBtn")?.addEventListener("click",openEtapa0Modal);
+    document.getElementById("deliverablesTabBtn")?.addEventListener("click",openEtapa0Modal);
     bindHistoryActions();
-    bindRouteTabs();
+    bindWorkspaceNav();
     renderCards();
+    setWorkspaceTab(state.workspaceTab,false);
   }
 
   function applyFilters() {
