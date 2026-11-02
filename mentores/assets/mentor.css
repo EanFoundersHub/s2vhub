@@ -632,3 +632,63 @@ body.modal-open{overflow:hidden}
   .bita-attachments-head{flex-direction:column}
   .bita-saved-chip{align-self:flex-start}
 }
+
+
+/* V51 · Ruta por etapas: hitos, horas y siguiente paso */
+.roadmap-section{border:1px solid var(--border);border-radius:26px;background:var(--surface);box-shadow:var(--soft);overflow:hidden}
+.route-tabs{display:flex;gap:8px;flex-wrap:wrap;padding:0 24px 16px}
+.route-tab{border:1px solid var(--border);border-radius:999px;background:var(--surface-2);color:var(--muted);padding:8px 12px;font-size:.62rem;font-weight:900;letter-spacing:.05em;cursor:pointer}
+.route-tab.active{border-color:var(--teal);background:var(--teal-bg);color:var(--teal-dark)}
+.route-tab-disabled{cursor:default;opacity:.7}
+.route-plan{border-top:1px solid var(--border)}
+.route-plan-summary{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,280px);gap:18px;align-items:center;padding:20px 24px;background:linear-gradient(145deg,var(--surface-2),var(--surface))}
+.route-plan-summary span,.route-total span{display:block;color:var(--muted);font-size:.56rem;font-weight:900;letter-spacing:.08em}
+.route-plan-summary h3{margin:4px 0 4px;color:var(--strong);font-size:1.25rem}
+.route-plan-summary p{margin:0;color:var(--muted);font-size:.7rem}
+.route-total{border:1px solid var(--teal-border);border-radius:15px;background:var(--teal-bg);padding:13px 15px}
+.route-total strong{display:block;margin:3px 0;color:var(--strong);font-size:1.15rem}
+.route-total small{display:block;color:var(--muted);font-size:.62rem}
+.route-stage-list{display:grid}
+.route-stage{display:grid;grid-template-columns:78px minmax(0,1.7fr) minmax(180px,.6fr) minmax(190px,.72fr);gap:0;border-top:1px solid var(--border);background:var(--surface)}
+.route-stage:first-child{border-top:0}
+.route-stage.is-current{background:linear-gradient(90deg,var(--teal-bg),var(--surface) 30%)}
+.route-stage-number,.route-stage-main,.route-stage-hours,.route-stage-next{padding:16px 18px;min-width:0}
+.route-stage-number{display:grid;align-content:center;justify-items:center;border-right:1px solid var(--border)}
+.route-stage-number span,.route-stage-main>span,.route-stage-hours>span,.route-stage-next>span{display:block;color:var(--muted);font-size:.52rem;font-weight:900;letter-spacing:.08em}
+.route-stage-number strong{display:block;color:var(--strong);font-size:1.35rem}
+.route-stage-main h4{margin:4px 0 6px;color:var(--strong);font-size:.82rem;line-height:1.35}
+.route-stage-main p{margin:0;color:var(--muted);font-size:.67rem;line-height:1.5}
+.route-stage-main p b{color:var(--strong)}
+.route-stage-hours,.route-stage-next{border-left:1px solid var(--border);display:grid;align-content:center}
+.route-stage-hours strong,.route-stage-next strong{display:block;margin:4px 0 2px;color:var(--strong);font-size:.82rem}
+.route-stage-hours small,.route-stage-next small{display:block;color:var(--muted);font-size:.6rem;line-height:1.4}
+.route-gap-note{margin:14px 24px 22px;padding:13px 15px;border:1px dashed var(--border);border-radius:14px;background:var(--surface-2);display:grid;gap:4px}
+.route-gap-note b{font-size:.7rem;color:var(--strong)}
+.route-gap-note span{font-size:.65rem;line-height:1.5;color:var(--muted)}
+
+.project-route-current,.project-route-note{border-bottom:1px solid var(--border);background:linear-gradient(145deg,var(--teal-bg),var(--surface));padding:18px 22px}
+.project-route-current{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(150px,.45fr) minmax(180px,.55fr);gap:12px;align-items:stretch}
+.project-route-current>div:first-child{padding:2px 4px}
+.project-route-current span,.project-route-note>span,.project-route-kpi span{display:block;color:var(--teal-dark);font-size:.55rem;font-weight:900;letter-spacing:.08em}
+.project-route-current h3{margin:4px 0 6px;color:var(--strong);font-size:1rem}
+.project-route-current p,.project-route-note p{margin:0;color:var(--muted);font-size:.68rem;line-height:1.5}
+.project-route-kpi{border:1px solid var(--teal-border);border-radius:14px;background:var(--surface);padding:12px 14px;display:grid;align-content:center}
+.project-route-kpi strong{display:block;margin:4px 0 2px;color:var(--strong);font-size:.9rem}
+.project-route-kpi small{display:block;color:var(--muted);font-size:.6rem;line-height:1.35}
+.project-route-note{display:grid;gap:5px}
+.project-route-note strong{font-size:.85rem;color:var(--strong)}
+
+@media(max-width:1100px){
+  .route-stage{grid-template-columns:70px minmax(0,1fr) minmax(160px,.55fr)}
+  .route-stage-next{grid-column:2/-1;border-left:0;border-top:1px dashed var(--border);padding-top:10px}
+  .project-route-current{grid-template-columns:1fr 1fr}
+  .project-route-current>div:first-child{grid-column:1/-1}
+}
+@media(max-width:760px){
+  .route-plan-summary{grid-template-columns:1fr}
+  .route-stage{grid-template-columns:58px minmax(0,1fr)}
+  .route-stage-hours,.route-stage-next{grid-column:2;border-left:0;border-top:1px dashed var(--border)}
+  .route-stage-number{grid-row:1/4}
+  .project-route-current{grid-template-columns:1fr}
+  .project-route-current>div:first-child{grid-column:auto}
+}
