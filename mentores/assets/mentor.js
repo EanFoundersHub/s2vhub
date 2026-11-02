@@ -235,94 +235,48 @@
     return "Ruta por validar";
   }
 
-  const ROUTE_PLANS = {
-    "TRL 1–3": {
-      weeks:"42 semanas",
-      total:"67,5 h máx.",
-      stages:[
-        {n:0,name:"Arranque y línea base",weeks:"Sem. 1–6",hours:"8,5 h",hito:"Línea base + plan de acción + 3–5 hipótesis críticas priorizadas."},
-        {n:1,name:"Tesis de oportunidad, equipo y mindset",weeks:"Sem. 7–12",hours:"8,5 h",hito:"Tesis de oportunidad + Founder Charter + mapa de roles y brechas."},
-        {n:2,name:"Validación problema y cliente",weeks:"Sem. 13–18",hours:"8,5 h",hito:"Mapa de mercado + 10–15 validaciones + problema/JTBD e ICP priorizados."},
-        {n:3,name:"Validación propuesta de valor y oportunidad comercial",weeks:"Sem. 19–24",hours:"10,5 h",hito:"Propuesta de valor v1 + caso de uso priorizado + tablero de experimentos y evidencias."},
-        {n:4,name:"Modelo de negocios y experimentación",weeks:"Sem. 25–30",hours:"10,5 h",hito:"Business Model v1 + ruta de transferencia preliminar + hipótesis de pricing + backlog de experimentos."},
-        {n:5,name:"GTM temprano, growth y lógica económica",weeks:"Sem. 31–36",hours:"10,5 h",hito:"GTM v0 + hipótesis de piloto + pipeline + modelo económico v0 + plan de growth a 90 días."},
-        {n:6,name:"Impacto",weeks:"Sem. 37–42",hours:"10,5 h",hito:"Teoría de Cambio + indicadores + pitch/dossier + scorecard final + roadmap."}
-      ]
-    },
-    "TRL 4–6": {
-      weeks:"36 semanas",
-      total:"57 h máx.",
-      stages:[
-        {n:0,name:"Arranque y línea base",weeks:"Sem. 1–6",hours:"8,5 h",hito:"Línea base + KPIs + plan individual + hitos técnico-comerciales."},
-        {n:1,name:"Tesis de oportunidad, equipo y mindset",weeks:"Sem. 7–12",hours:"8,5 h",hito:"Tesis de oportunidad + Founder Charter + mapa de roles/brechas + ruta de transferencia preliminar."},
-        {n:2,name:"Validación cliente y propuesta de valor",weeks:"Sem. 13–18",hours:"8,5 h",hito:"Cliente/segmento priorizado + propuesta de valor revisada + evidencias faltantes priorizadas."},
-        {n:3,name:"Validación del PMV y Go to Market",weeks:"Sem. 19–24",hours:"10,5 h",hito:"PMV fortalecido/ajustado + estrategia inicial de salida + criterios de tracción/piloto."},
-        {n:4,name:"Estructuración financiera y modelo de negocio",weeks:"Sem. 25–30",hours:"10,5 h",hito:"Modelo de negocio definido + base financiera estructurada + aspectos legales priorizados."},
-        {n:5,name:"Impacto",weeks:"Sem. 31–36",hours:"10,5 h",hito:"Estrategia de sostenibilidad + narrativa de impacto + métricas priorizadas + plan de trabajo a 6 meses."}
-      ]
-    }
+  const S2V_ROUTE = {
+    weeks:"32 semanas",
+    mentoringTotal:"12 h",
+    stages:[
+      {n:0,name:"Arranque y línea base",weeks:"Sem. 1–4",duration:"4 semanas",months:"Aprox. octubre de 2026",mentorHours:"2 h",hito:"Línea base + KPIs + plan individual + hitos técnico-comerciales."},
+      {n:1,name:"Validación problema y cliente",weeks:"Sem. 5–10",duration:"6 semanas",months:"Aprox. noviembre y diciembre de 2026",mentorHours:"2 h",hito:"20 a 50 validaciones en campo de problema, cliente/JTBD e ICP priorizados."},
+      {n:2,name:"Validación propuesta de valor y oportunidad comercial",weeks:"Sem. 11–16",duration:"6 semanas",months:"Aprox. enero y febrero de 2027",mentorHours:"2 h",hito:"Cliente/segmento priorizado + propuesta de valor revisada.",followup:"Seguimiento técnico 1 al cierre de la etapa."},
+      {n:3,name:"Modelo de negocio y experimentación",weeks:"Sem. 17–22",duration:"6 semanas",months:"Aprox. marzo y abril de 2027",mentorHours:"2 h",hito:"Modelo de negocio definido + base financiera estructurada + aspectos legales priorizados."},
+      {n:4,name:"GTM temprano, growth y lógica económica",weeks:"Sem. 22–27",duration:"6 semanas",months:"Aprox. mayo y junio de 2027",mentorHours:"2 h",hito:"PMV fortalecido + estrategia inicial de salida + criterios de tracción."},
+      {n:5,name:"Impacto",weeks:"Sem. 27–32",duration:"6 semanas",months:"Aprox. julio y agosto de 2027",mentorHours:"2 h",hito:"Sostenibilidad + narrativa de impacto + plan de trabajo a 6 meses.",followup:"Seguimiento técnico 2 y cierre de la ruta."}
+    ]
   };
 
-  function routePlansForMentor(){
-    const set=new Set((state.data?.projects||[]).map(routeBand));
-    return ["TRL 1–3","TRL 4–6"].filter(x=>set.has(x));
-  }
-
-  function routePlanHtml(band){
-    const route=ROUTE_PLANS[band];
-    if(!route) return "";
-    return `<div class="route-plan" data-route-plan="${esc(band)}">
-      <div class="route-plan-summary">
-        <div><span>RUTA DE ACOMPAÑAMIENTO</span><h3>${esc(band)}</h3><p>${esc(route.weeks)} · etapas de 6 semanas</p></div>
-        <div class="route-total"><span>INTENSIDAD MÁXIMA</span><strong>${esc(route.total)}</strong><small>Seguimientos técnicos no incluidos</small></div>
+  function mentorRoutesHtml(){
+    return `<section class="roadmap-section">
+      <div class="workspace-heading"><div><span>RUTA DE ACOMPAÑAMIENTO</span><h2>6 etapas · 32 semanas · 12 h de mentoría</h2><p>La misma ruta aplica a todas las iniciativas. Cada etapa incluye 2 horas de mentoría, distribuidas en 2 sesiones quincenales.</p></div></div>
+      <div class="single-route-summary">
+        <div><span>MENTORÍA POR ETAPA</span><strong>2 h</strong><small>2 sesiones · cada 15 días</small></div>
+        <div><span>MENTORÍA EN TODA LA RUTA</span><strong>12 h</strong><small>6 etapas</small></div>
+        <div><span>DURACIÓN</span><strong>32 semanas</strong><small>Etapa 0: 4 semanas · demás: 6 semanas</small></div>
       </div>
       <div class="route-stage-list">
-        ${route.stages.map((s,i)=>{
-          const next=route.stages[i+1];
+        ${S2V_ROUTE.stages.map((s,i)=>{
+          const next=S2V_ROUTE.stages[i+1];
           return `<article class="route-stage ${s.n===0?"is-current":""}">
-            <div class="route-stage-number"><span>ETAPA</span><strong>${s.n}</strong></div>
-            <div class="route-stage-main"><span>${esc(s.weeks)}</span><h4>${esc(s.name)}</h4><p><b>Hito requerido:</b> ${esc(s.hito)}</p></div>
-            <div class="route-stage-hours"><span>HORAS ETAPA</span><strong>${esc(s.hours)}</strong><small>${s.n<3?"4,5 h mentoría + hasta 4 h entrenamientos":"4,5 h mentoría + hasta 4 h entrenamientos + 2 h asesoría"}</small></div>
-            <div class="route-stage-next"><span>${next?"QUÉ SIGUE":"CIERRE"}</span><strong>${next?`Etapa ${next.n}`:"Fin de ruta"}</strong><small>${next?esc(next.name):"Seguimiento final y roadmap"}</small></div>
+            <div class="route-stage-number"><span>ETAPA</span><strong>E${s.n}</strong></div>
+            <div class="route-stage-main"><span>${esc(s.weeks)} · ${esc(s.duration)}</span><h4>${esc(s.name)}</h4><small class="route-months">${esc(s.months)}</small><p><b>Hito requerido:</b> ${esc(s.hito)}</p>${s.followup?`<em>${esc(s.followup)}</em>`:""}</div>
+            <div class="route-stage-hours"><span>MENTORÍA</span><strong>${esc(s.mentorHours)}</strong><small>2 sesiones quincenales</small></div>
+            <div class="route-stage-next"><span>${next?"QUÉ SIGUE":"CIERRE"}</span><strong>${next?`Etapa ${next.n}`:"Fin de ruta"}</strong><small>${next?esc(next.name):"Seguimiento final + próximos pasos"}</small></div>
           </article>`;
         }).join("")}
       </div>
-    </div>`;
-  }
-
-  function mentorRoutesHtml(){
-    const bands=routePlansForMentor();
-    const has79=(state.data?.projects||[]).some(p=>routeBand(p)==="TRL 7–9");
-    if(!bands.length&&!has79) return "";
-    return `<section class="roadmap-section">
-      <div class="workspace-heading"><div><span>RUTA DE ACOMPAÑAMIENTO</span><h2>Hitos, horas y siguiente paso</h2><p>Consulta qué debe producir cada etapa y cómo se conecta con la siguiente. La ruta depende del TRL validado de la iniciativa.</p></div></div>
-      <div class="route-tabs" role="tablist">
-        ${bands.map((b,i)=>`<button type="button" class="route-tab ${i===0?"active":""}" data-route-tab="${esc(b)}">${esc(b)}</button>`).join("")}
-        ${has79?'<span class="route-tab route-tab-disabled">TRL 7–9 · ruta personalizada</span>':""}
-      </div>
-      <div id="routePlanHost">${bands.length?routePlanHtml(bands[0]):""}</div>
-      ${has79?'<div class="route-gap-note"><b>TRL 7–9</b><span>El PT/Excel vigente no contiene todavía una ruta por etapas con hitos y horas para este nivel. La Etapa 0 sí se gestiona desde Mentor View mediante línea base y plan individual.</span></div>':""}
     </section>`;
   }
 
-  function bindRouteTabs(){
-    document.querySelectorAll("[data-route-tab]").forEach(btn=>btn.addEventListener("click",()=>{
-      document.querySelectorAll("[data-route-tab]").forEach(x=>x.classList.toggle("active",x===btn));
-      const host=document.getElementById("routePlanHost");
-      if(host) host.innerHTML=routePlanHtml(btn.dataset.routeTab);
-    }));
-  }
+  function bindRouteTabs(){}
 
   function projectRouteHtml(p){
-    const band=routeBand(p), route=ROUTE_PLANS[band];
-    if(!route){
-      if(band==="TRL 7–9") return `<section class="project-route-note"><span>RUTA DE ACOMPAÑAMIENTO · ${esc(band)}</span><strong>Etapa 0 activa: línea base + plan individual</strong><p>El PT/Excel vigente aún no parametriza hitos y horas de las etapas posteriores para TRL 7–9.</p></section>`;
-      return "";
-    }
-    const s=route.stages[0], next=route.stages[1];
+    const s=S2V_ROUTE.stages[0], next=S2V_ROUTE.stages[1];
     return `<section class="project-route-current">
-      <div><span>RUTA · ${esc(band)}</span><h3>Etapa 0 · ${esc(s.name)}</h3><p><b>Hito:</b> ${esc(s.hito)}</p></div>
-      <div class="project-route-kpi"><span>HORAS</span><strong>${esc(s.hours)}</strong><small>máximo programado</small></div>
+      <div><span>RUTA ÚNICA · SCIENCE2VENTURE</span><h3>Etapa 0 · ${esc(s.name)}</h3><p><b>Hito:</b> ${esc(s.hito)}</p></div>
+      <div class="project-route-kpi"><span>MENTORÍA ETAPA</span><strong>2 h</strong><small>2 sesiones quincenales</small></div>
       <div class="project-route-kpi"><span>SIGUE</span><strong>Etapa ${next.n}</strong><small>${esc(next.name)}</small></div>
     </section>`;
   }
@@ -333,7 +287,7 @@
       const hasPlan=a.docs.some(x=>clean(x.tipoDocumento).toLowerCase()==="plan de trabajo");
       const hasDiag=a.docs.some(x=>clean(x.tipoDocumento).toLowerCase()==="diagnóstico");
       return `<article class="stage-project-row">
-        <div class="stage-project-main"><span class="stage-route">${esc(routeBand(p))}</span><strong>${esc(p.name)}</strong><small>${esc(validatedTrl(p)||"TRL por validar")}</small></div>
+        <div class="stage-project-main"><strong>${esc(p.name)}</strong><small>TRL validado: ${esc(validatedTrl(p)||"Por validar")}</small></div>
         <div class="stage-check ${hasDiag?"is-done":""}"><span>${hasDiag?"✓":"○"}</span><div><b>Diagnóstico</b><small>${hasDiag?"Registrado":"Pendiente"}</small></div></div>
         <div class="stage-check ${hasPlan?"is-done":""}"><span>${hasPlan?"✓":"○"}</span><div><b>Plan de trabajo</b><small>${hasPlan?"Registrado":"Pendiente"}</small></div></div>
         <div class="stage-check ${a.bitacoras.length?"is-done":""}"><span>${a.bitacoras.length?"✓":"○"}</span><div><b>Bitácoras</b><small>${a.bitacoras.length} registrada${a.bitacoras.length===1?"":"s"}</small></div></div>
