@@ -379,14 +379,22 @@
 
           <section class="home-current-work">
             <div class="workspace-heading"><div><span>QUÉ DEBES HACER AHORA</span><h2>Etapa 0</h2><p>La prioridad es completar la línea base y el plan de trabajo de cada iniciativa y registrar cada mentoría realizada.</p></div></div>
-            <div class="stage-requirements">
-              <article><span class="requirement-step">01</span><div><b>Diagnóstico / línea base</b><p>Brechas, readiness, supuestos, riesgos y situación técnico-comercial.</p><em>1 por iniciativa.</em></div></article>
-              <article><span class="requirement-step">02</span><div><b>Plan de trabajo individual</b><p>Prioridades, KPIs, hitos y acciones acordadas con el equipo.</p><em>1 por iniciativa.</em></div></article>
-              <article><span class="requirement-step">03</span><div><b>Bitácora de cada sesión</b><p>Avances, compromisos y soportes de la mentoría.</p><em>Después de cada sesión.</em></div></article>
+            <div class="stage-requirements actionable">
+              <article>
+                <span class="requirement-step">01</span>
+                <div class="requirement-content"><b>Diagnóstico / línea base</b><p>Brechas, readiness, supuestos, riesgos y situación técnico-comercial.</p><em>1 por iniciativa.</em><button type="button" class="requirement-action" id="diagnosticoEntryBtn">↥ CARGAR DIAGNÓSTICO</button></div>
+              </article>
+              <article>
+                <span class="requirement-step">02</span>
+                <div class="requirement-content"><b>Plan de trabajo individual</b><p>Prioridades, KPIs, hitos y acciones acordadas con el equipo.</p><em>1 por iniciativa.</em><button type="button" class="requirement-action" id="planEntryBtn">↥ CARGAR PLAN DE TRABAJO</button></div>
+              </article>
+              <article>
+                <span class="requirement-step">03</span>
+                <div class="requirement-content"><b>Bitácora de cada sesión</b><p>Avances, compromisos y soportes de la mentoría.</p><em>Después de cada sesión.</em><button type="button" class="requirement-action gold" id="bitacoraEntryBtn">＋ REGISTRAR BITÁCORA</button></div>
+              </article>
             </div>
-            <div class="stage-actions">
-              <button class="primary-work-action" id="etapa0EntryBtn" type="button"><span>↥</span><div><b>CARGAR ENTREGABLES</b><small>Diagnóstico y plan de trabajo</small></div><i>→</i></button>
-              <button class="secondary-work-action gold" id="bitacoraEntryBtn" type="button"><span>＋</span><div><b>REGISTRAR BITÁCORA</b><small>Avances, compromisos y soportes</small></div><i>→</i></button>
+            <div class="stage-actions utility-actions">
+              <button class="secondary-work-action" id="initiativesEntryBtn" type="button"><span>${d.initiativeCount}</span><div><b>VER MIS INICIATIVAS</b><small>Equipos asignados y expedientes</small></div><i>→</i></button>
               <button class="secondary-work-action" id="toolsEntryBtn" type="button"><span>↗</span><div><b>BANCO DE HERRAMIENTAS</b><small>Formatos y recursos</small></div><i>→</i></button>
             </div>
           </section>
@@ -424,10 +432,12 @@
 
     document.getElementById("searchInput")?.addEventListener("input", applyFilters);
     document.getElementById("toolsEntryBtn")?.addEventListener("click",()=>renderToolsHub(true));
+    document.getElementById("initiativesEntryBtn")?.addEventListener("click",()=>setWorkspaceTab("initiatives"));
+    document.getElementById("diagnosticoEntryBtn")?.addEventListener("click",()=>openEtapa0Modal("Diagnóstico"));
+    document.getElementById("planEntryBtn")?.addEventListener("click",()=>openEtapa0Modal("Plan de trabajo"));
     document.getElementById("bitacoraEntryBtn")?.addEventListener("click",openBitacoraModal);
     document.getElementById("homeBitacoraBtn")?.addEventListener("click",openBitacoraModal);
     document.getElementById("bitacoraTabBtn")?.addEventListener("click",openBitacoraModal);
-    document.getElementById("etapa0EntryBtn")?.addEventListener("click",openEtapa0Modal);
     document.getElementById("deliverablesTabBtn")?.addEventListener("click",openEtapa0Modal);
     bindHistoryActions();
     bindWorkspaceNav();
@@ -680,11 +690,15 @@
     return modal;
   }
 
-  function openEtapa0Modal(){
+  function openEtapa0Modal(preferredType=""){
     const modal=ensureEtapa0Modal();
     modal.querySelector("#docsMentor").value=state.data?.mentor?.name||"";
     const select=modal.querySelector("#docsIniciativa");
     select.innerHTML=`<option value="">Seleccionar iniciativa</option>${(state.data?.projects||[]).map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("")}`;
+    if(preferredType){
+      const radio=[...modal.querySelectorAll('input[name="docsTipo"]')].find(x=>x.value===preferredType);
+      if(radio) radio.checked=true;
+    }
     select.onchange=()=>renderModalInitiativeHistory(modal,select.value);
     renderModalInitiativeHistory(modal,select.value);
     modal.querySelector("#docsPendingWrap").hidden=true;
