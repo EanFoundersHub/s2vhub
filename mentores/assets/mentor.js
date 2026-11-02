@@ -235,6 +235,98 @@
     return "Ruta por validar";
   }
 
+  const ROUTE_PLANS = {
+    "TRL 1–3": {
+      weeks:"42 semanas",
+      total:"67,5 h máx.",
+      stages:[
+        {n:0,name:"Arranque y línea base",weeks:"Sem. 1–6",hours:"8,5 h",hito:"Línea base + plan de acción + 3–5 hipótesis críticas priorizadas."},
+        {n:1,name:"Tesis de oportunidad, equipo y mindset",weeks:"Sem. 7–12",hours:"8,5 h",hito:"Tesis de oportunidad + Founder Charter + mapa de roles y brechas."},
+        {n:2,name:"Validación problema y cliente",weeks:"Sem. 13–18",hours:"8,5 h",hito:"Mapa de mercado + 10–15 validaciones + problema/JTBD e ICP priorizados."},
+        {n:3,name:"Validación propuesta de valor y oportunidad comercial",weeks:"Sem. 19–24",hours:"10,5 h",hito:"Propuesta de valor v1 + caso de uso priorizado + tablero de experimentos y evidencias."},
+        {n:4,name:"Modelo de negocios y experimentación",weeks:"Sem. 25–30",hours:"10,5 h",hito:"Business Model v1 + ruta de transferencia preliminar + hipótesis de pricing + backlog de experimentos."},
+        {n:5,name:"GTM temprano, growth y lógica económica",weeks:"Sem. 31–36",hours:"10,5 h",hito:"GTM v0 + hipótesis de piloto + pipeline + modelo económico v0 + plan de growth a 90 días."},
+        {n:6,name:"Impacto",weeks:"Sem. 37–42",hours:"10,5 h",hito:"Teoría de Cambio + indicadores + pitch/dossier + scorecard final + roadmap."}
+      ]
+    },
+    "TRL 4–6": {
+      weeks:"36 semanas",
+      total:"57 h máx.",
+      stages:[
+        {n:0,name:"Arranque y línea base",weeks:"Sem. 1–6",hours:"8,5 h",hito:"Línea base + KPIs + plan individual + hitos técnico-comerciales."},
+        {n:1,name:"Tesis de oportunidad, equipo y mindset",weeks:"Sem. 7–12",hours:"8,5 h",hito:"Tesis de oportunidad + Founder Charter + mapa de roles/brechas + ruta de transferencia preliminar."},
+        {n:2,name:"Validación cliente y propuesta de valor",weeks:"Sem. 13–18",hours:"8,5 h",hito:"Cliente/segmento priorizado + propuesta de valor revisada + evidencias faltantes priorizadas."},
+        {n:3,name:"Validación del PMV y Go to Market",weeks:"Sem. 19–24",hours:"10,5 h",hito:"PMV fortalecido/ajustado + estrategia inicial de salida + criterios de tracción/piloto."},
+        {n:4,name:"Estructuración financiera y modelo de negocio",weeks:"Sem. 25–30",hours:"10,5 h",hito:"Modelo de negocio definido + base financiera estructurada + aspectos legales priorizados."},
+        {n:5,name:"Impacto",weeks:"Sem. 31–36",hours:"10,5 h",hito:"Estrategia de sostenibilidad + narrativa de impacto + métricas priorizadas + plan de trabajo a 6 meses."}
+      ]
+    }
+  };
+
+  function routePlansForMentor(){
+    const set=new Set((state.data?.projects||[]).map(routeBand));
+    return ["TRL 1–3","TRL 4–6"].filter(x=>set.has(x));
+  }
+
+  function routePlanHtml(band){
+    const route=ROUTE_PLANS[band];
+    if(!route) return "";
+    return `<div class="route-plan" data-route-plan="${esc(band)}">
+      <div class="route-plan-summary">
+        <div><span>RUTA DE ACOMPAÑAMIENTO</span><h3>${esc(band)}</h3><p>${esc(route.weeks)} · etapas de 6 semanas</p></div>
+        <div class="route-total"><span>INTENSIDAD MÁXIMA</span><strong>${esc(route.total)}</strong><small>Seguimientos técnicos no incluidos</small></div>
+      </div>
+      <div class="route-stage-list">
+        ${route.stages.map((s,i)=>{
+          const next=route.stages[i+1];
+          return `<article class="route-stage ${s.n===0?"is-current":""}">
+            <div class="route-stage-number"><span>ETAPA</span><strong>${s.n}</strong></div>
+            <div class="route-stage-main"><span>${esc(s.weeks)}</span><h4>${esc(s.name)}</h4><p><b>Hito requerido:</b> ${esc(s.hito)}</p></div>
+            <div class="route-stage-hours"><span>HORAS ETAPA</span><strong>${esc(s.hours)}</strong><small>${s.n<3?"4,5 h mentoría + hasta 4 h entrenamientos":"4,5 h mentoría + hasta 4 h entrenamientos + 2 h asesoría"}</small></div>
+            <div class="route-stage-next"><span>${next?"QUÉ SIGUE":"CIERRE"}</span><strong>${next?`Etapa ${next.n}`:"Fin de ruta"}</strong><small>${next?esc(next.name):"Seguimiento final y roadmap"}</small></div>
+          </article>`;
+        }).join("")}
+      </div>
+    </div>`;
+  }
+
+  function mentorRoutesHtml(){
+    const bands=routePlansForMentor();
+    const has79=(state.data?.projects||[]).some(p=>routeBand(p)==="TRL 7–9");
+    if(!bands.length&&!has79) return "";
+    return `<section class="roadmap-section">
+      <div class="workspace-heading"><div><span>RUTA DE ACOMPAÑAMIENTO</span><h2>Hitos, horas y siguiente paso</h2><p>Consulta qué debe producir cada etapa y cómo se conecta con la siguiente. La ruta depende del TRL validado de la iniciativa.</p></div></div>
+      <div class="route-tabs" role="tablist">
+        ${bands.map((b,i)=>`<button type="button" class="route-tab ${i===0?"active":""}" data-route-tab="${esc(b)}">${esc(b)}</button>`).join("")}
+        ${has79?'<span class="route-tab route-tab-disabled">TRL 7–9 · ruta personalizada</span>':""}
+      </div>
+      <div id="routePlanHost">${bands.length?routePlanHtml(bands[0]):""}</div>
+      ${has79?'<div class="route-gap-note"><b>TRL 7–9</b><span>El PT/Excel vigente no contiene todavía una ruta por etapas con hitos y horas para este nivel. La Etapa 0 sí se gestiona desde Mentor View mediante línea base y plan individual.</span></div>':""}
+    </section>`;
+  }
+
+  function bindRouteTabs(){
+    document.querySelectorAll("[data-route-tab]").forEach(btn=>btn.addEventListener("click",()=>{
+      document.querySelectorAll("[data-route-tab]").forEach(x=>x.classList.toggle("active",x===btn));
+      const host=document.getElementById("routePlanHost");
+      if(host) host.innerHTML=routePlanHtml(btn.dataset.routeTab);
+    }));
+  }
+
+  function projectRouteHtml(p){
+    const band=routeBand(p), route=ROUTE_PLANS[band];
+    if(!route){
+      if(band==="TRL 7–9") return `<section class="project-route-note"><span>RUTA DE ACOMPAÑAMIENTO · ${esc(band)}</span><strong>Etapa 0 activa: línea base + plan individual</strong><p>El PT/Excel vigente aún no parametriza hitos y horas de las etapas posteriores para TRL 7–9.</p></section>`;
+      return "";
+    }
+    const s=route.stages[0], next=route.stages[1];
+    return `<section class="project-route-current">
+      <div><span>RUTA · ${esc(band)}</span><h3>Etapa 0 · ${esc(s.name)}</h3><p><b>Hito:</b> ${esc(s.hito)}</p></div>
+      <div class="project-route-kpi"><span>HORAS</span><strong>${esc(s.hours)}</strong><small>máximo programado</small></div>
+      <div class="project-route-kpi"><span>SIGUE</span><strong>Etapa ${next.n}</strong><small>${esc(next.name)}</small></div>
+    </section>`;
+  }
+
   function stageProjectListHtml(){
     return (state.data?.projects||[]).map(p=>{
       const a=activityForInitiative(p.name);
@@ -302,6 +394,8 @@
         </div>
       </section>
 
+      ${mentorRoutesHtml()}
+
       <section class="tracking-section">
         <div class="workspace-heading"><div><span>SEGUIMIENTO DE ETAPA 0</span><h2>Qué falta por cada iniciativa</h2><p>Una sola lectura para saber qué ya registraste y qué sigue pendiente.</p></div></div>
         <div id="stageProjectList" class="stage-project-list">${stageProjectListHtml()}</div>
@@ -324,6 +418,7 @@
     document.getElementById("bitacoraEntryBtn")?.addEventListener("click",openBitacoraModal);
     document.getElementById("etapa0EntryBtn")?.addEventListener("click",openEtapa0Modal);
     bindHistoryActions();
+    bindRouteTabs();
     renderCards();
   }
 
@@ -424,7 +519,7 @@
     app.innerHTML=`<section class="detail-view">
       <button class="back-btn" id="backBtn" type="button">← Mis iniciativas</button>
       <article class="detail-shell">
-        <header class="detail-head"><p class="eyebrow">MENTOR · ${esc(m.name)}</p><h1>${esc(p.name)}</h1><div class="detail-meta">${fundingBadge(r)}${r.trlValidatedByUnit?`<span class="badge">${esc(r.trlValidatedByUnit)} · validado</span>`:""}${r.sector?`<span class="badge">${esc(r.sector)}</span>`:""}</div>${projectKpis(r,a)}</header>${processHtml(r,a)}
+        <header class="detail-head"><p class="eyebrow">MENTOR · ${esc(m.name)}</p><h1>${esc(p.name)}</h1><div class="detail-meta">${fundingBadge(r)}${r.trlValidatedByUnit?`<span class="badge">${esc(r.trlValidatedByUnit)} · validado</span>`:""}${r.sector?`<span class="badge">${esc(r.sector)}</span>`:""}</div>${projectKpis(r,a)}</header>${projectRouteHtml(p)}${processHtml(r,a)}
         <nav class="tabs" aria-label="Secciones de iniciativa">
           ${[["summary","01 · RESUMEN"],["application","02 · POSTULACIÓN"],["panel","03 · EVALUACIÓN DEL PANEL"],["unit","04 · REVISIÓN INSTITUCIONAL"],["result","05 · RESULTADO"]].map(([id,l])=>`<button type="button" class="tab-btn ${id===state.activeTab?"active":""}" data-tab="${id}">${l}</button>`).join("")}
         </nav>
