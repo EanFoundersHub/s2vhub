@@ -701,10 +701,13 @@
     modal.id="bitacoraModal";
     modal.className="bitacora-modal";
     modal.hidden=true;
-    modal.innerHTML=`<div class="bitacora-backdrop" data-bita-close></div><section class="bitacora-dialog" role="dialog" aria-modal="true" aria-labelledby="bitacoraTitle"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ACOMPAÑAMIENTO</span><h2 id="bitacoraTitle">Registrar bitácora</h2><p>Registra únicamente los avances y compromisos acordados durante la sesión.</p></div><button class="bitacora-close" type="button" data-bita-close aria-label="Cerrar">×</button></header><form id="bitacoraForm" class="bitacora-form"><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="bitaMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="bitaIniciativa" required><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field"><span>Fecha de sesión</span><input id="bitaFecha" type="date" required></label><label class="bitacora-field bitacora-full"><span>Avances</span><textarea id="bitaAvances" required rows="5" placeholder="¿Qué avances se lograron o revisaron durante la sesión?"></textarea></label><label class="bitacora-field bitacora-full"><span>Compromisos</span><textarea id="bitaCompromisos" required rows="5" placeholder="¿Qué compromisos quedaron acordados?"></textarea></label></div><div id="bitacoraStatus" class="bitacora-status" role="status" aria-live="polite"></div><footer class="bitacora-actions"><button class="bitacora-secondary" type="button" data-bita-close>Cancelar</button><button class="bitacora-save" id="bitacoraSave" type="submit">GUARDAR BITÁCORA</button></footer></form></section>`;
+    modal.innerHTML=`<div class="bitacora-backdrop" data-bita-close></div><section class="bitacora-dialog bitacora-dialog-wide" role="dialog" aria-modal="true" aria-labelledby="bitacoraTitle"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ACOMPAÑAMIENTO</span><h2 id="bitacoraTitle">Registrar bitácora</h2><p>Deja la trazabilidad de la sesión y, si aplica, adjunta los soportes que respaldan el avance.</p></div><button class="bitacora-close" type="button" data-bita-close aria-label="Cerrar">×</button></header><form id="bitacoraForm" class="bitacora-form"><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="bitaMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="bitaIniciativa" required><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field"><span>Fecha de sesión</span><input id="bitaFecha" type="date" required></label><label class="bitacora-field bitacora-full"><span>Avances</span><textarea id="bitaAvances" required rows="5" placeholder="¿Qué avances se lograron o revisaron durante la sesión?"></textarea></label><label class="bitacora-field bitacora-full"><span>Compromisos</span><textarea id="bitaCompromisos" required rows="5" placeholder="¿Qué compromisos quedaron acordados?"></textarea></label></div><div id="bitacoraStatus" class="bitacora-status" role="status" aria-live="polite"></div><footer class="bitacora-actions"><button class="bitacora-secondary" type="button" data-bita-close>Cerrar</button><button class="bitacora-save" id="bitacoraSave" type="submit">1 · GUARDAR BITÁCORA</button></footer><section id="bitaAttachments" class="bita-attachments" hidden><div class="bita-attachments-head"><div><span>SOPORTES DE LA SESIÓN · OPCIONAL</span><h3>Adjuntar documentos a esta bitácora</h3><p>Puedes asociar actas, matrices, evidencias, presentaciones u otros archivos revisados durante la sesión.</p></div><div class="bita-saved-chip">BITÁCORA GUARDADA ✓</div></div><div class="docs-upload-actions"><button class="docs-upload-btn" id="bitaUploadBtn" type="button">2 · CARGAR SOPORTE ↗</button><button class="docs-verify-btn" id="bitaVerifyBtn" type="button">3 · VERIFICAR CARGA</button></div><div id="bitaDocsStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="bitaPendingWrap" class="docs-pending-wrap" hidden><div class="docs-pending-head"><span>ARCHIVOS ENCONTRADOS</span><small>Selecciona el soporte que quieres asociar a esta bitácora.</small></div><div id="bitaPendingList" class="pending-file-list"></div><button class="bitacora-save docs-associate-btn" id="bitaAssociateBtn" type="button">4 · ASOCIAR A ESTA BITÁCORA</button></div></section></form></section>`;
     document.body.appendChild(modal);
     modal.querySelectorAll("[data-bita-close]").forEach(el=>el.addEventListener("click",closeBitacoraModal));
     modal.querySelector("#bitacoraForm")?.addEventListener("submit",submitBitacora);
+    modal.querySelector("#bitaUploadBtn")?.addEventListener("click",openBitacoraUpload);
+    modal.querySelector("#bitaVerifyBtn")?.addEventListener("click",searchBitacoraPendingDocs);
+    modal.querySelector("#bitaAssociateBtn")?.addEventListener("click",associateBitacoraDoc);
     document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.hidden) closeBitacoraModal();});
     return modal;
   }
@@ -716,6 +719,11 @@
     select.innerHTML=`<option value="">Seleccionar iniciativa</option>${(state.data?.projects||[]).map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("")}`;
     fecha.value=localDateValue();
     avances.value=""; compromisos.value=""; status.textContent=""; status.className="bitacora-status";
+    modal.dataset.bitacoraId=""; modal.dataset.bitaSince="";
+    const attachments=modal.querySelector("#bitaAttachments"); if(attachments) attachments.hidden=true;
+    const pending=modal.querySelector("#bitaPendingWrap"); if(pending) pending.hidden=true;
+    const pendingList=modal.querySelector("#bitaPendingList"); if(pendingList) pendingList.innerHTML="";
+    modal._bitaPendingDocs=[];
     modal.hidden=false; document.body.classList.add("modal-open");
     setTimeout(()=>select.focus(),0);
   }
@@ -737,14 +745,106 @@
       const raw=await response.text(); let result={};
       try{result=raw?JSON.parse(raw):{};}catch(e){}
       if(!response.ok||result.ok!==true) throw new Error(result.mensaje||`Power Automate respondió ${response.status}`);
-      status.textContent="Bitácora guardada correctamente."; status.className="bitacora-status is-success";
-      recordMentorBitacora(payload);
-      avances.value=""; compromisos.value="";
-      setTimeout(closeBitacoraModal,900);
+      const bitacoraId=clean(result.bitacoraId ?? result.id ?? result.ID ?? result.itemId);
+      status.textContent=bitacoraId?"Bitácora guardada. Puedes adjuntar soportes a esta sesión.":"Bitácora guardada correctamente."; status.className="bitacora-status is-success";
+      recordMentorBitacora({...payload,bitacoraId:bitacoraId||null});
+      if(bitacoraId){
+        modal.dataset.bitacoraId=bitacoraId;
+        modal.dataset.bitaIniciativa=payload.iniciativa;
+        modal.dataset.bitaFecha=payload.fechaSesion;
+        const attachments=modal.querySelector("#bitaAttachments"); if(attachments) attachments.hidden=false;
+        save.textContent="BITÁCORA GUARDADA ✓";
+        save.disabled=true;
+      } else {
+        avances.value=""; compromisos.value="";
+        setTimeout(closeBitacoraModal,900);
+      }
     }catch(error){
       console.error("Error guardando bitácora",error);
       status.textContent="No fue posible guardar la bitácora. Intenta nuevamente."; status.className="bitacora-status is-error";
-    }finally{save.disabled=false;save.textContent="GUARDAR BITÁCORA";}
+    }finally{
+      if(!modal.dataset.bitacoraId){save.disabled=false;save.textContent="1 · GUARDAR BITÁCORA";}
+    }
+  }
+
+  function bitaDocsStatus(modal,message,type=""){
+    const el=modal?.querySelector("#bitaDocsStatus"); if(!el) return;
+    el.textContent=message||"";
+    el.className=`bitacora-status${type?` is-${type}`:""}`;
+  }
+
+  function openBitacoraUpload(){
+    const modal=document.getElementById("bitacoraModal"); if(!modal) return;
+    if(!modal.dataset.bitacoraId){bitaDocsStatus(modal,"Guarda primero la bitácora.","error");return;}
+    if(!DOC_UPLOAD_URL){bitaDocsStatus(modal,"El enlace de carga todavía no está configurado.","error");return;}
+    const since=new Date(Date.now()-30000).toISOString();
+    modal.dataset.bitaSince=since;
+    window.open(DOC_UPLOAD_URL,"_blank","noopener");
+    bitaDocsStatus(modal,"Se abrió Microsoft para cargar el soporte. Cuando termine, vuelve aquí y pulsa “Verificar carga”.");
+  }
+
+  function renderBitacoraPendingDocs(modal,items){
+    const wrap=modal.querySelector("#bitaPendingWrap"), list=modal.querySelector("#bitaPendingList");
+    modal._bitaPendingDocs=items;
+    wrap.hidden=!items.length;
+    if(!items.length){list.innerHTML="";return;}
+    list.innerHTML=items.map((f,i)=>`<label class="pending-file"><input type="radio" name="bitaPendingDoc" value="${i}" ${i===0?"checked":""}><span class="pending-file-main"><b>${esc(f.name)}</b><small>${f.created?esc(new Date(f.created).toLocaleString("es-CO")):"Carga reciente"}</small></span><span class="pending-file-id">SOPORTE</span></label>`).join("");
+  }
+
+  async function searchBitacoraPendingDocs(){
+    const modal=document.getElementById("bitacoraModal"); if(!modal) return;
+    if(!modal.dataset.bitacoraId){bitaDocsStatus(modal,"Guarda primero la bitácora.","error");return;}
+    const btn=modal.querySelector("#bitaVerifyBtn");
+    const since=modal.dataset.bitaSince||new Date(Date.now()-30*60*1000).toISOString();
+    btn.disabled=true; btn.textContent="VERIFICANDO…"; bitaDocsStatus(modal,"Buscando soportes cargados recientemente…");
+    try{
+      const response=await fetch(DOC_SEARCH_URL,{method:"POST",headers:{"Content-Type":"application/json; charset=utf-8","X-S2V-Access":access},body:JSON.stringify({desde:since})});
+      const raw=await response.text(); let result={}; try{result=raw?JSON.parse(raw):{};}catch(e){}
+      if(!response.ok||result.ok!==true) throw new Error(`Power Automate respondió ${response.status}`);
+      const items=(Array.isArray(result.archivos)?result.archivos:[]).map(normalizePendingDoc).filter(x=>!!x.id&&!!x.identifier);
+      renderBitacoraPendingDocs(modal,items);
+      bitaDocsStatus(modal,items.length?`${items.length} soporte${items.length===1?"":"s"} encontrado${items.length===1?"":"s"}.`:"No encontré una carga nueva todavía.",items.length?"success":"");
+    }catch(error){
+      console.error("Error buscando soportes de bitácora",error);
+      bitaDocsStatus(modal,"No fue posible verificar los soportes. Intenta nuevamente.","error");
+    }finally{btn.disabled=false;btn.textContent="3 · VERIFICAR CARGA";}
+  }
+
+  async function associateBitacoraDoc(){
+    const modal=document.getElementById("bitacoraModal"); if(!modal) return;
+    const selected=modal.querySelector('input[name="bitaPendingDoc"]:checked');
+    const file=selected?modal._bitaPendingDocs?.[Number(selected.value)]:null;
+    const bitacoraId=clean(modal.dataset.bitacoraId);
+    if(!bitacoraId||!file){bitaDocsStatus(modal,"Selecciona el soporte que quieres asociar.","error");return;}
+    const btn=modal.querySelector("#bitaAssociateBtn");
+    const payload={
+      archivoId:file.id,
+      nombreArchivo:file.name,
+      identificadorArchivo:file.identifier,
+      rutaArchivo:file.path,
+      fechaCarga:file.created,
+      mentor:clean(state.data?.mentor?.name),
+      iniciativa:clean(modal.dataset.bitaIniciativa),
+      etapa:"Etapa 0",
+      tipoDocumento:"Soporte de bitácora",
+      asociacionEmpresa:false,
+      bitacoraId:Number(bitacoraId)||bitacoraId,
+      fechaBitacora:clean(modal.dataset.bitaFecha),
+      fechaSesion:clean(modal.dataset.bitaFecha)
+    };
+    btn.disabled=true; btn.textContent="ASOCIANDO…"; bitaDocsStatus(modal,"Asociando el soporte a la bitácora…");
+    try{
+      const response=await fetch(DOC_ASSOCIATE_URL,{method:"POST",headers:{"Content-Type":"application/json; charset=utf-8","X-S2V-Access":access},body:JSON.stringify(payload)});
+      const raw=await response.text(); let result={}; try{result=raw?JSON.parse(raw):{};}catch(e){}
+      if(!response.ok||result.ok!==true) throw new Error(`Power Automate respondió ${response.status}`);
+      bitaDocsStatus(modal,`${file.name} quedó asociado a esta bitácora.`,"success");
+      recordMentorDoc({iniciativa:payload.iniciativa,tipoDocumento:"Soporte de bitácora",nombreArchivo:file.name,fechaCarga:file.created,bitacoraId});
+      modal._bitaPendingDocs=(modal._bitaPendingDocs||[]).filter(x=>x.id!==file.id);
+      renderBitacoraPendingDocs(modal,modal._bitaPendingDocs);
+    }catch(error){
+      console.error("Error asociando soporte de bitácora",error);
+      bitaDocsStatus(modal,"No fue posible asociar el soporte a la bitácora.","error");
+    }finally{btn.disabled=false;btn.textContent="4 · ASOCIAR A ESTA BITÁCORA";}
   }
 
   function toolsHtml(){
