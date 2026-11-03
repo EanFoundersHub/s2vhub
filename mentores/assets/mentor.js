@@ -375,6 +375,30 @@
     document.querySelectorAll("[data-open-workspace]").forEach(btn=>btn.addEventListener("click",()=>setWorkspaceTab(btn.dataset.openWorkspace)));
   }
 
+  function currentStageTasksHtml(d){
+    const cs=currentStageInfo();
+    if(cs.n===0){
+      return `<div class="stage-requirements actionable">
+        <article><span class="requirement-step">01</span><div class="requirement-content"><b>Diagnóstico / línea base</b><p>Brechas, readiness, supuestos, riesgos y situación técnico-comercial.</p><em>1 por iniciativa.</em><button type="button" class="requirement-action" id="diagnosticoEntryBtn">↥ CARGAR DIAGNÓSTICO</button></div></article>
+        <article><span class="requirement-step">02</span><div class="requirement-content"><b>Plan de trabajo individual</b><p>Prioridades, KPIs, hitos y acciones acordadas con el equipo.</p><em>1 por iniciativa.</em><button type="button" class="requirement-action" id="planEntryBtn">↥ CARGAR PLAN DE TRABAJO</button></div></article>
+        <article><span class="requirement-step">03</span><div class="requirement-content"><b>Bitácora de cada sesión</b><p>Avances, compromisos y soportes de la mentoría.</p><em>2 sesiones en la etapa.</em><button type="button" class="requirement-action gold" id="bitacoraEntryBtn">＋ REGISTRAR BITÁCORA</button></div></article>
+      </div>
+      <div class="stage-actions utility-actions">
+        <button class="secondary-work-action" id="initiativesEntryBtn" type="button"><span>${d.initiativeCount}</span><div><b>VER MIS INICIATIVAS</b><small>Equipos asignados y expedientes</small></div><i>→</i></button>
+        <button class="secondary-work-action" id="toolsEntryBtn" type="button"><span>↗</span><div><b>BANCO DE HERRAMIENTAS</b><small>Formatos y recursos</small></div><i>→</i></button>
+      </div>`;
+    }
+    return `<div class="stage-requirements actionable">
+      <article><span class="requirement-step">01</span><div class="requirement-content"><b>Mentoría · Sesión 1 de 2</b><p>Revisa avance, brechas y decisiones necesarias para acercar la iniciativa al hito de la etapa.</p><em>1 hora prevista.</em><button type="button" class="requirement-action gold" data-bita-session="1">＋ REGISTRAR SESIÓN 1</button></div></article>
+      <article><span class="requirement-step">02</span><div class="requirement-content"><b>Mentoría · Sesión 2 de 2</b><p>Contrasta avances, acuerda compromisos y deja definidos los siguientes pasos.</p><em>1 hora prevista.</em><button type="button" class="requirement-action gold" data-bita-session="2">＋ REGISTRAR SESIÓN 2</button></div></article>
+      <article><span class="requirement-step">03</span><div class="requirement-content"><b>Hito de la etapa</b><p>${esc(cs.hito)}</p><em>${esc(cs.months)}.</em><button type="button" class="requirement-action" data-open-workspace="route">VER RUTA Y SIGUIENTE ETAPA</button></div></article>
+    </div>
+    <div class="stage-actions utility-actions">
+      <button class="secondary-work-action" id="initiativesEntryBtn" type="button"><span>${d.initiativeCount}</span><div><b>VER MIS INICIATIVAS</b><small>Equipos asignados y expedientes</small></div><i>→</i></button>
+      <button class="secondary-work-action" id="toolsEntryBtn" type="button"><span>↗</span><div><b>BANCO DE HERRAMIENTAS</b><small>Formatos y recursos</small></div><i>→</i></button>
+    </div>`;
+  }
+
   function renderPortfolio() {
     const d=state.data,m=d.mentor;
     const people=new Set();
@@ -412,24 +436,7 @@
 
           <section class="home-current-work">
             <div class="workspace-heading"><div><span>QUÉ DEBES HACER AHORA</span><h2>Etapa ${CURRENT_STAGE_NUMBER}</h2><p>${CURRENT_STAGE_NUMBER===0?"La prioridad es completar la línea base y el plan de trabajo de cada iniciativa y registrar cada mentoría realizada.":"Completa las dos sesiones de mentoría de la etapa, registra sus bitácoras y orienta al equipo hacia el hito previsto."}</p></div></div>
-            <div class="stage-requirements actionable">
-              <article>
-                <span class="requirement-step">01</span>
-                <div class="requirement-content"><b>Diagnóstico / línea base</b><p>Brechas, readiness, supuestos, riesgos y situación técnico-comercial.</p><em>1 por iniciativa.</em><button type="button" class="requirement-action" id="diagnosticoEntryBtn">↥ CARGAR DIAGNÓSTICO</button></div>
-              </article>
-              <article>
-                <span class="requirement-step">02</span>
-                <div class="requirement-content"><b>Plan de trabajo individual</b><p>Prioridades, KPIs, hitos y acciones acordadas con el equipo.</p><em>1 por iniciativa.</em><button type="button" class="requirement-action" id="planEntryBtn">↥ CARGAR PLAN DE TRABAJO</button></div>
-              </article>
-              <article>
-                <span class="requirement-step">03</span>
-                <div class="requirement-content"><b>Bitácora de cada sesión</b><p>Avances, compromisos y soportes de la mentoría.</p><em>Después de cada sesión.</em><button type="button" class="requirement-action gold" id="bitacoraEntryBtn">＋ REGISTRAR BITÁCORA</button></div>
-              </article>
-            </div>
-            <div class="stage-actions utility-actions">
-              <button class="secondary-work-action" id="initiativesEntryBtn" type="button"><span>${d.initiativeCount}</span><div><b>VER MIS INICIATIVAS</b><small>Equipos asignados y expedientes</small></div><i>→</i></button>
-              <button class="secondary-work-action" id="toolsEntryBtn" type="button"><span>↗</span><div><b>BANCO DE HERRAMIENTAS</b><small>Formatos y recursos</small></div><i>→</i></button>
-            </div>
+            ${currentStageTasksHtml(d)}
           </section>
         </section>
       </div>
@@ -472,6 +479,7 @@
     document.getElementById("homeBitacoraBtn")?.addEventListener("click",openBitacoraModal);
     document.getElementById("bitacoraTabBtn")?.addEventListener("click",openBitacoraModal);
     document.getElementById("deliverablesTabBtn")?.addEventListener("click",openEtapa0Modal);
+    document.querySelectorAll("[data-bita-session]").forEach(btn=>btn.addEventListener("click",()=>openBitacoraModal(btn.dataset.bitaSession)));
     bindHistoryActions();
     bindWorkspaceNav();
     renderCards();
@@ -713,7 +721,7 @@
     modal.id="etapa0Modal";
     modal.className="bitacora-modal etapa0-modal";
     modal.hidden=true;
-    modal.innerHTML=`<div class="bitacora-backdrop" data-docs-close></div><section class="bitacora-dialog etapa0-dialog" role="dialog" aria-modal="true" aria-labelledby="etapa0Title"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ETAPA 0</span><h2 id="etapa0Title">Entregables de arranque y línea base</h2><p>Por cada iniciativa debes dejar asociado un diagnóstico y un plan de trabajo individual.</p></div><button class="bitacora-close" type="button" data-docs-close aria-label="Cerrar">×</button></header><div class="bitacora-form"><div class="docs-intro docs-intro-clear"><span>QUÉ DEBES COMPLETAR</span><strong>2 entregables por iniciativa</strong><div class="modal-requirements"><div><b>1 · Diagnóstico / línea base</b><small>Brechas, readiness, supuestos, riesgos y situación inicial.</small></div><div><b>2 · Plan de trabajo individual</b><small>Prioridades, KPIs, objetivos e hitos acordados.</small></div></div></div><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="docsMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="docsIniciativa"><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field bitacora-full"><span>¿Qué vas a cargar?</span><div class="doc-type-grid"><label class="doc-type-option"><input type="radio" name="docsTipo" value="Diagnóstico" checked><span><b>DIAGNÓSTICO / LÍNEA BASE</b><small>Lectura inicial y priorización de brechas de la iniciativa.</small></span></label><label class="doc-type-option"><input type="radio" name="docsTipo" value="Plan de trabajo"><span><b>PLAN DE TRABAJO INDIVIDUAL</b><small>Objetivos, prioridades, KPIs e hitos del acompañamiento.</small></span></label></div></label></div><div class="docs-upload-actions"><button class="docs-upload-btn" id="docsUploadBtn" type="button">1 · CARGAR EN MICROSOFT ↗</button><button class="docs-verify-btn" id="docsVerifyBtn" type="button">2 · VERIFICAR CARGA</button></div><div id="docsStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="docsPendingWrap" class="docs-pending-wrap" hidden><div class="docs-pending-head"><span>ARCHIVO ENCONTRADO</span><small>Confirma que sea el documento que acabas de cargar.</small></div><div id="docsPendingList" class="pending-file-list"></div><button class="bitacora-save docs-associate-btn" id="docsAssociateBtn" type="button">ASOCIAR Y MARCAR COMO REGISTRADO</button></div><div class="modal-local-history"><span>REGISTROS DE ESTA INICIATIVA</span><div id="docsInitiativeHistory" class="modal-history-list"></div></div></div></section>`;
+    modal.innerHTML=`<div class="bitacora-backdrop" data-docs-close></div><section class="bitacora-dialog etapa0-dialog" role="dialog" aria-modal="true" aria-labelledby="etapa0Title"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ETAPA 0</span><h2 id="etapa0Title">Entregables de arranque y línea base</h2><p>Por cada iniciativa debes dejar asociado un diagnóstico y un plan de trabajo individual.</p></div><button class="bitacora-close" type="button" data-docs-close aria-label="Cerrar">×</button></header><div class="bitacora-form"><div class="docs-intro docs-intro-clear"><span>QUÉ DEBES COMPLETAR</span><strong>2 entregables por iniciativa</strong><div class="modal-requirements"><div><b>1 · Diagnóstico / línea base</b><small>Brechas, readiness, supuestos, riesgos y situación inicial.</small></div><div><b>2 · Plan de trabajo individual</b><small>Prioridades, KPIs, objetivos e hitos acordados.</small></div></div></div><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="docsMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="docsIniciativa"><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field bitacora-full"><span>¿Qué vas a cargar?</span><div class="doc-type-grid"><label class="doc-type-option"><input type="radio" name="docsTipo" value="Diagnóstico" checked><span><b>DIAGNÓSTICO / LÍNEA BASE</b><small>Lectura inicial y priorización de brechas de la iniciativa.</small></span></label><label class="doc-type-option"><input type="radio" name="docsTipo" value="Plan de trabajo"><span><b>PLAN DE TRABAJO INDIVIDUAL</b><small>Objetivos, prioridades, KPIs e hitos del acompañamiento.</small></span></label></div></label></div><div class="docs-process-note"><b>Cargar no significa registrar.</b><span>Completa los 3 pasos: carga el archivo en Microsoft, regresa a Mentor View para verificarlo y finalmente asócialo a la iniciativa.</span></div><div class="docs-upload-actions"><button class="docs-upload-btn" id="docsUploadBtn" type="button">1 · CARGAR EN MICROSOFT ↗</button><button class="docs-verify-btn" id="docsVerifyBtn" type="button">2 · YA LO CARGUÉ · VERIFICAR</button></div><div id="docsStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="docsPendingWrap" class="docs-pending-wrap" hidden><div class="docs-pending-head"><span>ARCHIVO ENCONTRADO</span><small>Confirma que sea el documento que acabas de cargar.</small></div><div id="docsPendingList" class="pending-file-list"></div><button class="bitacora-save docs-associate-btn" id="docsAssociateBtn" type="button">3 · ASOCIAR Y MARCAR COMO REGISTRADO</button></div><div class="modal-local-history"><span>REGISTROS DE ESTA INICIATIVA</span><div id="docsInitiativeHistory" class="modal-history-list"></div></div></div></section>`;
     document.body.appendChild(modal);
     modal.querySelectorAll("[data-docs-close]").forEach(el=>el.addEventListener("click",closeEtapa0Modal));
     modal.querySelector("#docsUploadBtn")?.addEventListener("click",openDocsUpload);
@@ -840,7 +848,7 @@
     }catch(error){
       console.error("Error asociando archivo S2V",error);
       docsStatus(modal,"No fue posible asociar el archivo. Revisa el flujo e intenta nuevamente.","error");
-    }finally{btn.disabled=false;btn.textContent="ASOCIAR A LA INICIATIVA";}
+    }finally{btn.disabled=false;btn.textContent="3 · ASOCIAR Y MARCAR COMO REGISTRADO";}
   }
 
   function localDateValue(){
@@ -856,7 +864,7 @@
     modal.id="bitacoraModal";
     modal.className="bitacora-modal";
     modal.hidden=true;
-    modal.innerHTML=`<div class="bitacora-backdrop" data-bita-close></div><section class="bitacora-dialog bitacora-dialog-wide" role="dialog" aria-modal="true" aria-labelledby="bitacoraTitle"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ACOMPAÑAMIENTO</span><h2 id="bitacoraTitle">Registrar bitácora</h2><p>Deja la trazabilidad de la sesión y, si aplica, adjunta los soportes que respaldan el avance.</p></div><button class="bitacora-close" type="button" data-bita-close aria-label="Cerrar">×</button></header><form id="bitacoraForm" class="bitacora-form"><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="bitaMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="bitaIniciativa" required><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field"><span>Fecha de sesión</span><input id="bitaFecha" type="date" required></label><label class="bitacora-field"><span>Etapa</span><input id="bitaEtapa" type="text" readonly></label><label class="bitacora-field"><span>Sesión de la etapa</span><select id="bitaSesion" required><option value="">Seleccionar</option><option value="1">Sesión 1 de 2</option><option value="2">Sesión 2 de 2</option></select></label><label class="bitacora-field"><span>Duración (horas)</span><input id="bitaDuracion" type="number" min="0.25" max="2" step="0.25" value="1" required><small>Meta de la etapa: 2 h por iniciativa.</small></label><label class="bitacora-field bitacora-full"><span>Avances</span><textarea id="bitaAvances" required rows="5" placeholder="¿Qué avances se lograron o revisaron durante la sesión?"></textarea></label><label class="bitacora-field bitacora-full"><span>Compromisos</span><textarea id="bitaCompromisos" required rows="5" placeholder="¿Qué compromisos quedaron acordados?"></textarea></label></div><div id="bitacoraStatus" class="bitacora-status" role="status" aria-live="polite"></div><footer class="bitacora-actions"><button class="bitacora-secondary" type="button" data-bita-close>Cerrar</button><button class="bitacora-save" id="bitacoraSave" type="submit">1 · GUARDAR BITÁCORA</button></footer><section id="bitaAttachments" class="bita-attachments" hidden><div class="bita-attachments-head"><div><span>SOPORTES DE LA SESIÓN · OPCIONAL</span><h3>Adjuntar documentos a esta bitácora</h3><p>Puedes asociar actas, matrices, evidencias, presentaciones u otros archivos revisados durante la sesión.</p></div><div class="bita-saved-chip">BITÁCORA GUARDADA ✓</div></div><div class="docs-upload-actions"><button class="docs-upload-btn" id="bitaUploadBtn" type="button">2 · CARGAR SOPORTE ↗</button><button class="docs-verify-btn" id="bitaVerifyBtn" type="button">3 · VERIFICAR CARGA</button></div><div id="bitaDocsStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="bitaPendingWrap" class="docs-pending-wrap" hidden><div class="docs-pending-head"><span>ARCHIVOS ENCONTRADOS</span><small>Selecciona el soporte que quieres asociar a esta bitácora.</small></div><div id="bitaPendingList" class="pending-file-list"></div><button class="bitacora-save docs-associate-btn" id="bitaAssociateBtn" type="button">4 · ASOCIAR A ESTA BITÁCORA</button></div></section></form></section>`;
+    modal.innerHTML=`<div class="bitacora-backdrop" data-bita-close></div><section class="bitacora-dialog bitacora-dialog-wide" role="dialog" aria-modal="true" aria-labelledby="bitacoraTitle"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ACOMPAÑAMIENTO</span><h2 id="bitacoraTitle">Registrar bitácora</h2><p>Deja la trazabilidad de la sesión y, si aplica, adjunta los soportes que respaldan el avance.</p></div><button class="bitacora-close" type="button" data-bita-close aria-label="Cerrar">×</button></header><form id="bitacoraForm" class="bitacora-form"><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="bitaMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="bitaIniciativa" required><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field"><span>Fecha de sesión</span><input id="bitaFecha" type="date" required></label><label class="bitacora-field"><span>Etapa</span><input id="bitaEtapa" type="text" readonly></label><label class="bitacora-field"><span>Sesión de la etapa</span><select id="bitaSesion" required><option value="">Seleccionar</option><option value="1">Sesión 1 de 2</option><option value="2">Sesión 2 de 2</option></select></label><label class="bitacora-field"><span>Duración (horas)</span><input id="bitaDuracion" type="number" min="0.25" max="2" step="0.25" value="1" required><small>Meta de la etapa: 2 h por iniciativa.</small></label><label class="bitacora-field bitacora-full"><span>Avances</span><textarea id="bitaAvances" required rows="5" placeholder="¿Qué avances se lograron o revisaron durante la sesión?"></textarea></label><label class="bitacora-field bitacora-full"><span>Compromisos</span><textarea id="bitaCompromisos" required rows="5" placeholder="¿Qué compromisos quedaron acordados?"></textarea></label></div><div id="bitacoraStatus" class="bitacora-status" role="status" aria-live="polite"></div><footer class="bitacora-actions"><button class="bitacora-secondary" type="button" data-bita-close>Cerrar</button><button class="bitacora-save" id="bitacoraSave" type="submit">1 · GUARDAR BITÁCORA</button></footer><section id="bitaAttachments" class="bita-attachments" hidden><div class="bita-attachments-head"><div><span>SOPORTES DE LA SESIÓN · OPCIONAL</span><h3>Adjuntar documentos a esta bitácora</h3><p>Puedes asociar actas, matrices, evidencias, presentaciones u otros archivos revisados durante la sesión.</p></div><div class="bita-saved-chip">BITÁCORA GUARDADA ✓</div></div><div class="docs-process-note"><b>El soporte queda registrado solo después de asociarlo.</b><span>Cárgalo en Microsoft, vuelve a Mentor View, verifica el archivo y asócialo a esta bitácora.</span></div><div class="docs-upload-actions"><button class="docs-upload-btn" id="bitaUploadBtn" type="button">2 · CARGAR SOPORTE ↗</button><button class="docs-verify-btn" id="bitaVerifyBtn" type="button">3 · YA LO CARGUÉ · VERIFICAR</button></div><div id="bitaDocsStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="bitaPendingWrap" class="docs-pending-wrap" hidden><div class="docs-pending-head"><span>ARCHIVOS ENCONTRADOS</span><small>Selecciona el soporte que quieres asociar a esta bitácora.</small></div><div id="bitaPendingList" class="pending-file-list"></div><button class="bitacora-save docs-associate-btn" id="bitaAssociateBtn" type="button">4 · ASOCIAR A ESTA BITÁCORA</button></div></section></form></section>`;
     document.body.appendChild(modal);
     modal.querySelectorAll("[data-bita-close]").forEach(el=>el.addEventListener("click",closeBitacoraModal));
     modal.querySelector("#bitacoraForm")?.addEventListener("submit",submitBitacora);
@@ -867,13 +875,13 @@
     return modal;
   }
 
-  function openBitacoraModal(){
+  function openBitacoraModal(preferredSession=""){
     const modal=ensureBitacoraModal();
     const mentor=modal.querySelector("#bitaMentor"), select=modal.querySelector("#bitaIniciativa"), fecha=modal.querySelector("#bitaFecha"), etapa=modal.querySelector("#bitaEtapa"), sesion=modal.querySelector("#bitaSesion"), duracion=modal.querySelector("#bitaDuracion"), avances=modal.querySelector("#bitaAvances"), compromisos=modal.querySelector("#bitaCompromisos"), status=modal.querySelector("#bitacoraStatus");
     mentor.value=state.data?.mentor?.name||"";
     select.innerHTML=`<option value="">Seleccionar iniciativa</option>${(state.data?.projects||[]).map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("")}`;
     fecha.value=localDateValue();
-    const cs=currentStageInfo(); etapa.value=`Etapa ${cs.n} · ${cs.name}`; sesion.value=""; duracion.value="1";
+    const cs=currentStageInfo(); etapa.value=`Etapa ${cs.n} · ${cs.name}`; sesion.value=preferredSession?String(preferredSession):""; duracion.value="1";
     avances.value=""; compromisos.value=""; status.textContent=""; status.className="bitacora-status";
     modal.dataset.bitacoraId=""; modal.dataset.bitaSince=""; modal.dataset.bitaEtapa=String(CURRENT_STAGE_NUMBER);
     const attachments=modal.querySelector("#bitaAttachments"); if(attachments) attachments.hidden=true;
