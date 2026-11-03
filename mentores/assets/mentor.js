@@ -310,8 +310,8 @@
       const bitaDone=stageBitacoras.length>=2;
       return `<article class="stage-project-row">
         <div class="stage-project-main"><strong>${esc(p.name)}</strong><small>TRL validado: ${esc(validatedTrl(p)||"Por validar")}</small></div>
-        <div class="stage-check ${hasDiag?"is-done":""}"><span>${hasDiag?"✓":"○"}</span><div><b>Diagnóstico</b><small>${hasDiag?"Registrado":"Pendiente"}</small></div></div>
-        <div class="stage-check ${hasPlan?"is-done":""}"><span>${hasPlan?"✓":"○"}</span><div><b>Plan de trabajo</b><small>${hasPlan?"Registrado":"Pendiente"}</small></div></div>
+        <div class="stage-check ${hasDiag?"is-done":""}"><span>${hasDiag?"✓":"○"}</span><div><b>Diagnóstico</b><small>${hasDiag?(DOC_TRACKING_URL?"Registrado":"Visible en este dispositivo"):"Pendiente"}</small></div></div>
+        <div class="stage-check ${hasPlan?"is-done":""}"><span>${hasPlan?"✓":"○"}</span><div><b>Plan de trabajo</b><small>${hasPlan?(DOC_TRACKING_URL?"Registrado":"Visible en este dispositivo"):"Pendiente"}</small></div></div>
         <div class="stage-check ${bitaDone?"is-done":""}"><span>${bitaDone?"✓":"○"}</span><div><b>Bitácoras · E${CURRENT_STAGE_NUMBER}</b><small>${Math.min(stageBitacoras.length,2)} / 2 sesiones registradas</small></div></div>
       </article>`;
     }).join("");
@@ -334,8 +334,8 @@
     const total=(state.data?.projects||[]).length*2;
     const navBita=document.querySelector('[data-workspace-tab="bitacoras"] span'); if(navBita) navBita.textContent=String(bitaCount);
     const navDocs=document.querySelector('[data-workspace-tab="deliverables"] span'); if(navDocs) navDocs.textContent=`${completed}/${total}`;
-    const homeBita=document.querySelector('#homeBitacoraBtn small'); if(homeBita) homeBita.textContent=`${bitaCount} bitácora${bitaCount===1?"":"s"} registrada${bitaCount===1?"":"s"}.`;
-    const homeDocs=document.querySelector('[data-open-workspace="deliverables"] small'); if(homeDocs) homeDocs.textContent=`${completed} de ${total} entregables registrados.`;
+    const homeBita=document.querySelector('#homeBitacoraBtn small'); if(homeBita) homeBita.textContent=trackingScopeText("bitacoras",bitaCount);
+    const homeDocs=document.querySelector('[data-open-workspace="deliverables"] small'); if(homeDocs) homeDocs.textContent=trackingScopeText("docs",completed,total);
     const homeDocsIcon=document.querySelector('[data-open-workspace="deliverables"] .home-action-icon'); if(homeDocsIcon) homeDocsIcon.textContent=String(completed);
     const prog=document.querySelector(".deliverables-progress > strong"); if(prog) prog.textContent=`${completed} / ${total}`;
     const bar=document.querySelector(".deliverables-progress .stage-progress-bar i"); if(bar) bar.style.width=`${total?Math.round((completed/total)*100):0}%`;
@@ -344,6 +344,15 @@
   function bindHistoryActions(){
     document.getElementById("historyDocsAction")?.addEventListener("click",openEtapa0Modal);
     document.getElementById("historyBitaAction")?.addEventListener("click",openBitacoraModal);
+  }
+
+  function trackingScopeText(kind,count,total=0){
+    if(DOC_TRACKING_URL){
+      if(kind==="bitacoras") return `${count} bitácora${count===1?"":"s"} sincronizada${count===1?"":"s"}.`;
+      return `${count} de ${total} entregables registrados.`;
+    }
+    if(kind==="bitacoras") return `${count} bitácora${count===1?"":"s"} visible${count===1?"":"s"} en este dispositivo.`;
+    return `${count} de ${total} entregables visibles en este dispositivo.`;
   }
 
   function workspaceNavHtml(){
@@ -429,8 +438,8 @@
 
           <div class="home-action-grid">
             <button type="button" class="home-action-card" data-open-workspace="initiatives"><span class="home-action-icon">${d.initiativeCount}</span><div><b>MIS INICIATIVAS</b><strong>Ver equipos asignados</strong><small>Expedientes, contactos y datos técnicos.</small></div><i>→</i></button>
-            <button type="button" class="home-action-card gold" id="homeBitacoraBtn"><span class="home-action-icon">＋</span><div><b>BITÁCORAS</b><strong>Registrar una mentoría</strong><small>${bitaCount} bitácora${bitaCount===1?"":"s"} registrada${bitaCount===1?"":"s"}.</small></div><i>→</i></button>
-            <button type="button" class="home-action-card" data-open-workspace="deliverables"><span class="home-action-icon">${completed}</span><div><b>ENTREGABLES</b><strong>Diagnóstico y plan de trabajo</strong><small>${completed} de ${totalRequired} entregables registrados.</small></div><i>→</i></button>
+            <button type="button" class="home-action-card gold" id="homeBitacoraBtn"><span class="home-action-icon">＋</span><div><b>BITÁCORAS</b><strong>Registrar una mentoría</strong><small>${trackingScopeText("bitacoras",bitaCount)}</small></div><i>→</i></button>
+            <button type="button" class="home-action-card" data-open-workspace="deliverables"><span class="home-action-icon">${completed}</span><div><b>ENTREGABLES</b><strong>Diagnóstico y plan de trabajo</strong><small>${trackingScopeText("docs",completed,totalRequired)}</small></div><i>→</i></button>
             <button type="button" class="home-action-card" data-open-workspace="route"><span class="home-action-icon">6</span><div><b>RUTA</b><strong>Ver etapas, meses e hitos</strong><small>32 semanas · 12 h por iniciativa.</small></div><i>→</i></button>
           </div>
 
@@ -458,7 +467,7 @@
       <div class="workspace-panel" data-workspace-panel="deliverables" ${state.workspaceTab==="deliverables"?"":"hidden"}>
         <section class="tracking-section standalone">
           <div class="workspace-heading action-heading"><div><span>ENTREGABLES · ETAPA 0</span><h2>Diagnóstico y plan de trabajo</h2><p>Revisa qué falta por iniciativa y carga los documentos correspondientes.</p></div><button type="button" class="section-primary-btn" id="deliverablesTabBtn">↥ CARGAR ENTREGABLE</button></div>
-          <div class="deliverables-progress"><span>AVANCE</span><strong>${completed} / ${totalRequired}</strong><small>entregables registrados</small><div class="stage-progress-bar"><i style="width:${totalRequired?Math.round((completed/totalRequired)*100):0}%"></i></div></div>
+          <div class="deliverables-progress"><span>AVANCE</span><strong>${completed} / ${totalRequired}</strong><small>${DOC_TRACKING_URL?"entregables sincronizados":"seguimiento visible en este dispositivo"}</small><div class="stage-progress-bar"><i style="width:${totalRequired?Math.round((completed/totalRequired)*100):0}%"></i></div></div>
           <div id="stageProjectList" class="stage-project-list">${stageProjectListHtml()}</div>
         </section>
       </div>
