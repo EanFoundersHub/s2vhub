@@ -10,6 +10,7 @@
   const DOC_SEARCH_URL = String(DOCS_CONFIG.searchPendingUrl || "").trim();
   const DOC_ASSOCIATE_URL = String(DOCS_CONFIG.associateFileUrl || "").trim();
   const DOC_TRACKING_URL = String(DOCS_CONFIG.trackingUrl || "").trim();
+  const CURRENT_STAGE_NUMBER = Math.max(0, Math.min(5, Number(DOCS_CONFIG.currentStage ?? 0) || 0));
 
   const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
   const clean = v => (v === null || v === undefined ? "" : String(v).trim());
@@ -201,8 +202,13 @@
       const bitacoras=Array.isArray(result.bitacoras)?result.bitacoras.map(x=>({
         iniciativa:clean(x.Iniciativa??x.iniciativa),
         fechaSesion:clean(x.FechaSesion??x.fechaSesion),
+        etapa:clean(x.Etapa??x.etapa),
+        etapaNumero:Number(x.EtapaNumero??x.etapaNumero??((clean(x.Etapa??x.etapa).match(/\\d+/)||[])[0])??0),
+        sesionNumero:Number(x.SesionNumero??x.sesionNumero)||null,
+        duracionHoras:Number(x.DuracionHoras??x.duracionHoras)||null,
         avances:clean(x.Avances??x.avances),
         compromisos:clean(x.Compromisos??x.compromisos),
+        bitacoraId:clean(x.ID??x.Id??x.id??x.bitacoraId),
         recordedAt:clean(x.Modified??x.Created??x.fechaSesion)||new Date().toISOString(),
         server:true
       })):[];
@@ -248,18 +254,32 @@
     ]
   };
 
+  function currentStageInfo(){
+    return S2V_ROUTE.stages.find(x=>x.n===CURRENT_STAGE_NUMBER) || S2V_ROUTE.stages[0];
+  }
+
+  function nextStageInfo(){
+    return S2V_ROUTE.stages.find(x=>x.n===CURRENT_STAGE_NUMBER+1) || null;
+  }
+
+  function bitacoraStageNumber(item){
+    const raw=clean(item?.etapaNumero ?? item?.stageNumber ?? item?.etapa);
+    const m=raw.match(/\d+/);
+    return m ? Number(m[0]) : 0;
+  }
+
   function mentorRoutesHtml(){
     return `<section class="roadmap-section">
-      <div class="workspace-heading"><div><span>RUTA DE ACOMPAÑAMIENTO</span><h2>6 etapas · 32 semanas · 12 h de mentoría</h2><p>La misma ruta aplica a todas las iniciativas. Cada etapa incluye 2 horas de mentoría, distribuidas en 2 sesiones quincenales.</p></div></div>
+      <div class="workspace-heading"><div><span>RUTA DE ACOMPAÑAMIENTO</span><h2>6 etapas · 32 semanas · 12 h de mentoría por iniciativa</h2><p>La misma ruta aplica a todas las iniciativas. Cada iniciativa recibe 2 horas de mentoría por etapa, distribuidas en 2 sesiones quincenales.</p></div></div>
       <div class="single-route-summary">
         <div><span>MENTORÍA POR ETAPA</span><strong>2 h</strong><small>2 sesiones · cada 15 días</small></div>
-        <div><span>MENTORÍA EN TODA LA RUTA</span><strong>12 h</strong><small>6 etapas</small></div>
+        <div><span>MENTORÍA POR INICIATIVA</span><strong>12 h</strong><small>6 etapas · 2 h por etapa</small></div>
         <div><span>DURACIÓN</span><strong>32 semanas</strong><small>Etapa 0: 4 semanas · demás: 6 semanas</small></div>
       </div>
       <div class="route-stage-list">
         ${S2V_ROUTE.stages.map((s,i)=>{
           const next=S2V_ROUTE.stages[i+1];
-          return `<article class="route-stage ${s.n===0?"is-current":""}">
+          return `<article class="route-stage ${s.n===CURRENT_STAGE_NUMBER?"is-current":""}">
             <div class="route-stage-number"><span>ETAPA</span><strong>E${s.n}</strong></div>
             <div class="route-stage-main"><span>${esc(s.weeks)} · ${esc(s.duration)}</span><h4>${esc(s.name)}</h4><span class="route-month-badge">${esc(s.months)}</span><p><b>Hito requerido:</b> ${esc(s.hito)}</p>${s.followup?`<em>${esc(s.followup)}</em>`:""}</div>
             <div class="route-stage-hours"><span>MENTORÍA</span><strong>${esc(s.mentorHours)}</strong><small>2 sesiones quincenales</small></div>
@@ -273,11 +293,11 @@
   function bindRouteTabs(){}
 
   function projectRouteHtml(p){
-    const s=S2V_ROUTE.stages[0], next=S2V_ROUTE.stages[1];
+    const s=currentStageInfo(), next=nextStageInfo();
     return `<section class="project-route-current">
-      <div><span>RUTA ÚNICA · SCIENCE2VENTURE</span><h3>Etapa 0 · ${esc(s.name)}</h3><p><b>Hito:</b> ${esc(s.hito)}</p></div>
-      <div class="project-route-kpi"><span>MENTORÍA ETAPA</span><strong>2 h</strong><small>2 sesiones quincenales</small></div>
-      <div class="project-route-kpi"><span>SIGUE</span><strong>Etapa ${next.n}</strong><small>${esc(next.name)}</small></div>
+      <div><span>ETAPA VIGENTE · SCIENCE2VENTURE</span><h3>Etapa ${s.n} · ${esc(s.name)}</h3><p><b>Hito:</b> ${esc(s.hito)}</p></div>
+      <div class="project-route-kpi"><span>MENTORÍA ETAPA</span><strong>2 h</strong><small>por iniciativa · 2 sesiones</small></div>
+      <div class="project-route-kpi"><span>${next?"SIGUE":"CIERRE"}</span><strong>${next?`Etapa ${next.n}`:"Fin de ruta"}</strong><small>${next?esc(next.name):"Seguimiento final"}</small></div>
     </section>`;
   }
 
@@ -286,11 +306,13 @@
       const a=activityForInitiative(p.name);
       const hasPlan=a.docs.some(x=>clean(x.tipoDocumento).toLowerCase()==="plan de trabajo");
       const hasDiag=a.docs.some(x=>clean(x.tipoDocumento).toLowerCase()==="diagnóstico");
+      const stageBitacoras=a.bitacoras.filter(x=>bitacoraStageNumber(x)===CURRENT_STAGE_NUMBER);
+      const bitaDone=stageBitacoras.length>=2;
       return `<article class="stage-project-row">
         <div class="stage-project-main"><strong>${esc(p.name)}</strong><small>TRL validado: ${esc(validatedTrl(p)||"Por validar")}</small></div>
         <div class="stage-check ${hasDiag?"is-done":""}"><span>${hasDiag?"✓":"○"}</span><div><b>Diagnóstico</b><small>${hasDiag?"Registrado":"Pendiente"}</small></div></div>
         <div class="stage-check ${hasPlan?"is-done":""}"><span>${hasPlan?"✓":"○"}</span><div><b>Plan de trabajo</b><small>${hasPlan?"Registrado":"Pendiente"}</small></div></div>
-        <div class="stage-check ${a.bitacoras.length?"is-done":""}"><span>${a.bitacoras.length?"✓":"○"}</span><div><b>Bitácoras</b><small>${a.bitacoras.length} registrada${a.bitacoras.length===1?"":"s"}</small></div></div>
+        <div class="stage-check ${bitaDone?"is-done":""}"><span>${bitaDone?"✓":"○"}</span><div><b>Bitácoras · E${CURRENT_STAGE_NUMBER}</b><small>${Math.min(stageBitacoras.length,2)} / 2 sesiones registradas</small></div></div>
       </article>`;
     }).join("");
   }
@@ -299,13 +321,24 @@
     const docs=(state.activity?.docs||[]).slice(0,8);
     const bitas=(state.activity?.bitacoras||[]).slice(0,8);
     const docsHtml=docs.length?docs.map(x=>`<article class="history-item"><div class="history-icon">↥</div><div><span>ARCHIVO · ${esc(x.tipoDocumento||"Documento")}</span><strong>${esc(x.nombreArchivo||"Archivo asociado")}</strong><small>${esc(x.iniciativa||"")} · ${esc(new Date(x.recordedAt||Date.now()).toLocaleString("es-CO"))}</small></div></article>`).join(""):`<div class="history-empty">Todavía no hay archivos registrados en el historial local de esta vista.</div>`;
-    const bitasHtml=bitas.length?bitas.map(x=>`<article class="history-item"><div class="history-icon">✓</div><div><span>BITÁCORA</span><strong>${esc(x.iniciativa||"Sesión de mentoría")}</strong><small>${esc(x.fechaSesion||"")} · ${esc(x.avances||"").slice(0,120)}${clean(x.avances).length>120?"…":""}</small></div></article>`).join(""):`<div class="history-empty">Todavía no hay bitácoras registradas en el historial local de esta vista.</div>`;
+    const bitasHtml=bitas.length?bitas.map(x=>`<article class="history-item"><div class="history-icon">✓</div><div><span>BITÁCORA · E${bitacoraStageNumber(x)} · SESIÓN ${esc(x.sesionNumero||"—")}</span><strong>${esc(x.iniciativa||"Sesión de mentoría")}</strong><small>${esc(x.fechaSesion||"")} · ${esc(x.duracionHoras||"—")} h · ${esc(x.avances||"").slice(0,100)}${clean(x.avances).length>100?"…":""}</small></div></article>`).join(""):`<div class="history-empty">Todavía no hay bitácoras registradas en el historial local de esta vista.</div>`;
     return `<div class="history-columns"><section><div class="history-head"><div><span>ARCHIVOS ASOCIADOS</span><h3>Entregables registrados</h3></div><button type="button" class="history-action" id="historyDocsAction">CARGAR / ASOCIAR</button></div><div class="history-list">${docsHtml}</div></section><section><div class="history-head"><div><span>BITÁCORAS DE MENTORÍA</span><h3>Sesiones registradas</h3></div><button type="button" class="history-action gold" id="historyBitaAction">REGISTRAR BITÁCORA</button></div><div class="history-list">${bitasHtml}</div></section></div>`;
   }
 
   function updateStageTrackingViews(){
     const p=document.getElementById("stageProjectList"); if(p) p.innerHTML=stageProjectListHtml();
     const h=document.getElementById("activityHistory"); if(h){h.innerHTML=activityHistoryHtml();bindHistoryActions();}
+    const bitaCount=(state.activity?.bitacoras||[]).length;
+    const docs=(state.activity?.docs||[]).filter(x=>["plan de trabajo","diagnóstico"].includes(clean(x.tipoDocumento).toLowerCase()));
+    const completed=new Set(docs.map(x=>`${clean(x.iniciativa).toLowerCase()}|${clean(x.tipoDocumento).toLowerCase()}`)).size;
+    const total=(state.data?.projects||[]).length*2;
+    const navBita=document.querySelector('[data-workspace-tab="bitacoras"] span'); if(navBita) navBita.textContent=String(bitaCount);
+    const navDocs=document.querySelector('[data-workspace-tab="deliverables"] span'); if(navDocs) navDocs.textContent=`${completed}/${total}`;
+    const homeBita=document.querySelector('#homeBitacoraBtn small'); if(homeBita) homeBita.textContent=`${bitaCount} bitácora${bitaCount===1?"":"s"} registrada${bitaCount===1?"":"s"}.`;
+    const homeDocs=document.querySelector('[data-open-workspace="deliverables"] small'); if(homeDocs) homeDocs.textContent=`${completed} de ${total} entregables registrados.`;
+    const homeDocsIcon=document.querySelector('[data-open-workspace="deliverables"] .home-action-icon'); if(homeDocsIcon) homeDocsIcon.textContent=String(completed);
+    const prog=document.querySelector(".deliverables-progress > strong"); if(prog) prog.textContent=`${completed} / ${total}`;
+    const bar=document.querySelector(".deliverables-progress .stage-progress-bar i"); if(bar) bar.style.width=`${total?Math.round((completed/total)*100):0}%`;
   }
 
   function bindHistoryActions(){
@@ -357,7 +390,7 @@
         <div class="mentor-banner-main">
           <div class="avatar">${esc(m.initials||initials(m.name))}</div>
           <div class="mentor-banner-copy"><p class="eyebrow">SCIENCE2VENTURE · MENTOR VIEW</p><h1>${esc(m.name)}</h1><p>Tu espacio de acompañamiento. Consulta tus iniciativas, registra bitácoras, carga entregables y revisa la ruta sin perderte entre pantallas.</p></div>
-          <div class="mentor-identity"><span>MENTOR ASIGNADO</span><strong>${esc(m.name)}</strong><small>${d.initiativeCount} iniciativas · 12 h de mentoría en toda la ruta</small></div>
+          <div class="mentor-identity"><span>MENTOR ASIGNADO</span><strong>${esc(m.name)}</strong><small>${d.initiativeCount} iniciativas · 12 h de mentoría por iniciativa</small></div>
         </div>
       </article>
 
@@ -366,19 +399,19 @@
       <div class="workspace-panel" data-workspace-panel="home" ${state.workspaceTab==="home"?"":"hidden"}>
         <section class="home-dashboard">
           <div class="home-stage-card">
-            <div class="home-stage-top"><span class="stage-number small">0</span><div><span class="stage-label">ETAPA ACTUAL</span><h2>Arranque y línea base</h2><p>Octubre 2026 · Semanas 1–4 · 2 horas de mentoría</p></div></div>
-            <div class="home-stage-hito"><span>HITO DE LA ETAPA</span><strong>Línea base + KPIs + plan individual + hitos técnico-comerciales.</strong><small>Después sigue: Etapa 1 · Validación problema y cliente · Noviembre–Diciembre 2026</small></div>
+            ${(()=>{const cs=currentStageInfo(),ns=nextStageInfo();return `<div class="home-stage-top"><span class="stage-number small">${cs.n}</span><div><span class="stage-label">ETAPA VIGENTE</span><h2>${esc(cs.name)}</h2><p>${esc(cs.months)} · ${esc(cs.weeks)} · 2 horas de mentoría por iniciativa</p></div></div>
+            <div class="home-stage-hito"><span>HITO DE LA ETAPA</span><strong>${esc(cs.hito)}</strong><small>${ns?`Después sigue: Etapa ${ns.n} · ${esc(ns.name)} · ${esc(ns.months)}`:"Esta es la etapa final de la ruta."}</small></div>`;})()}
           </div>
 
           <div class="home-action-grid">
             <button type="button" class="home-action-card" data-open-workspace="initiatives"><span class="home-action-icon">${d.initiativeCount}</span><div><b>MIS INICIATIVAS</b><strong>Ver equipos asignados</strong><small>Expedientes, contactos y datos técnicos.</small></div><i>→</i></button>
             <button type="button" class="home-action-card gold" id="homeBitacoraBtn"><span class="home-action-icon">＋</span><div><b>BITÁCORAS</b><strong>Registrar una mentoría</strong><small>${bitaCount} bitácora${bitaCount===1?"":"s"} registrada${bitaCount===1?"":"s"}.</small></div><i>→</i></button>
             <button type="button" class="home-action-card" data-open-workspace="deliverables"><span class="home-action-icon">${completed}</span><div><b>ENTREGABLES</b><strong>Diagnóstico y plan de trabajo</strong><small>${completed} de ${totalRequired} entregables registrados.</small></div><i>→</i></button>
-            <button type="button" class="home-action-card" data-open-workspace="route"><span class="home-action-icon">6</span><div><b>RUTA</b><strong>Ver etapas, meses e hitos</strong><small>32 semanas · 12 h de mentoría.</small></div><i>→</i></button>
+            <button type="button" class="home-action-card" data-open-workspace="route"><span class="home-action-icon">6</span><div><b>RUTA</b><strong>Ver etapas, meses e hitos</strong><small>32 semanas · 12 h por iniciativa.</small></div><i>→</i></button>
           </div>
 
           <section class="home-current-work">
-            <div class="workspace-heading"><div><span>QUÉ DEBES HACER AHORA</span><h2>Etapa 0</h2><p>La prioridad es completar la línea base y el plan de trabajo de cada iniciativa y registrar cada mentoría realizada.</p></div></div>
+            <div class="workspace-heading"><div><span>QUÉ DEBES HACER AHORA</span><h2>Etapa ${CURRENT_STAGE_NUMBER}</h2><p>${CURRENT_STAGE_NUMBER===0?"La prioridad es completar la línea base y el plan de trabajo de cada iniciativa y registrar cada mentoría realizada.":"Completa las dos sesiones de mentoría de la etapa, registra sus bitácoras y orienta al equipo hacia el hito previsto."}</p></div></div>
             <div class="stage-requirements actionable">
               <article>
                 <span class="requirement-step">01</span>
@@ -823,7 +856,7 @@
     modal.id="bitacoraModal";
     modal.className="bitacora-modal";
     modal.hidden=true;
-    modal.innerHTML=`<div class="bitacora-backdrop" data-bita-close></div><section class="bitacora-dialog bitacora-dialog-wide" role="dialog" aria-modal="true" aria-labelledby="bitacoraTitle"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ACOMPAÑAMIENTO</span><h2 id="bitacoraTitle">Registrar bitácora</h2><p>Deja la trazabilidad de la sesión y, si aplica, adjunta los soportes que respaldan el avance.</p></div><button class="bitacora-close" type="button" data-bita-close aria-label="Cerrar">×</button></header><form id="bitacoraForm" class="bitacora-form"><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="bitaMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="bitaIniciativa" required><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field"><span>Fecha de sesión</span><input id="bitaFecha" type="date" required></label><label class="bitacora-field bitacora-full"><span>Avances</span><textarea id="bitaAvances" required rows="5" placeholder="¿Qué avances se lograron o revisaron durante la sesión?"></textarea></label><label class="bitacora-field bitacora-full"><span>Compromisos</span><textarea id="bitaCompromisos" required rows="5" placeholder="¿Qué compromisos quedaron acordados?"></textarea></label></div><div id="bitacoraStatus" class="bitacora-status" role="status" aria-live="polite"></div><footer class="bitacora-actions"><button class="bitacora-secondary" type="button" data-bita-close>Cerrar</button><button class="bitacora-save" id="bitacoraSave" type="submit">1 · GUARDAR BITÁCORA</button></footer><section id="bitaAttachments" class="bita-attachments" hidden><div class="bita-attachments-head"><div><span>SOPORTES DE LA SESIÓN · OPCIONAL</span><h3>Adjuntar documentos a esta bitácora</h3><p>Puedes asociar actas, matrices, evidencias, presentaciones u otros archivos revisados durante la sesión.</p></div><div class="bita-saved-chip">BITÁCORA GUARDADA ✓</div></div><div class="docs-upload-actions"><button class="docs-upload-btn" id="bitaUploadBtn" type="button">2 · CARGAR SOPORTE ↗</button><button class="docs-verify-btn" id="bitaVerifyBtn" type="button">3 · VERIFICAR CARGA</button></div><div id="bitaDocsStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="bitaPendingWrap" class="docs-pending-wrap" hidden><div class="docs-pending-head"><span>ARCHIVOS ENCONTRADOS</span><small>Selecciona el soporte que quieres asociar a esta bitácora.</small></div><div id="bitaPendingList" class="pending-file-list"></div><button class="bitacora-save docs-associate-btn" id="bitaAssociateBtn" type="button">4 · ASOCIAR A ESTA BITÁCORA</button></div></section></form></section>`;
+    modal.innerHTML=`<div class="bitacora-backdrop" data-bita-close></div><section class="bitacora-dialog bitacora-dialog-wide" role="dialog" aria-modal="true" aria-labelledby="bitacoraTitle"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ACOMPAÑAMIENTO</span><h2 id="bitacoraTitle">Registrar bitácora</h2><p>Deja la trazabilidad de la sesión y, si aplica, adjunta los soportes que respaldan el avance.</p></div><button class="bitacora-close" type="button" data-bita-close aria-label="Cerrar">×</button></header><form id="bitacoraForm" class="bitacora-form"><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="bitaMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="bitaIniciativa" required><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field"><span>Fecha de sesión</span><input id="bitaFecha" type="date" required></label><label class="bitacora-field"><span>Etapa</span><input id="bitaEtapa" type="text" readonly></label><label class="bitacora-field"><span>Sesión de la etapa</span><select id="bitaSesion" required><option value="">Seleccionar</option><option value="1">Sesión 1 de 2</option><option value="2">Sesión 2 de 2</option></select></label><label class="bitacora-field"><span>Duración (horas)</span><input id="bitaDuracion" type="number" min="0.25" max="2" step="0.25" value="1" required><small>Meta de la etapa: 2 h por iniciativa.</small></label><label class="bitacora-field bitacora-full"><span>Avances</span><textarea id="bitaAvances" required rows="5" placeholder="¿Qué avances se lograron o revisaron durante la sesión?"></textarea></label><label class="bitacora-field bitacora-full"><span>Compromisos</span><textarea id="bitaCompromisos" required rows="5" placeholder="¿Qué compromisos quedaron acordados?"></textarea></label></div><div id="bitacoraStatus" class="bitacora-status" role="status" aria-live="polite"></div><footer class="bitacora-actions"><button class="bitacora-secondary" type="button" data-bita-close>Cerrar</button><button class="bitacora-save" id="bitacoraSave" type="submit">1 · GUARDAR BITÁCORA</button></footer><section id="bitaAttachments" class="bita-attachments" hidden><div class="bita-attachments-head"><div><span>SOPORTES DE LA SESIÓN · OPCIONAL</span><h3>Adjuntar documentos a esta bitácora</h3><p>Puedes asociar actas, matrices, evidencias, presentaciones u otros archivos revisados durante la sesión.</p></div><div class="bita-saved-chip">BITÁCORA GUARDADA ✓</div></div><div class="docs-upload-actions"><button class="docs-upload-btn" id="bitaUploadBtn" type="button">2 · CARGAR SOPORTE ↗</button><button class="docs-verify-btn" id="bitaVerifyBtn" type="button">3 · VERIFICAR CARGA</button></div><div id="bitaDocsStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="bitaPendingWrap" class="docs-pending-wrap" hidden><div class="docs-pending-head"><span>ARCHIVOS ENCONTRADOS</span><small>Selecciona el soporte que quieres asociar a esta bitácora.</small></div><div id="bitaPendingList" class="pending-file-list"></div><button class="bitacora-save docs-associate-btn" id="bitaAssociateBtn" type="button">4 · ASOCIAR A ESTA BITÁCORA</button></div></section></form></section>`;
     document.body.appendChild(modal);
     modal.querySelectorAll("[data-bita-close]").forEach(el=>el.addEventListener("click",closeBitacoraModal));
     modal.querySelector("#bitacoraForm")?.addEventListener("submit",submitBitacora);
@@ -836,12 +869,13 @@
 
   function openBitacoraModal(){
     const modal=ensureBitacoraModal();
-    const mentor=modal.querySelector("#bitaMentor"), select=modal.querySelector("#bitaIniciativa"), fecha=modal.querySelector("#bitaFecha"), avances=modal.querySelector("#bitaAvances"), compromisos=modal.querySelector("#bitaCompromisos"), status=modal.querySelector("#bitacoraStatus");
+    const mentor=modal.querySelector("#bitaMentor"), select=modal.querySelector("#bitaIniciativa"), fecha=modal.querySelector("#bitaFecha"), etapa=modal.querySelector("#bitaEtapa"), sesion=modal.querySelector("#bitaSesion"), duracion=modal.querySelector("#bitaDuracion"), avances=modal.querySelector("#bitaAvances"), compromisos=modal.querySelector("#bitaCompromisos"), status=modal.querySelector("#bitacoraStatus");
     mentor.value=state.data?.mentor?.name||"";
     select.innerHTML=`<option value="">Seleccionar iniciativa</option>${(state.data?.projects||[]).map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("")}`;
     fecha.value=localDateValue();
+    const cs=currentStageInfo(); etapa.value=`Etapa ${cs.n} · ${cs.name}`; sesion.value=""; duracion.value="1";
     avances.value=""; compromisos.value=""; status.textContent=""; status.className="bitacora-status";
-    modal.dataset.bitacoraId=""; modal.dataset.bitaSince="";
+    modal.dataset.bitacoraId=""; modal.dataset.bitaSince=""; modal.dataset.bitaEtapa=String(CURRENT_STAGE_NUMBER);
     const attachments=modal.querySelector("#bitaAttachments"); if(attachments) attachments.hidden=true;
     const pending=modal.querySelector("#bitaPendingWrap"); if(pending) pending.hidden=true;
     const pendingList=modal.querySelector("#bitaPendingList"); if(pendingList) pendingList.innerHTML="";
@@ -858,9 +892,10 @@
   async function submitBitacora(event){
     event.preventDefault();
     const modal=document.getElementById("bitacoraModal"); if(!modal) return;
-    const select=modal.querySelector("#bitaIniciativa"), fecha=modal.querySelector("#bitaFecha"), avances=modal.querySelector("#bitaAvances"), compromisos=modal.querySelector("#bitaCompromisos"), status=modal.querySelector("#bitacoraStatus"), save=modal.querySelector("#bitacoraSave");
-    const payload={mentor:clean(state.data?.mentor?.name),iniciativa:clean(select.value),fechaSesion:clean(fecha.value),avances:clean(avances.value),compromisos:clean(compromisos.value)};
-    if(Object.values(payload).some(empty)){status.textContent="Completa todos los campos antes de guardar.";status.className="bitacora-status is-error";return;}
+    const select=modal.querySelector("#bitaIniciativa"), fecha=modal.querySelector("#bitaFecha"), sesion=modal.querySelector("#bitaSesion"), duracion=modal.querySelector("#bitaDuracion"), avances=modal.querySelector("#bitaAvances"), compromisos=modal.querySelector("#bitaCompromisos"), status=modal.querySelector("#bitacoraStatus"), save=modal.querySelector("#bitacoraSave");
+    const cs=currentStageInfo();
+    const payload={mentor:clean(state.data?.mentor?.name),iniciativa:clean(select.value),fechaSesion:clean(fecha.value),etapa:`Etapa ${cs.n}`,etapaNumero:cs.n,nombreEtapa:cs.name,sesionNumero:Number(sesion.value),duracionHoras:Number(duracion.value),avances:clean(avances.value),compromisos:clean(compromisos.value)};
+    if(empty(payload.mentor)||empty(payload.iniciativa)||empty(payload.fechaSesion)||![1,2].includes(payload.sesionNumero)||!Number.isFinite(payload.duracionHoras)||payload.duracionHoras<=0||empty(payload.avances)||empty(payload.compromisos)){status.textContent="Completa iniciativa, fecha, sesión, duración, avances y compromisos antes de guardar.";status.className="bitacora-status is-error";return;}
     save.disabled=true; save.textContent="GUARDANDO…"; status.textContent="Registrando la bitácora…"; status.className="bitacora-status";
     try{
       const response=await fetch(BITACORA_URL,{method:"POST",headers:{"Content-Type":"application/json; charset=utf-8"},body:JSON.stringify(payload)});
@@ -874,6 +909,8 @@
         modal.dataset.bitacoraId=bitacoraId;
         modal.dataset.bitaIniciativa=payload.iniciativa;
         modal.dataset.bitaFecha=payload.fechaSesion;
+        modal.dataset.bitaEtapa=String(payload.etapaNumero);
+        modal.dataset.bitaSesion=String(payload.sesionNumero);
         const attachments=modal.querySelector("#bitaAttachments"); if(attachments) attachments.hidden=false;
         save.textContent="BITÁCORA GUARDADA ✓";
         save.disabled=true;
@@ -947,12 +984,13 @@
       fechaCarga:file.created,
       mentor:clean(state.data?.mentor?.name),
       iniciativa:clean(modal.dataset.bitaIniciativa),
-      etapa:"Etapa 0",
+      etapa:`Etapa ${clean(modal.dataset.bitaEtapa)||CURRENT_STAGE_NUMBER}`,
       tipoDocumento:"Soporte de bitácora",
       asociacionEmpresa:false,
       bitacoraId:Number(bitacoraId)||bitacoraId,
       fechaBitacora:clean(modal.dataset.bitaFecha),
-      fechaSesion:clean(modal.dataset.bitaFecha)
+      fechaSesion:clean(modal.dataset.bitaFecha),
+      sesionNumero:Number(clean(modal.dataset.bitaSesion))||null
     };
     btn.disabled=true; btn.textContent="ASOCIANDO…"; bitaDocsStatus(modal,"Asociando el soporte a la bitácora…");
     try{
@@ -973,7 +1011,7 @@
     const resources=[
       {type:"PRESENTACIÓN",title:"Kick-Off Mentores · Cohorte I 2026",description:"Presentación de arranque para mentores: contexto de Science2Venture, ruta de acompañamiento, rol del mentor, asignaciones, seguimientos y próximos pasos.",file:"./recursos/kick-off-mentores-cohorte-i-2026.pptx",format:"PPTX"},
       {type:"FORMATO",title:"Plan de acompañamiento individual S2V",description:"Formato de trabajo para estructurar y registrar el acompañamiento individual de cada iniciativa durante la ruta.",file:"./recursos/plan-acompanamiento-individual-s2v.xlsx",format:"XLSX"},
-      {type:"LÍNEA BASE",title:"Líneas Base Construye S2V",description:"Archivo de línea base para el seguimiento de las iniciativas de Science2Venture vinculadas a la ruta Construye.",file:"./recursos/lineas-base-construye-s2v.xlsx",format:"XLSX"}
+      {type:"LÍNEA BASE",title:"Línea base Science2Venture",description:"Formato de apoyo para documentar la línea base técnico-comercial de cada iniciativa durante la Etapa 0.",file:"./recursos/lineas-base-construye-s2v.xlsx",format:"XLSX"}
     ];
     return `<section class="tool-bank"><div class="tool-bank-head"><div class="tool-bank-icon">↗</div><div><span class="source-label">BANCO DE HERRAMIENTAS</span><h2>Recursos para el acompañamiento</h2><p>Documentos de trabajo disponibles para los mentores de Science2Venture. Los archivos se descargan directamente desde esta plataforma.</p></div></div><div class="resource-grid">${resources.map(r=>`<article class="resource-card"><div class="resource-card-top"><span class="resource-type">${esc(r.type)}</span><span class="resource-format">${esc(r.format)}</span></div><h3>${esc(r.title)}</h3><p>${esc(r.description)}</p><a class="resource-action" href="${esc(r.file)}" download>DESCARGAR ARCHIVO <span aria-hidden="true">↓</span></a></article>`).join("")}</div><div class="notice">Estos recursos son comunes para todos los mentores y están disponibles directamente desde el ingreso principal de Mentor View.</div></section>`;
   }
