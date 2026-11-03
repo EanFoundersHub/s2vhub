@@ -873,7 +873,7 @@
     modal.id="bitacoraModal";
     modal.className="bitacora-modal";
     modal.hidden=true;
-    modal.innerHTML=`<div class="bitacora-backdrop" data-bita-close></div><section class="bitacora-dialog bitacora-dialog-wide" role="dialog" aria-modal="true" aria-labelledby="bitacoraTitle"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ACOMPAÑAMIENTO</span><h2 id="bitacoraTitle">Registrar bitácora</h2><p>Deja la trazabilidad de la sesión y, si aplica, adjunta los soportes que respaldan el avance.</p></div><button class="bitacora-close" type="button" data-bita-close aria-label="Cerrar">×</button></header><form id="bitacoraForm" class="bitacora-form"><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="bitaMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><select id="bitaIniciativa" required><option value="">Seleccionar iniciativa</option></select><small id="bitaIniciativaFull" class="bita-initiative-full" hidden></small></label><label class="bitacora-field"><span>Fecha de sesión</span><input id="bitaFecha" type="date" required></label><label class="bitacora-field"><span>Etapa</span><input id="bitaEtapa" type="text" readonly></label><label class="bitacora-field"><span>Sesión de la etapa</span><select id="bitaSesion" required><option value="">Seleccionar</option><option value="1">Sesión 1 de 2</option><option value="2">Sesión 2 de 2</option></select></label><label class="bitacora-field"><span>Duración (horas)</span><input id="bitaDuracion" type="number" min="0.25" max="2" step="0.25" value="1" required><small>Meta de la etapa: 2 h por iniciativa.</small></label><label class="bitacora-field bitacora-full"><span>Avances</span><textarea id="bitaAvances" required rows="5" placeholder="¿Qué avances se lograron o revisaron durante la sesión?"></textarea></label><label class="bitacora-field bitacora-full"><span>Compromisos</span><textarea id="bitaCompromisos" required rows="5" placeholder="¿Qué compromisos quedaron acordados?"></textarea></label></div><section id="bitaAttachments" class="bita-attachments"><div class="bita-attachments-head"><div><span>DESARROLLO DOCUMENTAL · OPCIONAL</span><h3>¿Se realizó desarrollo documental para esta sesión?</h3><p>Por ejemplo: actas, matrices, presentaciones, evidencias u otros documentos elaborados o actualizados durante la mentoría.</p></div><div class="bita-saved-chip" id="bitaSavedChip" hidden>BITÁCORA GUARDADA ✓</div></div><div class="docs-upload-actions" id="bitaDocsChoice"><button class="bitacora-secondary" id="bitaDocsNo" type="button" aria-pressed="false">NO</button><button class="docs-verify-btn" id="bitaDocsYes" type="button" aria-pressed="false">SÍ · HUBO DESARROLLO DOCUMENTAL</button></div><div id="bitaDocsChoiceStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="bitaDocsFlow" hidden><div class="docs-process-note"><b>Ahora adjunta el soporte documental de esta sesión.</b><span>Cárgalo en Microsoft, vuelve a Mentor View, verifica el archivo y asócialo a esta bitácora.</span></div><div class="docs-upload-actions"><button class="docs-upload-btn" id="bitaUploadBtn" type="button">2 · CARGAR SOPORTE ↗</button><button class="docs-verify-btn" id="bitaVerifyBtn" type="button">3 · YA LO CARGUÉ · VERIFICAR</button></div><div id="bitaDocsStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="bitaPendingWrap" class="docs-pending-wrap" hidden><div class="docs-pending-head"><span>ARCHIVOS ENCONTRADOS</span><small>Selecciona el soporte que quieres asociar a esta bitácora.</small></div><div id="bitaPendingList" class="pending-file-list"></div><button class="bitacora-save docs-associate-btn" id="bitaAssociateBtn" type="button">4 · ASOCIAR A ESTA BITÁCORA</button></div></div><div id="bitaDocsComplete" class="bita-docs-complete" hidden><span>✓ SOPORTE ASOCIADO</span><strong id="bitaDocsCompleteFile"></strong><small id="bitaDocsCompleteInitiative"></small></div></section><div id="bitacoraStatus" class="bitacora-status" role="status" aria-live="polite"></div><footer class="bitacora-actions"><button class="bitacora-secondary" type="button" data-bita-close>Cerrar</button><button class="bitacora-save" id="bitacoraSave" type="submit">1 · GUARDAR BITÁCORA</button></footer></form></section>`;
+    modal.innerHTML=`<div class="bitacora-backdrop" data-bita-close></div><section class="bitacora-dialog bitacora-dialog-wide" role="dialog" aria-modal="true" aria-labelledby="bitacoraTitle"><header class="bitacora-head"><div><span class="section-kicker">SCIENCE2VENTURE · ACOMPAÑAMIENTO</span><h2 id="bitacoraTitle">Registrar bitácora</h2><p>Deja la trazabilidad de la sesión y, si aplica, adjunta los soportes que respaldan el avance.</p></div><button class="bitacora-close" type="button" data-bita-close aria-label="Cerrar">×</button></header><form id="bitacoraForm" class="bitacora-form"><div class="bitacora-grid"><label class="bitacora-field"><span>Mentor</span><input id="bitaMentor" type="text" readonly></label><label class="bitacora-field"><span>Iniciativa</span><div class="bita-initiative-picker" id="bitaInitiativePicker"><button class="bita-initiative-toggle" id="bitaInitiativeToggle" type="button" aria-expanded="false"><span id="bitaInitiativeChoice">Seleccionar iniciativa</span><i aria-hidden="true">⌄</i></button><div class="bita-initiative-menu" id="bitaInitiativeMenu" role="listbox" hidden></div></div><select id="bitaIniciativa" class="bita-native-select-hidden" aria-hidden="true" tabindex="-1"><option value="">Seleccionar iniciativa</option></select></label><label class="bitacora-field"><span>Fecha de sesión</span><input id="bitaFecha" type="date" required></label><label class="bitacora-field"><span>Etapa</span><input id="bitaEtapa" type="text" readonly></label><label class="bitacora-field"><span>Sesión de la etapa</span><select id="bitaSesion" required><option value="">Seleccionar</option><option value="1">Sesión 1 de 2</option><option value="2">Sesión 2 de 2</option></select></label><label class="bitacora-field"><span>Duración (horas)</span><input id="bitaDuracion" type="number" min="0.25" max="2" step="0.25" value="1" required><small>Meta de la etapa: 2 h por iniciativa.</small></label><label class="bitacora-field bitacora-full"><span>Avances</span><textarea id="bitaAvances" required rows="5" placeholder="¿Qué avances se lograron o revisaron durante la sesión?"></textarea></label><label class="bitacora-field bitacora-full"><span>Compromisos</span><textarea id="bitaCompromisos" required rows="5" placeholder="¿Qué compromisos quedaron acordados?"></textarea></label></div><section id="bitaAttachments" class="bita-attachments"><div class="bita-attachments-head"><div><span>DESARROLLO DOCUMENTAL · OPCIONAL</span><h3>¿Se realizó desarrollo documental para esta sesión?</h3><p>Por ejemplo: actas, matrices, presentaciones, evidencias u otros documentos elaborados o actualizados durante la mentoría.</p></div><div class="bita-saved-chip" id="bitaSavedChip" hidden>BITÁCORA GUARDADA ✓</div></div><div class="docs-upload-actions" id="bitaDocsChoice"><button class="bitacora-secondary" id="bitaDocsNo" type="button" aria-pressed="false">NO</button><button class="docs-verify-btn" id="bitaDocsYes" type="button" aria-pressed="false">SÍ · HUBO DESARROLLO DOCUMENTAL</button></div><div id="bitaDocsChoiceStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="bitaDocsFlow" hidden><div class="docs-process-note"><b>Ahora adjunta el soporte documental de esta sesión.</b><span>Cárgalo en Microsoft, vuelve a Mentor View, verifica el archivo y asócialo a esta bitácora.</span></div><div class="docs-upload-actions"><button class="docs-upload-btn" id="bitaUploadBtn" type="button">2 · CARGAR SOPORTE ↗</button><button class="docs-verify-btn" id="bitaVerifyBtn" type="button">3 · YA LO CARGUÉ · VERIFICAR</button></div><div id="bitaDocsStatus" class="bitacora-status" role="status" aria-live="polite"></div><div id="bitaPendingWrap" class="docs-pending-wrap" hidden><div class="docs-pending-head"><span>ARCHIVOS ENCONTRADOS</span><small>Selecciona el soporte que quieres asociar a esta bitácora.</small></div><div id="bitaPendingList" class="pending-file-list"></div><button class="bitacora-save docs-associate-btn" id="bitaAssociateBtn" type="button">4 · ASOCIAR A ESTA BITÁCORA</button></div></div><div id="bitaDocsComplete" class="bita-docs-complete" hidden><span>✓ SOPORTE ASOCIADO</span><strong id="bitaDocsCompleteFile"></strong><small id="bitaDocsCompleteInitiative"></small></div></section><div id="bitacoraStatus" class="bitacora-status" role="status" aria-live="polite"></div><footer class="bitacora-actions"><button class="bitacora-secondary" type="button" data-bita-close>Cerrar</button><button class="bitacora-save" id="bitacoraSave" type="submit">1 · GUARDAR BITÁCORA</button></footer></form></section>`;
     document.body.appendChild(modal);
     modal.querySelectorAll("[data-bita-close]").forEach(el=>el.addEventListener("click",closeBitacoraModal));
     modal.querySelector("#bitacoraForm")?.addEventListener("submit",submitBitacora);
@@ -882,19 +882,54 @@
     modal.querySelector("#bitaUploadBtn")?.addEventListener("click",openBitacoraUpload);
     modal.querySelector("#bitaVerifyBtn")?.addEventListener("click",searchBitacoraPendingDocs);
     modal.querySelector("#bitaAssociateBtn")?.addEventListener("click",associateBitacoraDoc);
-    modal.querySelector("#bitaIniciativa")?.addEventListener("change",()=>updateBitacoraInitiativePreview(modal));
+    modal.querySelector("#bitaInitiativeToggle")?.addEventListener("click",()=>{
+      const menu=modal.querySelector("#bitaInitiativeMenu");
+      const toggle=modal.querySelector("#bitaInitiativeToggle");
+      if(!menu||!toggle) return;
+      const willOpen=menu.hidden;
+      menu.hidden=!willOpen;
+      toggle.setAttribute("aria-expanded",willOpen?"true":"false");
+    });
+    modal.querySelector("#bitaInitiativeMenu")?.addEventListener("click",e=>{
+      const option=e.target.closest("[data-bita-project-index]");
+      if(!option) return;
+      const idx=Number(option.dataset.bitaProjectIndex);
+      const project=state.data?.projects?.[idx];
+      const select=modal.querySelector("#bitaIniciativa");
+      if(!project||!select) return;
+      select.value=project.name;
+      updateBitacoraInitiativePreview(modal);
+      closeBitacoraInitiativeMenu(modal);
+    });
+    modal.addEventListener("click",e=>{
+      const picker=modal.querySelector("#bitaInitiativePicker");
+      if(picker&&!picker.contains(e.target)) closeBitacoraInitiativeMenu(modal);
+    });
     document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.hidden) closeBitacoraModal();});
     return modal;
   }
 
+  function closeBitacoraInitiativeMenu(modal){
+    const menu=modal?.querySelector("#bitaInitiativeMenu");
+    const toggle=modal?.querySelector("#bitaInitiativeToggle");
+    if(menu) menu.hidden=true;
+    if(toggle) toggle.setAttribute("aria-expanded","false");
+  }
+
   function updateBitacoraInitiativePreview(modal){
     const select=modal?.querySelector("#bitaIniciativa");
-    const preview=modal?.querySelector("#bitaIniciativaFull");
-    if(!select||!preview) return;
+    const choice=modal?.querySelector("#bitaInitiativeChoice");
+    if(!select||!choice) return;
     const name=clean(select.value);
-    select.title=name;
-    preview.textContent=name;
-    preview.hidden=!name;
+    choice.textContent=name||"Seleccionar iniciativa";
+    choice.title=name;
+  }
+
+  function renderBitacoraInitiativeOptions(modal){
+    const menu=modal?.querySelector("#bitaInitiativeMenu");
+    if(!menu) return;
+    const projects=state.data?.projects||[];
+    menu.innerHTML=projects.map((p,i)=>`<button type="button" class="bita-initiative-option" data-bita-project-index="${i}" role="option"><span>${esc(p.name)}</span></button>`).join("");
   }
 
   function openBitacoraModal(preferredSession=""){
@@ -902,6 +937,8 @@
     const mentor=modal.querySelector("#bitaMentor"), select=modal.querySelector("#bitaIniciativa"), fecha=modal.querySelector("#bitaFecha"), etapa=modal.querySelector("#bitaEtapa"), sesion=modal.querySelector("#bitaSesion"), duracion=modal.querySelector("#bitaDuracion"), avances=modal.querySelector("#bitaAvances"), compromisos=modal.querySelector("#bitaCompromisos"), status=modal.querySelector("#bitacoraStatus");
     mentor.value=state.data?.mentor?.name||"";
     select.innerHTML=`<option value="">Seleccionar iniciativa</option>${(state.data?.projects||[]).map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join("")}`;
+    renderBitacoraInitiativeOptions(modal);
+    closeBitacoraInitiativeMenu(modal);
     updateBitacoraInitiativePreview(modal);
     fecha.value=localDateValue();
     const cs=currentStageInfo(); etapa.value=`Etapa ${cs.n} · ${cs.name}`; sesion.value=preferredSession?String(preferredSession):""; duracion.value="1";
@@ -920,7 +957,7 @@
     const pendingList=modal.querySelector("#bitaPendingList"); if(pendingList) pendingList.innerHTML="";
     modal._bitaPendingDocs=[];
     modal.hidden=false; document.body.classList.add("modal-open");
-    setTimeout(()=>select.focus(),0);
+    setTimeout(()=>modal.querySelector("#bitaInitiativeToggle")?.focus(),0);
   }
 
   function closeBitacoraModal(){
