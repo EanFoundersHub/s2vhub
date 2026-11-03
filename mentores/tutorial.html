@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Science2Venture · Tutorial Mentor View</title>
+<style>
+:root{--ink:#17232d;--muted:#6b7780;--teal:#1f8f88;--teal2:#dff3f1;--gold:#b88936;--bg:#eef2f3;--white:#fff}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+body{overflow:hidden}
+.tutorial-shell{height:100vh;display:grid;grid-template-rows:auto 1fr auto;gap:0}
+.tutorial-top{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:#16242d;color:white;border-bottom:1px solid rgba(255,255,255,.12)}
+.brand{display:flex;align-items:center;gap:11px}.brand-dot{width:10px;height:10px;border-radius:50%;background:#49c4b8;box-shadow:0 0 0 5px rgba(73,196,184,.12)}
+.brand b{font-size:.78rem;letter-spacing:.08em}.brand small{display:block;margin-top:2px;color:#aebbc2;font-size:.6rem;letter-spacing:.05em}
+.demo-chip{border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:7px 10px;font-size:.58rem;font-weight:900;letter-spacing:.08em;color:#d5e0e4}
+.viewport{position:relative;min-height:0;padding:14px 18px 10px}
+.frame-wrap{position:relative;width:100%;height:100%;border-radius:18px;overflow:hidden;background:white;border:1px solid #cfd8dc;box-shadow:0 18px 55px rgba(19,35,46,.16)}
+iframe{display:block;width:100%;height:100%;border:0;background:white}
+.intro{position:absolute;inset:0;z-index:30;display:grid;place-items:center;background:linear-gradient(135deg,rgba(22,36,45,.96),rgba(22,36,45,.88));padding:30px}
+.intro-card{width:min(680px,92%);text-align:center;color:white}.intro-kicker{font-size:.62rem;font-weight:900;letter-spacing:.12em;color:#65d0c7}.intro h1{margin:12px 0 10px;font-size:2rem;line-height:1.08;letter-spacing:-.045em}.intro p{margin:0 auto 20px;max-width:560px;color:#cad5da;font-size:.9rem;line-height:1.55}
+.play{border:0;border-radius:14px;background:#fff;color:#17232d;padding:13px 18px;font-size:.72rem;font-weight:900;letter-spacing:.055em;cursor:pointer}
+.play:hover{transform:translateY(-1px)}
+.caption-bar{height:122px;background:white;border-top:1px solid #d9e0e3;display:grid;grid-template-columns:64px 1fr auto;gap:16px;align-items:center;padding:14px 22px}
+.step-number{width:54px;height:54px;border-radius:17px;background:#16242d;color:white;display:grid;place-items:center;font-size:1.1rem;font-weight:900}
+.caption-copy span{display:block;color:#1f8f88;font-size:.58rem;font-weight:900;letter-spacing:.09em}.caption-copy h2{margin:4px 0 3px;font-size:1.05rem;letter-spacing:-.025em}.caption-copy p{margin:0;color:#68757d;font-size:.72rem;line-height:1.4}
+.controls{display:flex;align-items:center;gap:9px}.control{border:1px solid #d4dde0;background:white;border-radius:10px;padding:9px 12px;color:#394952;font-size:.64rem;font-weight:850;cursor:pointer}.control.primary{background:#16242d;color:white;border-color:#16242d}
+.progress{height:3px;background:#dfe6e8;position:absolute;left:0;right:0;bottom:0}.progress i{display:block;height:100%;width:0;background:#1f8f88;transition:width .35s ease}
+.cursor{position:absolute;z-index:25;width:20px;height:28px;pointer-events:none;opacity:0;transition:left .6s ease,top .6s ease,opacity .2s ease,transform .15s ease}
+.cursor:before{content:"";position:absolute;left:1px;top:0;width:0;height:0;border-left:7px solid #0f1920;border-top:12px solid transparent;border-bottom:12px solid transparent;transform:rotate(-35deg)}
+.cursor.click{transform:scale(.82)}
+.flash{position:absolute;z-index:24;border:3px solid #25a59a;border-radius:14px;box-shadow:0 0 0 7px rgba(37,165,154,.13),0 10px 30px rgba(12,44,50,.18);pointer-events:none;opacity:0;transition:all .45s ease,opacity .2s ease}
+.flash.show{opacity:1}
+@media(max-width:800px){.caption-bar{grid-template-columns:48px 1fr;height:145px}.step-number{width:44px;height:44px}.controls{display:none}.intro h1{font-size:1.55rem}}
+</style>
+</head>
+<body>
+<div class="tutorial-shell">
+  <header class="tutorial-top">
+    <div class="brand"><span class="brand-dot"></span><div><b>SCIENCE2VENTURE</b><small>TUTORIAL · MENTOR VIEW</small></div></div>
+    <span class="demo-chip">DEMO GUIADA · NO GUARDA CAMBIOS</span>
+  </header>
+  <main class="viewport">
+    <div class="frame-wrap" id="frameWrap">
+      <iframe id="mentorFrame" title="Mentor View"></iframe>
+      <div class="flash" id="flash"></div>
+      <div class="cursor" id="cursor"></div>
+      <div class="intro" id="intro">
+        <div class="intro-card">
+          <div class="intro-kicker">SCIENCE2VENTURE · COHORTE I 2026</div>
+          <h1>Cómo usar tu espacio de Mentor View</h1>
+          <p>En menos de un minuto verás cómo consultar tus iniciativas, registrar bitácoras, cargar entregables y revisar la ruta de acompañamiento.</p>
+          <button class="play" id="playBtn">▶ REPRODUCIR TUTORIAL</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="caption-bar">
+    <div class="step-number" id="stepNumber">1</div>
+    <div class="caption-copy"><span id="stepKicker">PASO 1 DE 5</span><h2 id="stepTitle">Consulta tus iniciativas asignadas</h2><p id="stepText">En “Mis iniciativas” encuentras los equipos que acompañas y puedes abrir su expediente.</p></div>
+    <div class="controls"><button class="control" id="prevBtn">← ANTERIOR</button><button class="control primary" id="nextBtn">SIGUIENTE →</button></div>
+    <div class="progress"><i id="progressBar"></i></div>
+  </footer>
+</div>
+<script>
+(() => {
+  const qs=new URLSearchParams(location.search);
+  const access=qs.get("access")||"";
+  const frame=document.getElementById("mentorFrame");
+  frame.src="./"+(access?"?access="+encodeURIComponent(access):"");
+  const intro=document.getElementById("intro"), flash=document.getElementById("flash"), cursor=document.getElementById("cursor");
+  const sn=document.getElementById("stepNumber"), sk=document.getElementById("stepKicker"), st=document.getElementById("stepTitle"), sx=document.getElementById("stepText"), pb=document.getElementById("progressBar");
+  let index=0,timer=null,playing=false;
+
+  const steps=[
+    {title:"Consulta tus iniciativas asignadas",text:"En “Mis iniciativas” encuentras los equipos que acompañas y puedes abrir su expediente.",selector:'[data-workspace-tab="initiatives"]',click:true,after:900},
+    {title:"Registra la bitácora de cada mentoría",text:"Usa “Bitácoras” para dejar avances, compromisos y soportes de cada sesión.",selector:'[data-workspace-tab="bitacoras"]',click:true,after:900},
+    {title:"Carga el diagnóstico y el plan de trabajo",text:"En “Entregables” puedes revisar qué falta por iniciativa y cargar los documentos de la Etapa 0.",selector:'[data-workspace-tab="deliverables"]',click:true,after:900},
+    {title:"Revisa el avance por iniciativa",text:"El seguimiento te muestra de forma rápida si el diagnóstico, el plan de trabajo y las bitácoras ya están registrados.",selector:'.stage-project-list',click:false,after:900},
+    {title:"Consulta la ruta completa",text:"En “Ruta” encuentras las seis etapas, los meses, el hito esperado y las 2 horas de mentoría de cada etapa.",selector:'[data-workspace-tab="route"]',click:true,after:900}
+  ];
+
+  function doc(){try{return frame.contentDocument}catch(e){return null}}
+  function win(){try{return frame.contentWindow}catch(e){return null}}
+  function resetFlash(){flash.classList.remove("show");cursor.style.opacity=0}
+  function locate(el){
+    if(!el)return;
+    const fr=frame.getBoundingClientRect(), r=el.getBoundingClientRect();
+    flash.style.left=(fr.left+r.left-window.scrollX)+"px";
+    flash.style.top=(fr.top+r.top-window.scrollY)+"px";
+    flash.style.width=r.width+"px";
+    flash.style.height=r.height+"px";
+    flash.classList.add("show");
+    cursor.style.left=(fr.left+r.left+r.width*.72)+"px";
+    cursor.style.top=(fr.top+r.top+r.height*.55)+"px";
+    cursor.style.opacity=1;
+  }
+  function updateCaption(){
+    const s=steps[index];
+    sn.textContent=index+1; sk.textContent="PASO "+(index+1)+" DE "+steps.length; st.textContent=s.title; sx.textContent=s.text;
+    pb.style.width=((index+1)/steps.length*100)+"%";
+  }
+  async function showStep(i){
+    clearTimeout(timer); index=(i+steps.length)%steps.length; updateCaption(); resetFlash();
+    const d=doc(),w=win(); if(!d||!w)return;
+    const s=steps[index],el=d.querySelector(s.selector); if(!el)return;
+    el.scrollIntoView({behavior:"smooth",block:"center"});
+    await new Promise(r=>setTimeout(r,650));
+    locate(el);
+    if(s.click){
+      cursor.classList.add("click"); setTimeout(()=>cursor.classList.remove("click"),170);
+      el.click();
+      await new Promise(r=>setTimeout(r,s.after||700));
+      const newEl=d.querySelector(s.selector); if(newEl) locate(newEl);
+    }
+    if(playing) timer=setTimeout(()=>{ if(index===steps.length-1){playing=false;resetFlash();intro.style.display="grid";intro.querySelector("h1").textContent="Tutorial completado";intro.querySelector("p").textContent="Ya sabes dónde consultar tus iniciativas, registrar bitácoras, cargar entregables y revisar la ruta.";document.getElementById("playBtn").textContent="↻ REPRODUCIR DE NUEVO";return;} showStep(index+1); },4800);
+  }
+  function start(){
+    intro.style.display="none";playing=true;index=0;
+    const ready=()=>{const d=doc(); if(d&&d.querySelector('[data-workspace-tab="home"]'))showStep(0); else setTimeout(ready,400)};ready();
+  }
+  document.getElementById("playBtn").addEventListener("click",start);
+  document.getElementById("nextBtn").addEventListener("click",()=>{playing=false;showStep(index+1)});
+  document.getElementById("prevBtn").addEventListener("click",()=>{playing=false;showStep(index-1)});
+  frame.addEventListener("load",()=>{updateCaption()});
+})();
+</script>
+</body>
+</html>
