@@ -1041,14 +1041,18 @@
     try{
       const response=await fetch(DOC_ASSOCIATE_URL,{method:"POST",headers:{"Content-Type":"application/json; charset=utf-8","X-S2V-Access":access},body:JSON.stringify(payload)});
       const raw=await response.text(); let result={}; try{result=raw?JSON.parse(raw):{};}catch(e){}
-      if(!response.ok||result.ok!==true) throw new Error(`Power Automate respondió ${response.status}`);
+      if(!response.ok||result.ok!==true){
+        const detail=clean(result.mensaje||result.error||result.message||raw);
+        throw new Error(detail?`HTTP ${response.status} · ${detail}`:`HTTP ${response.status}`);
+      }
       bitaDocsStatus(modal,`${file.name} quedó asociado a esta bitácora.`,"success");
       recordMentorDoc({iniciativa:payload.iniciativa,tipoDocumento:"Soporte de bitácora",nombreArchivo:file.name,fechaCarga:file.created,bitacoraId});
       modal._bitaPendingDocs=(modal._bitaPendingDocs||[]).filter(x=>x.id!==file.id);
       renderBitacoraPendingDocs(modal,modal._bitaPendingDocs);
     }catch(error){
       console.error("Error asociando soporte de bitácora",error);
-      bitaDocsStatus(modal,"No fue posible asociar el soporte a la bitácora.","error");
+      const detail=clean(error?.message);
+      bitaDocsStatus(modal,detail?`No fue posible asociar el soporte. ${detail}`:"No fue posible asociar el soporte a la bitácora.","error");
     }finally{btn.disabled=false;btn.textContent="4 · ASOCIAR A ESTA BITÁCORA";}
   }
 
