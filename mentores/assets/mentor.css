@@ -1045,3 +1045,53 @@ body.modal-open{overflow:hidden}
   overflow-wrap:anywhere;
   word-break:break-word;
 }
+
+
+/* V62 · Selector de iniciativas multilinea dentro del modal */
+.bita-native-select-hidden{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+.bita-initiative-picker{width:100%;min-width:0;display:grid;gap:7px}
+.bita-initiative-toggle{
+  width:100%;min-width:0;min-height:52px;
+  border:1px solid var(--border);border-radius:13px;
+  background:var(--surface-2);color:var(--strong);
+  padding:12px 13px;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;
+  text-align:left;cursor:pointer;
+  transition:border-color .16s ease,box-shadow .16s ease,background-color .16s ease;
+}
+.bita-initiative-toggle:hover,.bita-initiative-toggle[aria-expanded="true"]{
+  border-color:var(--teal);box-shadow:0 0 0 3px rgba(85,201,204,.13);background:var(--surface)
+}
+.bita-initiative-toggle>span{
+  min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:break-word;line-height:1.45
+}
+.bita-initiative-toggle>i{font-style:normal;color:var(--muted);font-size:1rem;transition:transform .16s ease}
+.bita-initiative-toggle[aria-expanded="true"]>i{transform:rotate(180deg)}
+.bita-initiative-menu{
+  width:100%;min-width:0;max-height:280px;overflow-y:auto;
+  padding:6px;border:1px solid var(--teal-border);border-radius:13px;
+  background:var(--surface);box-shadow:var(--soft)
+}
+.bita-initiative-menu[hidden]{display:none!important}
+.bita-initiative-option{
+  appearance:none;width:100%;min-width:0;border:0;border-bottom:1px solid var(--border);
+  background:transparent;color:var(--strong);padding:11px 12px;text-align:left;cursor:pointer
+}
+.bita-initiative-option:last-child{border-bottom:0}
+.bita-initiative-option:hover,.bita-initiative-option:focus-visible{background:var(--teal-bg);outline:none}
+.bita-initiative-option>span{
+  display:block;min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:break-word;
+  line-height:1.5;font-size:.72rem;font-weight:650
+}
