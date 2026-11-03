@@ -935,3 +935,36 @@ body.modal-open{overflow:hidden}
 @media(max-width:760px){
   .utility-actions{grid-template-columns:1fr}
 }
+
+
+/* V56 · Claridad de registro y metadatos de bitácora */
+.docs-process-note{
+  margin:2px 0 12px;
+  padding:11px 13px;
+  border:1px solid var(--gold-border,rgba(212,168,83,.32));
+  border-radius:12px;
+  background:var(--gold-bg);
+  display:grid;
+  gap:3px;
+}
+.docs-process-note b{font-size:.64rem;color:#7e5f24}
+.docs-process-note span{font-size:.62rem;line-height:1.45;color:var(--muted)}
+.bitacora-field>small{
+  display:block;
+  margin-top:5px;
+  color:var(--muted);
+  font-size:.58rem;
+  line-height:1.4;
+}
+.route-stage.is-current{
+  outline:2px solid var(--teal-border);
+  outline-offset:-2px;
+}
+.route-stage.is-current .route-stage-number::after{
+  content:"VIGENTE";
+  margin-top:4px;
+  font-size:.46rem;
+  font-weight:900;
+  letter-spacing:.08em;
+  color:var(--teal-dark);
+}
