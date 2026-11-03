@@ -968,3 +968,80 @@ body.modal-open{overflow:hidden}
   letter-spacing:.08em;
   color:var(--teal-dark);
 }
+
+
+/* V61 · Cierre de soporte + nombres largos de iniciativas */
+.bitacora-field select{
+  min-width:0;
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.bita-initiative-full{
+  display:block;
+  width:100%;
+  margin-top:1px;
+  padding:9px 11px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  background:var(--surface);
+  color:var(--strong)!important;
+  font-size:.64rem!important;
+  font-weight:650;
+  line-height:1.5!important;
+  text-transform:none!important;
+  letter-spacing:0!important;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.bita-docs-complete{
+  margin-top:13px;
+  padding:15px 16px;
+  border:1px solid rgba(47,143,92,.34);
+  border-radius:14px;
+  background:rgba(47,143,92,.10);
+  display:grid;
+  gap:5px;
+  min-width:0;
+}
+.bita-docs-complete>span{
+  color:#267447;
+  font-size:.6rem;
+  font-weight:900;
+  letter-spacing:.075em;
+}
+.bita-docs-complete>strong{
+  color:var(--strong);
+  font-size:.74rem;
+  line-height:1.45;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.bita-docs-complete>small{
+  color:var(--muted);
+  font-size:.65rem;
+  line-height:1.5;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.stage-project-main,
+.project-card,
+.history-item,
+.modal-history-row,
+.pending-file-main{
+  min-width:0;
+}
+.stage-project-main h3,
+.stage-project-main strong,
+.project-card h2,
+.history-item strong,
+.history-item small,
+.modal-history-row b,
+.modal-history-row small,
+.pending-file-main b,
+.pending-file-main small{
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
