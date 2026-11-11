@@ -212,8 +212,13 @@
         recordedAt:clean(x.Modified??x.Created??x.fechaSesion)||new Date().toISOString(),
         server:true
       })):[];
-      if(docs.length||bitacoras.length){
-        state.activity={docs,bitacoras};
+      const hasDocuments = Array.isArray(result.archivos);
+      const hasBitacoras = Array.isArray(result.bitacoras);
+      if(hasDocuments || hasBitacoras){
+        state.activity={
+          docs:hasDocuments ? docs : state.activity.docs,
+          bitacoras:hasBitacoras ? bitacoras : state.activity.bitacoras
+        };
         writeMentorActivity();
         updateStageTrackingViews();
       }
