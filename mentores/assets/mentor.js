@@ -437,7 +437,12 @@
       <div class="workspace-panel" data-workspace-panel="home" ${state.workspaceTab==="home"?"":"hidden"}>
         <section class="home-dashboard">
           <div class="home-stage-card">
-            ${(()=>{const cs=currentStageInfo(),ns=nextStageInfo();return `<div class="home-stage-top"><span class="stage-number small">${cs.n}</span><div><span class="stage-label">ETAPA VIGENTE</span><h2>${esc(cs.name)}</h2><p>${esc(cs.months)} · ${esc(cs.weeks)} · 2 horas de mentoría por iniciativa</p></div></div>
+            ${(()=>{const cs=currentStageInfo(),ns=nextStageInfo();return `<div class="home-stage-top"><span class="stage-number small">${cs.n}</span><div><span class="stage-label">ETAPA VIGENTE</span><h2>${esc(cs.name)}</h2><p>${esc(cs.months)} · ${esc(cs.weeks)} · 2 horas de mentoría por iniciativa</p>
+              ${cs.n===0?`<div class="home-stage-tools">
+                <button type="button" class="section-primary-btn" id="homeToolsBtn">Banco de Herramientas <span aria-hidden="true">→</span></button>
+                <p>Consulta el banco antes de preparar la línea base y el plan de trabajo.</p>
+              </div>`:""}
+            </div></div>
             <div class="home-stage-hito"><span>HITO DE LA ETAPA</span><strong>${esc(cs.hito)}</strong><small>${ns?`Después sigue: Etapa ${ns.n} · ${esc(ns.name)} · ${esc(ns.months)}`:"Esta es la etapa final de la ruta."}</small></div>`;})()}
           </div>
 
@@ -486,6 +491,7 @@
 
     document.getElementById("searchInput")?.addEventListener("input", applyFilters);
     document.getElementById("toolsEntryBtn")?.addEventListener("click",()=>renderToolsHub(true));
+    document.getElementById("homeToolsBtn")?.addEventListener("click",()=>renderToolsHub(true));
     document.getElementById("initiativesEntryBtn")?.addEventListener("click",()=>setWorkspaceTab("initiatives"));
     document.getElementById("diagnosticoEntryBtn")?.addEventListener("click",()=>openEtapa0Modal("Diagnóstico"));
     document.getElementById("planEntryBtn")?.addEventListener("click",()=>openEtapa0Modal("Plan de trabajo"));

@@ -782,6 +782,10 @@ body.modal-open{overflow:hidden}
 .stage-number.small{width:52px;height:52px;border-radius:16px;font-size:1.25rem}
 .home-stage-top h2{margin:5px 0 4px;color:var(--strong);font-size:1.35rem;letter-spacing:-.035em}
 .home-stage-top p{margin:0;color:var(--muted);font-size:.74rem}
+.home-stage-tools{margin-top:14px}
+.home-stage-tools .section-primary-btn{font-size:.82rem;min-height:44px}
+.home-stage-tools .section-primary-btn span{margin-inline-start:6px}
+.home-stage-tools p{margin-top:7px}
 .home-stage-hito{
   border:1px solid var(--teal-border);
   border-radius:17px;
