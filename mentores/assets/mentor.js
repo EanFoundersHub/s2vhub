@@ -393,7 +393,7 @@
     const cs=currentStageInfo();
     if(cs.n===0){
       return `<div class="stage-requirements actionable">
-        <article><span class="requirement-step">01</span><div class="requirement-content"><b>Diagnóstico / línea base</b><p>Brechas, readiness, supuestos, riesgos y situación técnico-comercial.</p><em>1 por iniciativa.</em><button type="button" class="requirement-action" id="diagnosticoEntryBtn">↥ CARGAR DIAGNÓSTICO</button></div></article>
+        <article><span class="requirement-step">01</span><div class="requirement-content"><b>Diagnóstico / línea base</b><p>Brechas, readiness, supuestos, riesgos y situación técnico-comercial. <strong>Antes de diligenciar y cargar el diagnóstico y el plan de trabajo, debes consultar el Banco de Herramientas y usar los formatos de la Etapa 0.</strong></p><em>1 por iniciativa.</em><button type="button" class="requirement-action" id="diagnosticoEntryBtn">↥ CARGAR DIAGNÓSTICO</button></div></article>
         <article><span class="requirement-step">02</span><div class="requirement-content"><b>Plan de trabajo individual</b><p>Prioridades, KPIs, hitos y acciones acordadas con el equipo.</p><em>1 por iniciativa.</em><button type="button" class="requirement-action" id="planEntryBtn">↥ CARGAR PLAN DE TRABAJO</button></div></article>
         <article><span class="requirement-step">03</span><div class="requirement-content"><b>Bitácora de cada sesión</b><p>Avances, compromisos y soportes de la mentoría.</p><em>2 sesiones en la etapa.</em><button type="button" class="requirement-action gold" id="bitacoraEntryBtn">＋ REGISTRAR BITÁCORA</button></div></article>
       </div>
