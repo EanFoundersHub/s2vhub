@@ -785,7 +785,7 @@ body.modal-open{overflow:hidden}
 .home-stage-tools{margin-top:14px}
 .home-stage-tools .section-primary-btn{font-size:.82rem;min-height:44px}
 .home-stage-tools .section-primary-btn span{margin-inline-start:6px}
-.home-stage-tools p{margin-top:7px}
+.home-stage-tools p{margin-bottom:7px}
 .home-stage-hito{
   border:1px solid var(--teal-border);
   border-radius:17px;

@@ -439,8 +439,8 @@
           <div class="home-stage-card">
             ${(()=>{const cs=currentStageInfo(),ns=nextStageInfo();return `<div class="home-stage-top"><span class="stage-number small">${cs.n}</span><div><span class="stage-label">ETAPA VIGENTE</span><h2>${esc(cs.name)}</h2><p>${esc(cs.months)} · ${esc(cs.weeks)} · 2 horas de mentoría por iniciativa</p>
               ${cs.n===0?`<div class="home-stage-tools">
+                <p><strong>Revisa el Banco de Herramientas</strong> antes de preparar la línea base y el plan de trabajo.</p>
                 <button type="button" class="section-primary-btn" id="homeToolsBtn">Banco de Herramientas <span aria-hidden="true">→</span></button>
-                <p>Consulta el banco antes de preparar la línea base y el plan de trabajo.</p>
               </div>`:""}
             </div></div>
             <div class="home-stage-hito"><span>HITO DE LA ETAPA</span><strong>${esc(cs.hito)}</strong><small>${ns?`Después sigue: Etapa ${ns.n} · ${esc(ns.name)} · ${esc(ns.months)}`:"Esta es la etapa final de la ruta."}</small></div>`;})()}
@@ -1129,11 +1129,12 @@
 
   function toolsHtml(){
     const resources=[
+      {type:"GRABACIÓN",title:"Antes que nada, revive la sesión de Kick-off de Mentores",description:"Vuelve a ver la sesión de arranque de Science2Venture.",videoUrl:"https://youtu.be/OeVWy4Rtl3Q",format:"YOUTUBE"},
       {type:"PRESENTACIÓN",title:"Kick-Off Mentores · Cohorte I 2026",description:"Presentación de arranque para mentores: contexto de Science2Venture, ruta de acompañamiento, rol del mentor, asignaciones, seguimientos y próximos pasos.",file:"./recursos/kick-off-mentores-cohorte-i-2026.pptx",format:"PPTX"},
       {type:"FORMATO",title:"Plan de acompañamiento individual S2V",description:"Formato de trabajo para estructurar y registrar el acompañamiento individual de cada iniciativa durante la ruta.",file:"./recursos/plan-acompanamiento-individual-s2v.xlsx",format:"XLSX"},
       {type:"LÍNEA BASE",title:"Línea base Science2Venture",description:"Formato de apoyo para documentar la línea base técnico-comercial de cada iniciativa durante la Etapa 0.",file:"./recursos/lineas-base-construye-s2v.xlsx",format:"XLSX"}
     ];
-    return `<section class="tool-bank"><div class="tool-bank-head"><div class="tool-bank-icon">↗</div><div><span class="source-label">BANCO DE HERRAMIENTAS</span><h2>Recursos para el acompañamiento</h2><p>Documentos de trabajo disponibles para los mentores de Science2Venture. Los archivos se descargan directamente desde esta plataforma.</p></div></div><div class="resource-grid">${resources.map(r=>`<article class="resource-card"><div class="resource-card-top"><span class="resource-type">${esc(r.type)}</span><span class="resource-format">${esc(r.format)}</span></div><h3>${esc(r.title)}</h3><p>${esc(r.description)}</p><a class="resource-action" href="${esc(r.file)}" download>DESCARGAR ARCHIVO <span aria-hidden="true">↓</span></a></article>`).join("")}</div><div class="notice">Estos recursos son comunes para todos los mentores y están disponibles directamente desde el ingreso principal de Mentor View.</div></section>`;
+    return `<section class="tool-bank"><div class="tool-bank-head"><div class="tool-bank-icon">↗</div><div><span class="source-label">BANCO DE HERRAMIENTAS</span><h2>Recursos para el acompañamiento</h2><p>Grabación, presentación y formatos de trabajo para los mentores de Science2Venture.</p></div></div><div class="resource-grid">${resources.map(r=>`<article class="resource-card"><div class="resource-card-top"><span class="resource-type">${esc(r.type)}</span><span class="resource-format">${esc(r.format)}</span></div><h3>${esc(r.title)}</h3><p>${esc(r.description)}</p>${r.videoUrl?`<a class="resource-action" href="${esc(r.videoUrl)}" target="_blank" rel="noopener noreferrer">VER GRABACIÓN EN YOUTUBE <span aria-hidden="true">↗</span></a>`:`<a class="resource-action" href="${esc(r.file)}" download>DESCARGAR ARCHIVO <span aria-hidden="true">↓</span></a>`}</article>`).join("")}</div><div class="notice">Estos recursos son comunes para todos los mentores y están disponibles directamente desde el ingreso principal de Mentor View.</div></section>`;
   }
 
   load();
